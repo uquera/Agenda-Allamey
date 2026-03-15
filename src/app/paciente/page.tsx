@@ -1,0 +1,196 @@
+import { prisma } from "@/lib/prisma"
+import { auth } from "@/auth"
+import { redirect } from "next/navigation"
+import { Card, CardContent } from "@/components/ui/card"
+import { Badge } from "@/components/ui/badge"
+import { CalendarDays, BookOpen, FileText, Clock } from "lucide-react"
+import { format } from "date-fns"
+import { es } from "date-fns/locale"
+import Link from "next/link"
+
+export const dynamic = "force-dynamic"
+
+export default async function PacienteDashboard() {
+  const session = await auth()
+  if (!session) redirect("/login")
+
+  const paciente = await prisma.paciente.findUnique({
+    where: { userId: session.user.id },
+    include: {
+      citas: {
+        where: {
+          fecha: { gte: new Date() },
+          estado: { in: ["PENDIENTE", "APROBADA"] },
+        },
+        orderBy: { fecha: "asc" },
+        take: 3,
+      },
+      materiales: {
+        where: { visto: false },
+        include: { material: true },
+        take: 3,
+      },
+      sesiones: {
+        where: { publicado: true },
+        orderBy: { fechaSesion: "desc" },
+        take: 2,
+      },
+    },
+  })
+
+  if (!paciente) redirect("/login")
+
+  const estadoColor: Record<string, string> = {
+    PENDIENTE: "bg-amber-100 text-amber-700",
+    APROBADA: "bg-green-100 text-green-700",
+    RECHAZADA: "bg-red-100 text-red-700",
+    REAGENDADA: "bg-blue-100 text-blue-700",
+    COMPLETADA: "bg-gray-100 text-gray-600",
+    CANCELADA: "bg-gray-100 text-gray-600",
+  }
+
+  const estadoLabel: Record<string, string> = {
+    PENDIENTE: "Pendiente",
+    APROBADA: "Confirmada",
+    RECHAZADA: "Rechazada",
+    REAGENDADA: "Reagendada",
+    COMPLETADA: "Completada",
+    CANCELADA: "Cancelada",
+  }
+
+  return (
+    <div className="space-y-6 max-w-4xl">
+      <div>
+        <h1 className="text-xl font-bold text-gray-800">Mi portal</h1>
+        <p className="text-sm text-gray-500 mt-1">
+          Gestiona tus citas y accede a tus recursos
+        </p>
+      </div>
+
+      {/* Accesos rápidos */}
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+        {[
+          { href: "/paciente/agendar", icon: CalendarDays, label: "Solicitar cita", color: "#8B1A2C", bg: "#fff0f2" },
+          { href: "/paciente/citas", icon: Clock, label: "Mis citas", color: "#2563eb", bg: "#eff6ff" },
+          { href: "/paciente/sesiones", icon: FileText, label: "Sesiones", color: "#7c3aed", bg: "#f5f3ff" },
+          { href: "/paciente/materiales", icon: BookOpen, label: "Materiales", color: "#059669", bg: "#ecfdf5" },
+        ].map((item) => (
+          <Link
+            key={item.href}
+            href={item.href}
+            className="flex flex-col items-center gap-2 p-4 bg-white rounded-xl border border-gray-100 hover:shadow-sm transition-all text-center"
+          >
+            <div
+              className="w-10 h-10 rounded-xl flex items-center justify-center"
+              style={{ backgroundColor: item.bg }}
+            >
+              <item.icon size={20} style={{ color: item.color }} />
+            </div>
+            <span className="text-xs font-medium text-gray-700">{item.label}</span>
+          </Link>
+        ))}
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Próximas citas */}
+        <Card className="border-0 shadow-sm">
+          <CardContent className="p-5">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-sm font-semibold text-gray-800">Próximas citas</h2>
+              <Link
+                href="/paciente/citas"
+                className="text-xs font-medium hover:underline"
+                style={{ color: "#8B1A2C" }}
+              >
+                Ver todas →
+              </Link>
+            </div>
+
+            {paciente.citas.length === 0 ? (
+              <div className="text-center py-6">
+                <CalendarDays size={32} className="mx-auto text-gray-300 mb-2" />
+                <p className="text-sm text-gray-400">No tienes citas próximas</p>
+                <Link
+                  href="/paciente/agendar"
+                  className="text-xs font-medium mt-2 inline-block hover:underline"
+                  style={{ color: "#8B1A2C" }}
+                >
+                  Solicitar una cita
+                </Link>
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {paciente.citas.map((cita) => (
+                  <div key={cita.id} className="flex items-center gap-3 p-3 rounded-lg bg-gray-50">
+                    <div
+                      className="w-1.5 h-10 rounded-full shrink-0"
+                      style={{ backgroundColor: cita.estado === "PENDIENTE" ? "#f59e0b" : "#8B1A2C" }}
+                    />
+                    <div className="flex-1">
+                      <p className="text-sm font-medium text-gray-800 capitalize">
+                        {format(new Date(cita.fecha), "EEEE d 'de' MMMM", { locale: es })}
+                      </p>
+                      <p className="text-xs text-gray-500">
+                        {format(new Date(cita.fecha), "HH:mm")} ·{" "}
+                        {cita.modalidad === "ONLINE" ? "Online" : "Presencial"}
+                      </p>
+                    </div>
+                    <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${estadoColor[cita.estado]}`}>
+                      {estadoLabel[cita.estado]}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* Materiales sin ver */}
+        <Card className="border-0 shadow-sm">
+          <CardContent className="p-5">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-sm font-semibold text-gray-800">Materiales nuevos</h2>
+              <Link
+                href="/paciente/materiales"
+                className="text-xs font-medium hover:underline"
+                style={{ color: "#8B1A2C" }}
+              >
+                Ver todos →
+              </Link>
+            </div>
+
+            {paciente.materiales.length === 0 ? (
+              <div className="text-center py-6">
+                <BookOpen size={32} className="mx-auto text-gray-300 mb-2" />
+                <p className="text-sm text-gray-400">No hay materiales nuevos</p>
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {paciente.materiales.map((ma) => (
+                  <Link
+                    key={ma.id}
+                    href="/paciente/materiales"
+                    className="flex items-center gap-3 p-3 rounded-lg bg-gray-50 hover:bg-gray-100 transition-colors"
+                  >
+                    <div className="w-8 h-8 rounded-lg bg-green-50 flex items-center justify-center shrink-0">
+                      <BookOpen size={14} className="text-green-600" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium text-gray-800 truncate">
+                        {ma.material.titulo}
+                      </p>
+                      <p className="text-xs text-gray-400">{ma.material.tipo}</p>
+                    </div>
+                    <Badge className="bg-green-100 text-green-700 hover:bg-green-100 text-xs shrink-0">
+                      Nuevo
+                    </Badge>
+                  </Link>
+                ))}
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      </div>
+    </div>
+  )
+}

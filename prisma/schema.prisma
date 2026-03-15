@@ -1,0 +1,300 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+// ─── AUTENTICACION ─────────────────────────────────────────────────────────────
+
+model User {
+  id            String    @id @default(cuid())
+  name          String?
+  email         String    @unique
+  emailVerified DateTime?
+  image         String?
+  password      String?
+  role          Role      @default(PACIENTE)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  accounts Account[]
+  sessions Session[]
+  paciente Paciente?
+
+  @@map("users")
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+  @@map("accounts")
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("sessions")
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+  @@map("verification_tokens")
+}
+
+enum Role {
+  ADMIN
+  PACIENTE
+}
+
+// ─── PACIENTES ─────────────────────────────────────────────────────────────────
+
+model Paciente {
+  id              String    @id @default(cuid())
+  userId          String    @unique
+  telefono        String?
+  fechaNacimiento DateTime?
+  genero          String?
+  ocupacion       String?
+  motivoConsulta  String?
+  notas           String?
+  activo          Boolean   @default(true)
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  user       User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  citas      Cita[]
+  sesiones   SesionNota[]
+  materiales MaterialAsignado[]
+  pagos      Pago[]
+  archivos   ArchivoPaciente[]
+
+  @@map("pacientes")
+}
+
+// ─── DISPONIBILIDAD ────────────────────────────────────────────────────────────
+
+model Disponibilidad {
+  id         String   @id @default(cuid())
+  diaSemana  Int
+  horaInicio String
+  horaFin    String
+  activo     Boolean  @default(true)
+  createdAt  DateTime @default(now())
+
+  @@map("disponibilidad")
+}
+
+model BloqueoHorario {
+  id         String    @id @default(cuid())
+  fecha      DateTime
+  horaInicio String?
+  horaFin    String?
+  todoElDia  Boolean   @default(false)
+  motivo     String?
+  createdAt  DateTime  @default(now())
+
+  @@map("bloqueos_horario")
+}
+
+// ─── CITAS ─────────────────────────────────────────────────────────────────────
+
+model Cita {
+  id             String     @id @default(cuid())
+  pacienteId     String
+  fecha          DateTime
+  duracion       Int        @default(60)
+  modalidad      Modalidad  @default(PRESENCIAL)
+  estado         EstadoCita @default(PENDIENTE)
+  motivoConsulta String?
+  notasPaciente  String?
+  notasAdmin     String?
+  linkSesion     String?
+  recordatorio24h Boolean   @default(false)
+  createdAt      DateTime   @default(now())
+  updatedAt      DateTime   @updatedAt
+
+  paciente Paciente    @relation(fields: [pacienteId], references: [id])
+  sesion   SesionNota?
+  pago     Pago?
+
+  @@map("citas")
+}
+
+enum Modalidad {
+  PRESENCIAL
+  ONLINE
+}
+
+enum EstadoCita {
+  PENDIENTE
+  APROBADA
+  RECHAZADA
+  REAGENDADA
+  COMPLETADA
+  CANCELADA
+}
+
+// ─── SESIONES / NOTAS CLINICAS ─────────────────────────────────────────────────
+
+model SesionNota {
+  id          String   @id @default(cuid())
+  citaId      String?  @unique
+  pacienteId  String
+  titulo      String   @default("Resumen de Sesion")
+  contenido   String
+  publicado   Boolean  @default(false)
+  pdfUrl      String?
+  fechaSesion DateTime
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  cita     Cita?           @relation(fields: [citaId], references: [id])
+  paciente Paciente        @relation(fields: [pacienteId], references: [id])
+  archivos SesionArchivo[]
+
+  @@map("sesiones_notas")
+}
+
+model SesionArchivo {
+  id        String   @id @default(cuid())
+  sesionId  String
+  nombre    String
+  tipo      String
+  url       String
+  tamano    Int?
+  createdAt DateTime @default(now())
+
+  sesion SesionNota @relation(fields: [sesionId], references: [id], onDelete: Cascade)
+
+  @@map("sesion_archivos")
+}
+
+// ─── MATERIALES DIDACTICOS ─────────────────────────────────────────────────────
+
+model Material {
+  id          String       @id @default(cuid())
+  titulo      String
+  descripcion String?
+  tipo        TipoMaterial
+  contenido   String?
+  archivoUrl  String?
+  activo      Boolean      @default(true)
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+
+  asignaciones MaterialAsignado[]
+
+  @@map("materiales")
+}
+
+model MaterialAsignado {
+  id         String    @id @default(cuid())
+  materialId String
+  pacienteId String
+  visto      Boolean   @default(false)
+  fechaVisto DateTime?
+  createdAt  DateTime  @default(now())
+
+  material Material @relation(fields: [materialId], references: [id])
+  paciente Paciente @relation(fields: [pacienteId], references: [id])
+
+  @@unique([materialId, pacienteId])
+  @@map("materiales_asignados")
+}
+
+enum TipoMaterial {
+  PDF
+  VIDEO
+  ARTICULO
+  EJERCICIO
+  AUDIO
+}
+
+// ─── PAGOS ─────────────────────────────────────────────────────────────────────
+
+model Pago {
+  id         String     @id @default(cuid())
+  citaId     String?    @unique
+  pacienteId String
+  monto      Float
+  moneda     Moneda     @default(USD)
+  metodoPago MetodoPago
+  estado     EstadoPago @default(PENDIENTE)
+  referencia String?
+  notas      String?
+  fechaPago  DateTime?
+  createdAt  DateTime   @default(now())
+  updatedAt  DateTime   @updatedAt
+
+  cita     Cita?    @relation(fields: [citaId], references: [id])
+  paciente Paciente @relation(fields: [pacienteId], references: [id])
+
+  @@map("pagos")
+}
+
+enum MetodoPago {
+  ZELLE
+  PAGO_MOVIL
+  BINANCE
+  TRANSFERENCIA_USD
+  TRANSFERENCIA_BS
+  EFECTIVO
+}
+
+enum Moneda {
+  USD
+  BS
+}
+
+enum EstadoPago {
+  PENDIENTE
+  PAGADO
+  CANCELADO
+}
+
+enum TipoArchivo {
+  DOCUMENTO
+  IMAGEN
+  URL
+  OTRO
+}
+
+model ArchivoPaciente {
+  id          String      @id @default(cuid())
+  pacienteId  String
+  nombre      String
+  tipo        TipoArchivo
+  url         String
+  tamano      Int?
+  descripcion String?
+  createdAt   DateTime    @default(now())
+
+  paciente Paciente @relation(fields: [pacienteId], references: [id], onDelete: Cascade)
+
+  @@map("archivos_paciente")
+}
