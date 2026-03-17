@@ -4,7 +4,6 @@ import { useRef, useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { toast } from "sonner"
 import { Button } from "@/components/ui/button"
-import { ScrollArea } from "@/components/ui/scroll-area"
 import { Loader2, PenLine, RotateCcw, CheckCircle2 } from "lucide-react"
 
 const TEXTO_CONSENTIMIENTO = `CONSENTIMIENTO INFORMADO PARA SERVICIOS PSICOLÓGICOS
@@ -154,13 +153,13 @@ export default function ConsentimientoPage() {
           <div className="w-2 h-2 rounded-full bg-[#8B1A2C]" />
           <span className="text-xs font-medium text-gray-600">Documento de consentimiento</span>
         </div>
-        <ScrollArea className="h-64">
+        <div className="h-64 overflow-y-auto">
           <div className="p-5">
             <pre className="text-xs text-gray-700 leading-relaxed whitespace-pre-wrap font-sans">
               {TEXTO_CONSENTIMIENTO}
             </pre>
           </div>
-        </ScrollArea>
+        </div>
       </div>
 
       {/* Zona de firma */}
