@@ -1,229 +1,184 @@
 "use client"
 
-import { useRef, useState, useEffect } from "react"
+import { useState } from "react"
 import { useRouter } from "next/navigation"
 import { toast } from "sonner"
 import { Button } from "@/components/ui/button"
-import { Loader2, PenLine, RotateCcw, CheckCircle2 } from "lucide-react"
+import { Loader2, ShieldCheck, CheckSquare, Square } from "lucide-react"
 
-const TEXTO_CONSENTIMIENTO = `CONSENTIMIENTO INFORMADO PARA SERVICIOS PSICOLÓGICOS
-
-Psicóloga: Allamey Sanz
-Especialidad: Psicología Clínica y Sexología
-
-1. NATURALEZA DEL SERVICIO
-Los servicios psicológicos comprenden evaluación, orientación, psicoterapia individual, de pareja o grupal, y asesoría en sexología clínica. El objetivo es apoyar su bienestar emocional, mental y sexual mediante técnicas basadas en evidencia.
-
-2. CONFIDENCIALIDAD
-Toda la información compartida durante las sesiones es estrictamente confidencial. Solo se romperá la confidencialidad en los siguientes casos establecidos por ley: (a) riesgo inminente para su vida o la de terceros, (b) sospecha de abuso o maltrato de menores, o (c) requerimiento legal formal de un tribunal competente.
-
-3. REGISTRO DE SESIONES
-Se llevarán notas de progreso clínico que forman parte de su expediente. Estos registros son confidenciales y solo serán compartidos con su consentimiento expreso o en los supuestos legales antes mencionados.
-
-4. DERECHOS DEL PACIENTE
-Usted tiene derecho a: recibir información clara sobre su proceso terapéutico, hacer preguntas sobre las técnicas y objetivos del tratamiento, solicitar una segunda opinión profesional en cualquier momento, y finalizar el proceso terapéutico cuando lo desee, previo aviso con la antelación acordada.
-
-5. CANCELACIONES Y REPROGRAMACIONES
-Las citas deben cancelarse o reprogramarse con un mínimo de 24 horas de anticipación. Las cancelaciones tardías o inasistencias sin previo aviso podrán ser objeto de cobro según la política vigente del consultorio.
-
-6. HONORARIOS Y FORMAS DE PAGO
-Los honorarios serán acordados al inicio del proceso terapéutico. Los pagos deberán realizarse según la modalidad y plazo convenidos. Los cambios en los honorarios serán notificados con anticipación.
-
-7. COMUNICACIÓN ENTRE SESIONES
-La comunicación fuera de las sesiones (mensajes, llamadas, correos) se limitará a asuntos logísticos como programación de citas. Las consultas de carácter clínico se atenderán en las sesiones agendadas.
-
-8. TECNOLOGÍA Y SESIONES ONLINE
-Para las sesiones online, se utilizarán plataformas que garanticen privacidad. Usted es responsable de asegurar un espacio privado y conexión estable durante las sesiones virtuales.
-
-9. DECLARACIÓN
-He leído y comprendido este documento. He tenido la oportunidad de hacer preguntas y las mismas han sido respondidas satisfactoriamente. Entiendo que puedo solicitar una copia de este consentimiento en cualquier momento.
-
-Al firmar este documento, consiento voluntariamente recibir servicios psicológicos bajo los términos aquí descritos.`
+const CLAUSULAS = [
+  {
+    id: "naturaleza",
+    titulo: "Naturaleza del servicio",
+    texto:
+      "Entiendo que los servicios psicológicos comprenden evaluación, orientación, psicoterapia individual, de pareja o grupal, y asesoría en sexología clínica. El objetivo es apoyar mi bienestar emocional, mental y sexual mediante técnicas basadas en evidencia.",
+  },
+  {
+    id: "confidencialidad",
+    titulo: "Confidencialidad",
+    texto:
+      "Entiendo que toda la información compartida durante las sesiones es estrictamente confidencial. Solo se romperá la confidencialidad en casos establecidos por ley: riesgo inminente para mi vida o la de terceros, sospecha de abuso o maltrato de menores, o requerimiento legal formal de un tribunal competente.",
+  },
+  {
+    id: "registros",
+    titulo: "Registro de sesiones",
+    texto:
+      "Acepto que se lleven notas de progreso clínico que forman parte de mi expediente. Estos registros son confidenciales y solo serán compartidos con mi consentimiento expreso o en los supuestos legales antes mencionados.",
+  },
+  {
+    id: "cancelaciones",
+    titulo: "Cancelaciones y honorarios",
+    texto:
+      "Entiendo que las citas deben cancelarse o reprogramarse con un mínimo de 24 horas de anticipación. Las cancelaciones tardías o inasistencias sin previo aviso podrán ser objeto de cobro según la política vigente del consultorio.",
+  },
+  {
+    id: "comunicacion",
+    titulo: "Comunicación entre sesiones",
+    texto:
+      "Entiendo que la comunicación fuera de las sesiones (mensajes, llamadas, correos) se limitará a asuntos logísticos. Las consultas de carácter clínico se atenderán únicamente en las sesiones agendadas.",
+  },
+  {
+    id: "voluntario",
+    titulo: "Consentimiento voluntario",
+    texto:
+      "Declaro que he leído y comprendido este documento, que participo voluntariamente en el proceso terapéutico y que puedo retirar mi consentimiento en cualquier momento. Autorizo a Allamey Sanz, Psicóloga Clínica y Sexóloga, a brindarme los servicios descritos.",
+  },
+]
 
 export default function ConsentimientoPage() {
   const router = useRouter()
-  const canvasRef = useRef<HTMLCanvasElement>(null)
-  const [isDrawing, setIsDrawing] = useState(false)
-  const [hasFirma, setHasFirma] = useState(false)
+  const [aceptados, setAceptados] = useState<Record<string, boolean>>({})
   const [loading, setLoading] = useState(false)
-  const [lastPoint, setLastPoint] = useState<{ x: number; y: number } | null>(null)
 
-  useEffect(() => {
-    const canvas = canvasRef.current
-    if (!canvas) return
-    const ctx = canvas.getContext("2d")
-    if (!ctx) return
-    ctx.strokeStyle = "#1e293b"
-    ctx.lineWidth = 2
-    ctx.lineCap = "round"
-    ctx.lineJoin = "round"
-  }, [])
-
-  function getPos(e: React.MouseEvent | React.TouchEvent, canvas: HTMLCanvasElement) {
-    const rect = canvas.getBoundingClientRect()
-    const scaleX = canvas.width / rect.width
-    const scaleY = canvas.height / rect.height
-    if ("touches" in e) {
-      const touch = e.touches[0]
-      return {
-        x: (touch.clientX - rect.left) * scaleX,
-        y: (touch.clientY - rect.top) * scaleY,
-      }
-    }
-    return {
-      x: (e.clientX - rect.left) * scaleX,
-      y: (e.clientY - rect.top) * scaleY,
-    }
+  const toggleClausula = (id: string) => {
+    setAceptados((prev) => ({ ...prev, [id]: !prev[id] }))
   }
 
-  function startDrawing(e: React.MouseEvent | React.TouchEvent) {
-    e.preventDefault()
-    const canvas = canvasRef.current
-    if (!canvas) return
-    setIsDrawing(true)
-    const pos = getPos(e, canvas)
-    setLastPoint(pos)
-  }
-
-  function draw(e: React.MouseEvent | React.TouchEvent) {
-    e.preventDefault()
-    if (!isDrawing) return
-    const canvas = canvasRef.current
-    if (!canvas) return
-    const ctx = canvas.getContext("2d")
-    if (!ctx || !lastPoint) return
-    const pos = getPos(e, canvas)
-    ctx.beginPath()
-    ctx.moveTo(lastPoint.x, lastPoint.y)
-    ctx.lineTo(pos.x, pos.y)
-    ctx.stroke()
-    setLastPoint(pos)
-    setHasFirma(true)
-  }
-
-  function stopDrawing() {
-    setIsDrawing(false)
-    setLastPoint(null)
-  }
-
-  function limpiarFirma() {
-    const canvas = canvasRef.current
-    if (!canvas) return
-    const ctx = canvas.getContext("2d")
-    ctx?.clearRect(0, 0, canvas.width, canvas.height)
-    setHasFirma(false)
-  }
+  const aceptadosCount = Object.values(aceptados).filter(Boolean).length
+  const todosAceptados = CLAUSULAS.every((c) => aceptados[c.id])
 
   async function handleFirmar() {
-    if (!hasFirma) {
-      toast.error("Por favor dibuja tu firma antes de continuar")
+    if (!todosAceptados) {
+      toast.error("Debes aceptar todos los puntos para continuar")
       return
     }
     setLoading(true)
     try {
-      const canvas = canvasRef.current
-      const firmaBase64 = canvas?.toDataURL("image/png") || null
       const res = await fetch("/api/consentimiento", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ firma: firmaBase64 }),
+        body: JSON.stringify({ firma: "checkbox-accepted" }),
       })
-      if (!res.ok) throw new Error("Error al guardar")
-      toast.success("Consentimiento firmado correctamente")
+      if (!res.ok) throw new Error()
+      toast.success("Consentimiento registrado correctamente")
       router.push("/paciente")
     } catch {
-      toast.error("Error al guardar la firma. Intenta de nuevo.")
+      toast.error("Error al guardar. Intenta de nuevo.")
     } finally {
       setLoading(false)
     }
   }
 
   return (
-    <div className="max-w-2xl mx-auto space-y-6">
-      <div>
+    <div className="max-w-2xl mx-auto space-y-5 pb-10">
+      {/* Header */}
+      <div className="text-center pt-2">
+        <div
+          className="w-12 h-12 rounded-2xl flex items-center justify-center mx-auto mb-3"
+          style={{ backgroundColor: "#fff0f2" }}
+        >
+          <ShieldCheck size={24} style={{ color: "#8B1A2C" }} />
+        </div>
         <h1 className="text-xl font-bold text-gray-800">Consentimiento informado</h1>
         <p className="text-sm text-gray-500 mt-1">
-          Lee el documento completo y firma para continuar usando el portal
+          Lee cada punto y márcalo para confirmar que lo entiendes y aceptas
         </p>
       </div>
 
-      {/* Texto del consentimiento */}
-      <div className="border border-gray-200 rounded-xl bg-white overflow-hidden">
-        <div className="bg-gray-50 border-b border-gray-100 px-4 py-2 flex items-center gap-2">
-          <div className="w-2 h-2 rounded-full bg-[#8B1A2C]" />
-          <span className="text-xs font-medium text-gray-600">Documento de consentimiento</span>
-        </div>
-        <div className="h-64 overflow-y-auto">
-          <div className="p-5">
-            <pre className="text-xs text-gray-700 leading-relaxed whitespace-pre-wrap font-sans">
-              {TEXTO_CONSENTIMIENTO}
-            </pre>
-          </div>
-        </div>
+      {/* Encabezado del documento */}
+      <div className="bg-white border border-gray-100 rounded-xl p-5 shadow-sm">
+        <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1">
+          Psicóloga Clínica · Sexóloga
+        </p>
+        <h2 className="text-base font-bold" style={{ color: "#8B1A2C" }}>
+          Allamey Sanz
+        </h2>
+        <p className="text-xs text-gray-500 mt-2 leading-relaxed">
+          Para usar el portal de pacientes necesitas leer y aceptar cada uno de los
+          siguientes puntos del consentimiento informado para servicios psicológicos.
+          Este documento tiene validez legal.
+        </p>
       </div>
 
-      {/* Zona de firma */}
-      <div className="bg-white border border-gray-200 rounded-xl p-5 space-y-3">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <PenLine size={16} className="text-gray-500" />
-            <span className="text-sm font-medium text-gray-700">Firma digital</span>
-          </div>
-          {hasFirma && (
+      {/* Cláusulas */}
+      <div className="space-y-3">
+        {CLAUSULAS.map((clausula) => {
+          const aceptado = !!aceptados[clausula.id]
+          return (
             <button
-              onClick={limpiarFirma}
-              className="flex items-center gap-1 text-xs text-gray-400 hover:text-gray-600 transition-colors"
+              key={clausula.id}
+              onClick={() => toggleClausula(clausula.id)}
+              className={`w-full text-left p-4 rounded-xl border-2 transition-all ${
+                aceptado
+                  ? "border-green-400 bg-green-50"
+                  : "border-gray-200 bg-white hover:border-gray-300"
+              }`}
             >
-              <RotateCcw size={12} />
-              Limpiar
+              <div className="flex items-start gap-3">
+                <div className="shrink-0 mt-0.5">
+                  {aceptado ? (
+                    <CheckSquare size={20} className="text-green-600" />
+                  ) : (
+                    <Square size={20} className="text-gray-300" />
+                  )}
+                </div>
+                <div>
+                  <p className={`text-sm font-semibold mb-1 ${aceptado ? "text-green-700" : "text-gray-700"}`}>
+                    {clausula.titulo}
+                  </p>
+                  <p className="text-xs text-gray-500 leading-relaxed">{clausula.texto}</p>
+                </div>
+              </div>
             </button>
-          )}
-        </div>
-        <p className="text-xs text-gray-400">
-          Dibuja tu firma en el recuadro de abajo usando el mouse o tu dedo
-        </p>
-        <canvas
-          ref={canvasRef}
-          width={600}
-          height={160}
-          className={`w-full border-2 rounded-lg touch-none cursor-crosshair ${
-            hasFirma ? "border-[#8B1A2C]/40" : "border-dashed border-gray-200"
-          } bg-gray-50`}
-          onMouseDown={startDrawing}
-          onMouseMove={draw}
-          onMouseUp={stopDrawing}
-          onMouseLeave={stopDrawing}
-          onTouchStart={startDrawing}
-          onTouchMove={draw}
-          onTouchEnd={stopDrawing}
-        />
-        {!hasFirma && (
-          <p className="text-center text-xs text-gray-300 -mt-2">Área de firma</p>
-        )}
+          )
+        })}
       </div>
 
-      {/* Declaración y botón */}
-      <div className="bg-[#fff0f2] border border-[#8B1A2C]/10 rounded-xl p-4">
-        <div className="flex gap-3">
-          <CheckCircle2 size={18} className="text-[#8B1A2C] shrink-0 mt-0.5" />
-          <p className="text-xs text-gray-600 leading-relaxed">
-            Al firmar este documento confirmo que he leído, comprendido y acepto los términos del
-            consentimiento informado para recibir servicios psicológicos de <strong>Allamey Sanz</strong>.
-            Mi firma tiene validez legal como expresión de mi consentimiento voluntario.
-          </p>
+      {/* Barra de progreso */}
+      <div className="bg-white border border-gray-100 rounded-xl p-4 shadow-sm">
+        <div className="flex items-center justify-between mb-2">
+          <span className="text-xs text-gray-500">Puntos aceptados</span>
+          <span className="text-xs font-semibold text-gray-700">
+            {aceptadosCount} / {CLAUSULAS.length}
+          </span>
+        </div>
+        <div className="w-full h-2 bg-gray-100 rounded-full overflow-hidden">
+          <div
+            className="h-full rounded-full transition-all duration-300"
+            style={{
+              width: `${(aceptadosCount / CLAUSULAS.length) * 100}%`,
+              backgroundColor: todosAceptados ? "#16a34a" : "#8B1A2C",
+            }}
+          />
         </div>
       </div>
 
+      {/* Botón */}
       <Button
-        className="w-full h-11 text-white font-semibold"
-        style={{ backgroundColor: "#8B1A2C" }}
+        className="w-full h-12 text-white font-semibold text-sm"
+        style={{
+          backgroundColor: todosAceptados ? "#16a34a" : "#8B1A2C",
+          opacity: !todosAceptados ? 0.5 : 1,
+        }}
         onClick={handleFirmar}
-        disabled={loading || !hasFirma}
+        disabled={loading || !todosAceptados}
       >
         {loading ? (
-          <><Loader2 size={16} className="animate-spin mr-2" /> Guardando firma...</>
+          <><Loader2 size={16} className="animate-spin mr-2" />Guardando...</>
+        ) : todosAceptados ? (
+          <><ShieldCheck size={16} className="mr-2" />Acepto y continuar</>
         ) : (
-          "Firmar y continuar"
+          "Acepta todos los puntos para continuar"
         )}
       </Button>
     </div>
