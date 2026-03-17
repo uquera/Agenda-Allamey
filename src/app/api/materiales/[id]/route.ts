@@ -33,10 +33,8 @@ export async function DELETE(
 
   const { id } = await params
 
-  await prisma.material.update({
-    where: { id },
-    data: { activo: false },
-  })
+  await prisma.materialAsignado.deleteMany({ where: { materialId: id } })
+  await prisma.material.delete({ where: { id } })
 
   return NextResponse.json({ ok: true })
 }

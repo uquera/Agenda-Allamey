@@ -98,7 +98,7 @@ export default async function MaterialesPacientePage() {
                     Descargar
                   </a>
                 )}
-                {ma.material.contenido && ma.material.tipo === "ARTICULO" && (
+                {ma.material.contenido && (
                   <a
                     href={ma.material.contenido}
                     target="_blank"
@@ -107,7 +107,9 @@ export default async function MaterialesPacientePage() {
                     style={{ color: "#8B1A2C", borderColor: "#8B1A2C" }}
                   >
                     <ExternalLink size={12} />
-                    Abrir enlace
+                    {ma.material.tipo === "VIDEO" ? "Ver video" :
+                     ma.material.tipo === "AUDIO" ? "Escuchar" :
+                     "Abrir enlace"}
                   </a>
                 )}
                 {!ma.visto && (

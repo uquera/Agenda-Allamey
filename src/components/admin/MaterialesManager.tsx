@@ -10,7 +10,7 @@ import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Badge } from "@/components/ui/badge"
-import { Plus, BookOpen, FileText, Video, Link as LinkIcon, Music, Dumbbell, Users, Loader2, Trash2, Pencil } from "lucide-react"
+import { Plus, BookOpen, FileText, Video, Link as LinkIcon, Music, Dumbbell, Users, Loader2, Trash2, Pencil, RefreshCw } from "lucide-react"
 import { format } from "date-fns"
 import { es } from "date-fns/locale"
 import { toast } from "sonner"
@@ -59,6 +59,8 @@ export default function MaterialesManager({ materiales, pacientes }: Props) {
   const [modalEditar, setModalEditar] = useState<Material | null>(null)
   const [modalAsignar, setModalAsignar] = useState<Material | null>(null)
   const [loading, setLoading] = useState(false)
+  const [deletingId, setDeletingId] = useState<string | null>(null)
+  const [renovandoId, setRenovandoId] = useState<string | null>(null)
   const [pacientesSeleccionados, setPacientesSeleccionados] = useState<string[]>([])
 
   const [form, setForm] = useState<{
@@ -161,6 +163,36 @@ export default function MaterialesManager({ materiales, pacientes }: Props) {
     }
   }
 
+  async function eliminarMaterial(id: string) {
+    if (!confirm("¿Eliminar este material? Se quitará de todos los pacientes asignados.")) return
+    setDeletingId(id)
+    try {
+      const res = await fetch(`/api/materiales/${id}`, { method: "DELETE" })
+      if (!res.ok) throw new Error()
+      toast.success("Material eliminado")
+      router.refresh()
+    } catch {
+      toast.error("Error al eliminar el material")
+    } finally {
+      setDeletingId(null)
+    }
+  }
+
+  async function renovarMaterial(id: string) {
+    if (!confirm("¿Renovar este material? Aparecerá como 'Nuevo' para todos los pacientes asignados.")) return
+    setRenovandoId(id)
+    try {
+      const res = await fetch(`/api/materiales/${id}/renovar`, { method: "POST" })
+      if (!res.ok) throw new Error()
+      toast.success("Material renovado — los pacientes lo verán como nuevo")
+      router.refresh()
+    } catch {
+      toast.error("Error al renovar el material")
+    } finally {
+      setRenovandoId(null)
+    }
+  }
+
   function togglePaciente(id: string) {
     setPacientesSeleccionados((prev) =>
       prev.includes(id) ? prev.filter((p) => p !== id) : [...prev, id]
@@ -254,6 +286,34 @@ export default function MaterialesManager({ materiales, pacientes }: Props) {
                           <Users size={13} className="mr-1.5" />
                           Asignar
                         </Button>
+                        {m.totalAsignaciones > 0 && (
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            className="h-8 text-xs text-blue-600 border-blue-200 hover:bg-blue-50"
+                            disabled={renovandoId === m.id}
+                            onClick={() => renovarMaterial(m.id)}
+                          >
+                            {renovandoId === m.id
+                              ? <Loader2 size={13} className="animate-spin" />
+                              : <RefreshCw size={13} className="mr-1.5" />
+                            }
+                            Renovar
+                          </Button>
+                        )}
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="h-8 text-xs text-red-600 border-red-200 hover:bg-red-50"
+                          disabled={deletingId === m.id}
+                          onClick={() => eliminarMaterial(m.id)}
+                        >
+                          {deletingId === m.id
+                            ? <Loader2 size={13} className="animate-spin" />
+                            : <Trash2 size={13} className="mr-1.5" />
+                          }
+                          Borrar
+                        </Button>
                       </div>
                     </div>
                   </CardContent>
@@ -308,11 +368,14 @@ export default function MaterialesManager({ materiales, pacientes }: Props) {
 
             <div className="space-y-1.5">
               <Label className="text-sm">
-                {form.tipo === "ARTICULO" ? "URL del artículo" : "Contenido o enlace"}{" "}
+                {form.tipo === "ARTICULO" ? "URL del artículo" :
+                 form.tipo === "VIDEO" ? "URL del video (YouTube, Vimeo...)" :
+                 form.tipo === "AUDIO" ? "URL del audio" :
+                 "Enlace"}{" "}
                 <span className="text-gray-400">(opcional)</span>
               </Label>
               <Input
-                placeholder={form.tipo === "ARTICULO" ? "https://..." : "Texto o enlace"}
+                placeholder="https://..."
                 value={form.contenido}
                 onChange={(e) => setForm({ ...form, contenido: e.target.value })}
                 className="h-9"
@@ -381,11 +444,14 @@ export default function MaterialesManager({ materiales, pacientes }: Props) {
 
             <div className="space-y-1.5">
               <Label className="text-sm">
-                {formEditar.tipo === "ARTICULO" ? "URL del artículo" : "Contenido o enlace"}{" "}
+                {formEditar.tipo === "ARTICULO" ? "URL del artículo" :
+                 formEditar.tipo === "VIDEO" ? "URL del video (YouTube, Vimeo...)" :
+                 formEditar.tipo === "AUDIO" ? "URL del audio" :
+                 "Enlace"}{" "}
                 <span className="text-gray-400">(opcional)</span>
               </Label>
               <Input
-                placeholder={formEditar.tipo === "ARTICULO" ? "https://..." : "Texto o enlace"}
+                placeholder="https://..."
                 value={formEditar.contenido}
                 onChange={(e) => setFormEditar({ ...formEditar, contenido: e.target.value })}
                 className="h-9"
