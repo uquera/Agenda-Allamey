@@ -1,10 +1,10 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { toast } from "sonner"
 import { Button } from "@/components/ui/button"
-import { Loader2, ShieldCheck, CheckSquare, Square } from "lucide-react"
+import { Loader2, ShieldCheck, CheckSquare, Square, FileText, Download } from "lucide-react"
 
 const CLAUSULAS = [
   {
@@ -45,10 +45,25 @@ const CLAUSULAS = [
   },
 ]
 
+interface ConsentimientoData {
+  firmado: boolean
+  fechaFirma?: string | null
+}
+
 export default function ConsentimientoPage() {
   const router = useRouter()
+  const [estado, setEstado] = useState<ConsentimientoData | null>(null)
+  const [loadingEstado, setLoadingEstado] = useState(true)
   const [aceptados, setAceptados] = useState<Record<string, boolean>>({})
   const [loading, setLoading] = useState(false)
+
+  useEffect(() => {
+    fetch("/api/consentimiento")
+      .then((r) => r.json())
+      .then((data) => setEstado(data))
+      .catch(() => setEstado({ firmado: false }))
+      .finally(() => setLoadingEstado(false))
+  }, [])
 
   const toggleClausula = (id: string) => {
     setAceptados((prev) => ({ ...prev, [id]: !prev[id] }))
@@ -70,7 +85,7 @@ export default function ConsentimientoPage() {
         body: JSON.stringify({ firma: "checkbox-accepted" }),
       })
       if (!res.ok) throw new Error()
-      toast.success("Consentimiento registrado correctamente")
+      toast.success("Consentimiento registrado. ¡Bienvenida al portal!")
       router.push("/paciente")
     } catch {
       toast.error("Error al guardar. Intenta de nuevo.")
@@ -79,6 +94,54 @@ export default function ConsentimientoPage() {
     }
   }
 
+  if (loadingEstado) {
+    return (
+      <div className="flex items-center justify-center py-24">
+        <Loader2 size={24} className="animate-spin text-gray-300" />
+      </div>
+    )
+  }
+
+  // Ya firmó — mostrar estado completado
+  if (estado?.firmado) {
+    const fecha = estado.fechaFirma
+      ? new Date(estado.fechaFirma).toLocaleDateString("es-ES", {
+          day: "numeric", month: "long", year: "numeric",
+        })
+      : null
+
+    return (
+      <div className="max-w-md mx-auto text-center space-y-5 pt-10">
+        <div
+          className="w-16 h-16 rounded-2xl flex items-center justify-center mx-auto"
+          style={{ backgroundColor: "#f0fdf4" }}
+        >
+          <ShieldCheck size={32} className="text-green-600" />
+        </div>
+        <div>
+          <h1 className="text-xl font-bold text-gray-800">Consentimiento firmado</h1>
+          {fecha && (
+            <p className="text-sm text-gray-500 mt-1">Firmado el {fecha}</p>
+          )}
+        </div>
+        <p className="text-sm text-gray-500 leading-relaxed">
+          Ya aceptaste el consentimiento informado. El documento fue guardado en tu expediente
+          y está disponible para descarga en tu carpeta de archivos.
+        </p>
+        <div className="flex flex-col gap-3">
+          <Button
+            className="w-full text-white"
+            style={{ backgroundColor: "#8B1A2C" }}
+            onClick={() => router.push("/paciente")}
+          >
+            Volver al inicio
+          </Button>
+        </div>
+      </div>
+    )
+  }
+
+  // Aún no firmó — mostrar formulario
   return (
     <div className="max-w-2xl mx-auto space-y-5 pb-10">
       {/* Header */}
@@ -105,8 +168,8 @@ export default function ConsentimientoPage() {
         </h2>
         <p className="text-xs text-gray-500 mt-2 leading-relaxed">
           Para usar el portal de pacientes necesitas leer y aceptar cada uno de los
-          siguientes puntos del consentimiento informado para servicios psicológicos.
-          Este documento tiene validez legal.
+          siguientes puntos del consentimiento informado. Este proceso es único — solo
+          se realiza la primera vez. El documento quedará guardado en tu expediente.
         </p>
       </div>
 
@@ -163,6 +226,14 @@ export default function ConsentimientoPage() {
         </div>
       </div>
 
+      {/* Nota PDF */}
+      <div className="flex items-center gap-2 px-1">
+        <FileText size={13} className="text-gray-400 shrink-0" />
+        <p className="text-xs text-gray-400">
+          Al aceptar se generará automáticamente un documento firmado que quedará guardado en tu expediente.
+        </p>
+      </div>
+
       {/* Botón */}
       <Button
         className="w-full h-12 text-white font-semibold text-sm"
@@ -174,7 +245,7 @@ export default function ConsentimientoPage() {
         disabled={loading || !todosAceptados}
       >
         {loading ? (
-          <><Loader2 size={16} className="animate-spin mr-2" />Guardando...</>
+          <><Loader2 size={16} className="animate-spin mr-2" />Guardando documento...</>
         ) : todosAceptados ? (
           <><ShieldCheck size={16} className="mr-2" />Acepto y continuar</>
         ) : (
