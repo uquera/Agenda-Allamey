@@ -14,7 +14,7 @@ import { Label } from "@/components/ui/label"
 import { format } from "date-fns"
 import { es } from "date-fns/locale"
 import { toast } from "sonner"
-import { Lock } from "lucide-react"
+import { Lock, Trash2 } from "lucide-react"
 
 interface Evento {
   id: string
@@ -33,8 +33,18 @@ interface Evento {
   }
 }
 
+interface Bloqueo {
+  id: string
+  fecha: string
+  horaInicio: string | null
+  horaFin: string | null
+  todoElDia: boolean
+  motivo: string | null
+}
+
 interface Props {
   eventos: Evento[]
+  bloqueosIniciales: Bloqueo[]
 }
 
 const estadoLabel: Record<string, string> = {
@@ -55,11 +65,43 @@ const estadoBg: Record<string, string> = {
   CANCELADA:  "#ef4444",
 }
 
-export default function AgendaCalendar({ eventos }: Props) {
+function bloqueoToEvento(b: Bloqueo) {
+  const fechaStr = b.fecha.split("T")[0]
+  if (b.todoElDia) {
+    return {
+      id: `bloqueo-${b.id}`,
+      title: b.motivo || "Bloqueado",
+      start: fechaStr,
+      allDay: true,
+      display: "background" as const,
+      backgroundColor: "#9ca3af",
+      borderColor: "#9ca3af",
+      extendedProps: { tipo: "bloqueo", bloqueoId: b.id, motivo: b.motivo },
+    }
+  }
+  return {
+    id: `bloqueo-${b.id}`,
+    title: `🔒 ${b.motivo || "Bloqueado"}`,
+    start: `${fechaStr}T${b.horaInicio || "00:00"}`,
+    end: `${fechaStr}T${b.horaFin || "23:59"}`,
+    backgroundColor: "#9ca3af",
+    borderColor: "#9ca3af",
+    textColor: "#ffffff",
+    extendedProps: { tipo: "bloqueo", bloqueoId: b.id, motivo: b.motivo },
+  }
+}
+
+export default function AgendaCalendar({ eventos, bloqueosIniciales }: Props) {
   const calendarRef = useRef(null)
+  const [bloqueos, setBloqueos] = useState<Bloqueo[]>(bloqueosIniciales)
   const [bloqueoOpen, setBloqueoOpen] = useState(false)
   const [bloqueo, setBloqueo] = useState({ fecha: "", horaInicio: "", horaFin: "", motivo: "", todoElDia: false })
   const [guardandoBloqueo, setGuardandoBloqueo] = useState(false)
+
+  // Dialog para eliminar bloqueo
+  const [deleteOpen, setDeleteOpen] = useState(false)
+  const [bloqueoAEliminar, setBloqueoAEliminar] = useState<{ id: string; motivo: string | null } | null>(null)
+  const [eliminando, setEliminando] = useState(false)
 
   const eventosColoreados = eventos.map((ev) => ({
     ...ev,
@@ -68,8 +110,16 @@ export default function AgendaCalendar({ eventos }: Props) {
     textColor: "#ffffff",
   }))
 
+  const eventosBloqueos = bloqueos.map(bloqueoToEvento)
+  const todosLosEventos = [...eventosColoreados, ...eventosBloqueos]
+
   function handleEventClick(info: { event: { id: string; title: string; start: Date | null; extendedProps: Record<string, unknown> } }) {
     const ev = info.event
+    if (ev.extendedProps.tipo === "bloqueo") {
+      setBloqueoAEliminar({ id: ev.extendedProps.bloqueoId as string, motivo: ev.extendedProps.motivo as string | null })
+      setDeleteOpen(true)
+      return
+    }
     const estado = ev.extendedProps.estado as string
     const modalidad = ev.extendedProps.modalidad as string
     const fechaStr = ev.start ? format(ev.start, "EEEE d 'de' MMMM · HH:mm", { locale: es }) : ""
@@ -97,12 +147,30 @@ export default function AgendaCalendar({ eventos }: Props) {
         body: JSON.stringify(bloqueo),
       })
       if (!res.ok) throw new Error()
+      const nuevo: Bloqueo = await res.json()
+      setBloqueos((prev) => [...prev, nuevo])
       toast.success("Horario bloqueado correctamente")
       setBloqueoOpen(false)
     } catch {
       toast.error("Error al bloquear el horario")
     } finally {
       setGuardandoBloqueo(false)
+    }
+  }
+
+  async function eliminarBloqueo() {
+    if (!bloqueoAEliminar) return
+    setEliminando(true)
+    try {
+      const res = await fetch(`/api/bloqueos/${bloqueoAEliminar.id}`, { method: "DELETE" })
+      if (!res.ok) throw new Error()
+      setBloqueos((prev) => prev.filter((b) => b.id !== bloqueoAEliminar.id))
+      toast.success("Bloqueo eliminado")
+      setDeleteOpen(false)
+    } catch {
+      toast.error("Error al eliminar el bloqueo")
+    } finally {
+      setEliminando(false)
     }
   }
 
@@ -115,6 +183,7 @@ export default function AgendaCalendar({ eventos }: Props) {
           { color: "#6b7280", label: "Realizada" },
           { color: "#ef4444", label: "Cancelada" },
           { color: "#3b82f6", label: "Reagendada" },
+          { color: "#9ca3af", label: "Bloqueado" },
         ].map(({ color, label }) => (
           <div key={label} className="flex items-center gap-1.5">
             <span className="w-3 h-3 rounded-full inline-block" style={{ backgroundColor: color }} />
@@ -123,7 +192,7 @@ export default function AgendaCalendar({ eventos }: Props) {
         ))}
         <div className="flex items-center gap-1.5 ml-auto text-gray-400">
           <Lock size={11} />
-          <span>Clic en espacio vacío para bloquear horario</span>
+          <span>Arrastra para bloquear · Clic en bloqueo gris para eliminar</span>
         </div>
       </div>
 
@@ -134,9 +203,10 @@ export default function AgendaCalendar({ eventos }: Props) {
             plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin]}
             initialView="timeGridWeek"
             locale={esLocale}
-            events={eventosColoreados}
+            events={todosLosEventos}
             eventClick={handleEventClick}
             selectable={true}
+            selectMirror={true}
             select={handleDateSelect}
             headerToolbar={{
               left: "prev,next today",
@@ -157,6 +227,7 @@ export default function AgendaCalendar({ eventos }: Props) {
         </CardContent>
       </Card>
 
+      {/* Dialog: Crear bloqueo */}
       <Dialog open={bloqueoOpen} onOpenChange={setBloqueoOpen}>
         <DialogContent className="max-w-sm">
           <DialogHeader>
@@ -183,7 +254,7 @@ export default function AgendaCalendar({ eventos }: Props) {
             )}
             <div>
               <Label>Motivo <span className="text-gray-400 font-normal">(opcional)</span></Label>
-              <Input value={bloqueo.motivo} onChange={e => setBloqueo(b => ({ ...b, motivo: e.target.value }))} placeholder="Ej: Almuerzo, Personal..." className="mt-1" />
+              <Input value={bloqueo.motivo} onChange={e => setBloqueo(b => ({ ...b, motivo: e.target.value }))} placeholder="Ej: Almuerzo, Personal, Reunión..." className="mt-1" />
             </div>
             <div className="flex gap-3 pt-1">
               <Button variant="outline" className="flex-1" onClick={() => setBloqueoOpen(false)}>Cancelar</Button>
@@ -191,6 +262,26 @@ export default function AgendaCalendar({ eventos }: Props) {
                 {guardandoBloqueo ? "Guardando..." : "Bloquear"}
               </Button>
             </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Dialog: Eliminar bloqueo */}
+      <Dialog open={deleteOpen} onOpenChange={setDeleteOpen}>
+        <DialogContent className="max-w-sm">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Trash2 size={16} className="text-red-500" /> Eliminar bloqueo
+            </DialogTitle>
+          </DialogHeader>
+          <p className="text-sm text-gray-600">
+            ¿Deseas eliminar el bloqueo{bloqueoAEliminar?.motivo ? ` "${bloqueoAEliminar.motivo}"` : ""}? El horario quedará disponible nuevamente.
+          </p>
+          <div className="flex gap-3 pt-1">
+            <Button variant="outline" className="flex-1" onClick={() => setDeleteOpen(false)}>Cancelar</Button>
+            <Button className="flex-1 bg-red-500 hover:bg-red-600 text-white" onClick={eliminarBloqueo} disabled={eliminando}>
+              {eliminando ? "Eliminando..." : "Eliminar bloqueo"}
+            </Button>
           </div>
         </DialogContent>
       </Dialog>

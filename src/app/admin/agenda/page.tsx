@@ -29,6 +29,7 @@ export default async function AgendaPage() {
     className: `fc-event-${c.estado.toLowerCase()}`,
   }))
 
+  const bloqueos = await prisma.bloqueoHorario.findMany({ orderBy: { fecha: "asc" } })
   const pendientes = citas.filter((c) => c.estado === "PENDIENTE")
 
   return (
@@ -56,7 +57,17 @@ export default async function AgendaPage() {
         />
       )}
 
-      <AgendaCalendar eventos={eventos} />
+      <AgendaCalendar
+        eventos={eventos}
+        bloqueosIniciales={bloqueos.map((b) => ({
+          id: b.id,
+          fecha: b.fecha.toISOString(),
+          horaInicio: b.horaInicio,
+          horaFin: b.horaFin,
+          todoElDia: b.todoElDia,
+          motivo: b.motivo,
+        }))}
+      />
     </div>
   )
 }

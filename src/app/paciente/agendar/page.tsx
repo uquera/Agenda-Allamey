@@ -26,7 +26,7 @@ export default function AgendarPage() {
   const [estadosMes, setEstadosMes] = useState<Record<string, EstadoDia>>({})
   const [loadingMes, setLoadingMes] = useState(false)
   const [fechaSeleccionada, setFechaSeleccionada] = useState<Date | null>(null)
-  const [slots, setSlots] = useState<string[]>([])
+  const [slots, setSlots] = useState<{ hora: string; estado: "disponible" | "bloqueado" | "ocupado"; motivo?: string }[]>([])
   const [horaSeleccionada, setHoraSeleccionada] = useState<string | null>(null)
   const [loadingSlots, setLoadingSlots] = useState(false)
   const [modalidad, setModalidad] = useState<"PRESENCIAL" | "ONLINE">("PRESENCIAL")
@@ -66,7 +66,7 @@ export default function AgendarPage() {
     try {
       const res = await fetch(`/api/disponibilidad?fecha=${fechaStr}`)
       const data = await res.json()
-      setSlots(data.slots || [])
+      setSlots(data.todosLosSlots || data.slots?.map((h: string) => ({ hora: h, estado: "disponible" as const })) || [])
     } catch {
       setSlots([])
     } finally {
@@ -302,19 +302,34 @@ export default function AgendarPage() {
                 ) : slots.length === 0 ? (
                   <p className="text-sm text-gray-400 text-center py-3">No hay horarios disponibles para este día</p>
                 ) : (
-                  <div className="grid grid-cols-4 gap-2">
-                    {slots.map((slot) => (
-                      <button
-                        key={slot}
-                        onClick={() => setHoraSeleccionada(slot)}
-                        className={`py-2 rounded-lg text-sm font-medium transition-all ${
-                          horaSeleccionada === slot ? "text-white shadow-sm" : "bg-gray-50 text-gray-700 hover:bg-gray-100"
-                        }`}
-                        style={horaSeleccionada === slot ? { backgroundColor: "#8B1A2C" } : {}}
-                      >
-                        {slot}
-                      </button>
-                    ))}
+                  <div className="grid grid-cols-3 gap-2">
+                    {slots.map((slot) => {
+                      const bloqueado = slot.estado === "bloqueado" || slot.estado === "ocupado"
+                      const seleccionado = horaSeleccionada === slot.hora
+                      return (
+                        <button
+                          key={slot.hora}
+                          onClick={() => !bloqueado && setHoraSeleccionada(slot.hora)}
+                          disabled={bloqueado}
+                          title={bloqueado && slot.motivo ? slot.motivo : undefined}
+                          className={`py-2 px-1 rounded-lg text-xs font-medium transition-all ${
+                            bloqueado
+                              ? "bg-gray-100 text-gray-400 cursor-not-allowed"
+                              : seleccionado
+                              ? "text-white shadow-sm"
+                              : "bg-gray-50 text-gray-700 hover:bg-gray-100"
+                          }`}
+                          style={!bloqueado && seleccionado ? { backgroundColor: "#8B1A2C" } : {}}
+                        >
+                          {slot.hora}
+                          {bloqueado && (
+                            <span className="block text-xs text-gray-400 font-normal leading-tight mt-0.5">
+                              Horario ocupado
+                            </span>
+                          )}
+                        </button>
+                      )
+                    })}
                   </div>
                 )}
               </div>

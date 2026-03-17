@@ -46,7 +46,13 @@ export async function GET(req: Request) {
       todoElDia: true,
     },
   })
-  if (bloqueo) return NextResponse.json({ slots: [] })
+  if (bloqueo) return NextResponse.json({ slots: [], todosLosSlots: [] })
+
+  // Bloqueos parciales del día
+  const bloqueosParciales = await prisma.bloqueoHorario.findMany({
+    where: { fecha: { gte: inicioDia, lt: finDia }, todoElDia: false },
+    select: { horaInicio: true, horaFin: true, motivo: true },
+  })
 
   // Citas ya agendadas ese día
   const citasDelDia = await prisma.cita.findMany({
@@ -59,6 +65,7 @@ export async function GET(req: Request) {
 
   // Generar slots de 1 hora
   const slots: string[] = []
+  const todosLosSlots: { hora: string; estado: "disponible" | "bloqueado" | "ocupado"; motivo?: string }[] = []
   const [hIni, mIni] = horario.horaInicio.split(":").map(Number)
   const [hFin, mFin] = horario.horaFin.split(":").map(Number)
   const inicio = hIni * 60 + mIni
@@ -69,17 +76,35 @@ export async function GET(req: Request) {
     const mm = (min % 60).toString().padStart(2, "0")
     const slotTime = `${hh}:${mm}`
 
-    // Verificar si está ocupado
+    // Verificar bloqueo parcial
+    const bloqueoMatch = bloqueosParciales.find((b) => {
+      if (!b.horaInicio || !b.horaFin) return false
+      const [bhi, bmi] = b.horaInicio.split(":").map(Number)
+      const [bhf, bmf] = b.horaFin.split(":").map(Number)
+      const bIni = bhi * 60 + bmi
+      const bFin = bhf * 60 + bmf
+      return min < bFin && min + 60 > bIni
+    })
+    if (bloqueoMatch) {
+      todosLosSlots.push({ hora: slotTime, estado: "bloqueado", motivo: bloqueoMatch.motivo || undefined })
+      continue
+    }
+
+    // Verificar cita ocupada
     const ocupado = citasDelDia.some((c) => {
-      const citaMin =
-        new Date(c.fecha).getHours() * 60 + new Date(c.fecha).getMinutes()
+      const citaMin = new Date(c.fecha).getHours() * 60 + new Date(c.fecha).getMinutes()
       return Math.abs(citaMin - min) < c.duracion
     })
 
-    if (!ocupado) slots.push(slotTime)
+    if (ocupado) {
+      todosLosSlots.push({ hora: slotTime, estado: "ocupado" })
+    } else {
+      slots.push(slotTime)
+      todosLosSlots.push({ hora: slotTime, estado: "disponible" })
+    }
   }
 
-  return NextResponse.json({ slots })
+  return NextResponse.json({ slots, todosLosSlots })
 }
 
 // POST — guardar disponibilidad semanal (solo admin)
