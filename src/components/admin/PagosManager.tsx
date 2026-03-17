@@ -27,11 +27,12 @@ interface Pago {
   createdAt: string
   paciente: { nombre: string }
   cita?: { fecha: string } | null
+  codigoPaciente?: string | null
 }
 
 interface Props {
   pagos: Pago[]
-  pacientes: { id: string; nombre: string }[]
+  pacientes: { id: string; nombre: string; codigo?: string | null }[]
   resumen: { totalCobradoUSD: number; pagosPendientes: number }
 }
 
@@ -179,7 +180,10 @@ export default function PagosManager({ pagos, pacientes, resumen }: Props) {
                 <tbody>
                   {pagos.map((p) => (
                     <tr key={p.id} className="border-b border-gray-50 hover:bg-gray-50 transition-colors">
-                      <td className="px-4 py-3 font-medium text-gray-800">{p.paciente.nombre}</td>
+                      <td className="px-4 py-3">
+                        <p className="font-medium text-gray-800">{p.paciente.nombre}</p>
+                        {p.codigoPaciente && <p className="text-xs text-gray-400 font-mono">{p.codigoPaciente}</p>}
+                      </td>
                       <td className="px-4 py-3 font-semibold">
                         {p.moneda === "USD" ? "$" : "Bs."} {p.monto.toFixed(2)}
                       </td>
@@ -231,7 +235,9 @@ export default function PagosManager({ pagos, pacientes, resumen }: Props) {
                 </SelectTrigger>
                 <SelectContent>
                   {pacientes.map((p) => (
-                    <SelectItem key={p.id} value={p.id}>{p.nombre}</SelectItem>
+                    <SelectItem key={p.id} value={p.id}>
+                      {p.nombre}{p.codigo ? ` — ${p.codigo}` : ""}
+                    </SelectItem>
                   ))}
                 </SelectContent>
               </Select>

@@ -37,7 +37,10 @@ export default auth((req) => {
     return NextResponse.redirect(new URL("/admin", nextUrl))
   }
 
-  return NextResponse.next()
+  // Reenviar la ruta actual como header para que los layouts la puedan leer
+  const requestHeaders = new Headers(req.headers)
+  requestHeaders.set("x-pathname", nextUrl.pathname)
+  return NextResponse.next({ request: { headers: requestHeaders } })
 })
 
 export const config = {

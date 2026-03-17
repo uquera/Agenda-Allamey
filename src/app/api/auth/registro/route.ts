@@ -2,9 +2,23 @@ import { NextResponse } from "next/server"
 import bcrypt from "bcryptjs"
 import { prisma } from "@/lib/prisma"
 
+async function generarCodigoPaciente(): Promise<string> {
+  const year = new Date().getFullYear()
+  const ultimo = await prisma.paciente.findFirst({
+    where: { codigo: { startsWith: `PAC-${year}-` } },
+    orderBy: { codigo: "desc" },
+  })
+  const siguiente = ultimo ? parseInt(ultimo.codigo!.split("-")[2]) + 1 : 1
+  return `PAC-${year}-${String(siguiente).padStart(4, "0")}`
+}
+
 export async function POST(req: Request) {
   try {
-    const { name, email, password, telefono } = await req.json()
+    const {
+      name, email, password, telefono,
+      fechaNacimiento, genero, ocupacion,
+      direccion, pais, quienRemite, primeraConsulta, motivoConsulta,
+    } = await req.json()
 
     if (!name || !email || !password) {
       return NextResponse.json({ error: "Datos incompletos" }, { status: 400 })
@@ -16,6 +30,7 @@ export async function POST(req: Request) {
     }
 
     const hash = await bcrypt.hash(password, 10)
+    const codigo = await generarCodigoPaciente()
 
     const user = await prisma.user.create({
       data: {
@@ -25,7 +40,16 @@ export async function POST(req: Request) {
         role: "PACIENTE",
         paciente: {
           create: {
+            codigo,
             telefono: telefono || null,
+            fechaNacimiento: fechaNacimiento ? new Date(fechaNacimiento) : null,
+            genero: genero || null,
+            ocupacion: ocupacion || null,
+            direccion: direccion || null,
+            pais: pais || null,
+            quienRemite: quienRemite || null,
+            primeraConsulta: primeraConsulta ?? true,
+            motivoConsulta: motivoConsulta || null,
           },
         },
       },

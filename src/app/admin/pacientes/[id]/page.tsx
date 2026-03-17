@@ -2,7 +2,7 @@ import { prisma } from "@/lib/prisma"
 import { notFound } from "next/navigation"
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { CalendarDays, FileText, BookOpen, CreditCard, ArrowLeft, Phone, Mail, User, FolderOpen } from "lucide-react"
+import { CalendarDays, FileText, BookOpen, CreditCard, ArrowLeft, Phone, Mail, User, FolderOpen, ShieldCheck, ShieldAlert } from "lucide-react"
 import { format } from "date-fns"
 import { es } from "date-fns/locale"
 import Link from "next/link"
@@ -30,6 +30,7 @@ export default async function PacienteDetallePage({
         take: 5,
       },
       pagos: { orderBy: { createdAt: "desc" }, take: 5 },
+      consentimiento: true,
     },
   })
 
@@ -85,6 +86,22 @@ export default async function PacienteDetallePage({
                 <span className="flex items-center gap-1 text-xs text-gray-500">
                   <Phone size={11} />
                   {paciente.telefono}
+                </span>
+              )}
+              {paciente.consentimiento?.firmado ? (
+                <span className="flex items-center gap-1 text-xs text-green-600 font-medium">
+                  <ShieldCheck size={11} />
+                  Consentimiento firmado
+                  {paciente.consentimiento.fechaFirma && (
+                    <span className="text-gray-400 font-normal">
+                      · {format(new Date(paciente.consentimiento.fechaFirma), "d MMM yyyy", { locale: es })}
+                    </span>
+                  )}
+                </span>
+              ) : (
+                <span className="flex items-center gap-1 text-xs text-amber-600 font-medium">
+                  <ShieldAlert size={11} />
+                  Sin consentimiento
                 </span>
               )}
             </div>

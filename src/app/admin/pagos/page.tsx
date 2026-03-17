@@ -38,9 +38,10 @@ export default async function PagosPage() {
         fechaPago: p.fechaPago?.toISOString() ?? null,
         createdAt: p.createdAt.toISOString(),
         paciente: { nombre: p.paciente.user.name || "Paciente" },
+        codigoPaciente: p.paciente.codigo,
         cita: p.cita ? { fecha: p.cita.fecha.toISOString() } : null,
       }))}
-      pacientes={pacientes.map((p) => ({ id: p.id, nombre: p.user.name || "Paciente" }))}
+      pacientes={pacientes.map((p) => ({ id: p.id, nombre: p.user.name || "Paciente", codigo: p.codigo }))}
       resumen={{ totalCobradoUSD: totalCobrado, pagosPendientes: pendientes }}
     />
   )

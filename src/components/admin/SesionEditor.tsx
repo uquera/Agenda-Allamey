@@ -11,6 +11,8 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Badge } from "@/components/ui/badge"
 import { toast } from "sonner"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Textarea } from "@/components/ui/textarea"
 import {
   Bold, Italic, List, ListOrdered, Heading2, Undo, Redo,
   Save, Eye, EyeOff, FileDown, Loader2, ArrowLeft, User,
@@ -33,13 +35,24 @@ interface Props {
   sesion: {
     id: string
     titulo: string
+    tipoSesion: string
     contenido: string
+    recomendacion?: string | null
+    cantidadSesiones?: number | null
+    estadoSeguimiento?: string | null
     publicado: boolean
     fechaSesion: string
     pdfUrl?: string | null
     paciente: { nombre: string; email: string }
   }
 }
+
+const ESTADOS_SEGUIMIENTO = [
+  { value: "AGENDADA", label: "Agendada", color: "bg-blue-100 text-blue-700" },
+  { value: "CUMPLIDA", label: "Cumplida", color: "bg-green-100 text-green-700" },
+  { value: "REPROGRAMAR", label: "Reprogramar", color: "bg-amber-100 text-amber-700" },
+  { value: "CANCELADA", label: "Cancelada", color: "bg-red-100 text-red-700" },
+]
 
 function formatBytes(bytes: number | null): string {
   if (!bytes) return ""
@@ -69,6 +82,10 @@ const tipoColor: Record<string, string> = {
 export default function SesionEditor({ sesion }: Props) {
   const router = useRouter()
   const [titulo, setTitulo] = useState(sesion.titulo)
+  const [tipoSesion, setTipoSesion] = useState(sesion.tipoSesion || "INDIVIDUAL")
+  const [recomendacion, setRecomendacion] = useState(sesion.recomendacion || "")
+  const [cantidadSesiones, setCantidadSesiones] = useState(sesion.cantidadSesiones?.toString() || "")
+  const [estadoSeguimiento, setEstadoSeguimiento] = useState(sesion.estadoSeguimiento || "")
   const [publicado, setPublicado] = useState(sesion.publicado)
   const [saving, setSaving] = useState(false)
   const [generandoPDF, setGenerandoPDF] = useState(false)
@@ -173,7 +190,10 @@ export default function SesionEditor({ sesion }: Props) {
         const res = await fetch(`/api/sesiones/${sesion.id}`, {
           method: "PATCH",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ titulo, contenido: editor.getHTML(), publicado: nuevoPublicado }),
+          body: JSON.stringify({
+            titulo, contenido: editor.getHTML(), publicado: nuevoPublicado,
+            tipoSesion, recomendacion, cantidadSesiones, estadoSeguimiento,
+          }),
         })
         if (!res.ok) throw new Error()
         if (publicarAhora && !publicado) {
@@ -241,10 +261,37 @@ export default function SesionEditor({ sesion }: Props) {
         </Badge>
       </div>
 
-      {/* Título */}
-      <div className="space-y-1.5">
-        <Label className="text-sm font-medium text-gray-700">Título del resumen</Label>
-        <Input value={titulo} onChange={(e) => setTitulo(e.target.value)} className="text-base font-semibold h-11" placeholder="Resumen de sesión..." />
+      {/* Título y metadatos de sesión */}
+      <div className="space-y-3">
+        <div className="space-y-1.5">
+          <Label className="text-sm font-medium text-gray-700">Título del resumen</Label>
+          <Input value={titulo} onChange={(e) => setTitulo(e.target.value)} className="text-base font-semibold h-11" placeholder="Resumen de sesión..." />
+        </div>
+
+        <div className="grid grid-cols-2 gap-3">
+          <div className="space-y-1.5">
+            <Label className="text-sm font-medium text-gray-700">Tipo de sesión</Label>
+            <Select value={tipoSesion} onValueChange={setTipoSesion}>
+              <SelectTrigger><SelectValue /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="INDIVIDUAL">Individual</SelectItem>
+                <SelectItem value="PAREJA">Pareja</SelectItem>
+                <SelectItem value="GRUPAL">Grupal</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="space-y-1.5">
+            <Label className="text-sm font-medium text-gray-700">Estado de seguimiento</Label>
+            <Select value={estadoSeguimiento} onValueChange={setEstadoSeguimiento}>
+              <SelectTrigger><SelectValue placeholder="Sin estado" /></SelectTrigger>
+              <SelectContent>
+                {ESTADOS_SEGUIMIENTO.map(e => (
+                  <SelectItem key={e.value} value={e.value}>{e.label}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
       </div>
 
       {/* Editor */}
@@ -369,6 +416,27 @@ export default function SesionEditor({ sesion }: Props) {
             ))}
           </div>
         )}
+      </div>
+
+      {/* Recomendación clínica */}
+      <div className="border border-gray-200 rounded-xl bg-white shadow-sm p-4 space-y-3">
+        <h3 className="text-sm font-semibold text-gray-700">Recomendación al cierre de sesión</h3>
+        <Textarea
+          value={recomendacion}
+          onChange={e => setRecomendacion(e.target.value)}
+          placeholder="Indicaciones, continuidad del proceso, observaciones para la próxima sesión..."
+          rows={3}
+        />
+        <div className="flex items-center gap-3">
+          <Label className="text-sm text-gray-600 whitespace-nowrap">Sesiones propuestas</Label>
+          <Input
+            type="number" min={1} max={100}
+            value={cantidadSesiones}
+            onChange={e => setCantidadSesiones(e.target.value)}
+            placeholder="Ej: 8"
+            className="w-24"
+          />
+        </div>
       </div>
 
       {/* Acciones */}

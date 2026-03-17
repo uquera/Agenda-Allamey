@@ -2,7 +2,7 @@
 
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { CalendarDays, Clock, FileText, BookOpen, LogOut, Home } from "lucide-react"
+import { CalendarDays, Clock, FileText, BookOpen, LogOut, Home, ShieldCheck } from "lucide-react"
 import { signOut } from "next-auth/react"
 import { cn } from "@/lib/utils"
 
@@ -12,6 +12,7 @@ const navItems = [
   { href: "/paciente/citas", label: "Mis citas", icon: Clock },
   { href: "/paciente/sesiones", label: "Mis sesiones", icon: FileText },
   { href: "/paciente/materiales", label: "Mis materiales", icon: BookOpen },
+  { href: "/paciente/consentimiento", label: "Consentimiento", icon: ShieldCheck },
 ]
 
 export default function PacienteSidebar() {

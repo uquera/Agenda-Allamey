@@ -3,6 +3,18 @@ import { auth } from "@/auth"
 import { prisma } from "@/lib/prisma"
 import bcrypt from "bcryptjs"
 
+async function generarCodigoPaciente(): Promise<string> {
+  const year = new Date().getFullYear()
+  const ultimo = await prisma.paciente.findFirst({
+    where: { codigo: { startsWith: `PAC-${year}-` } },
+    orderBy: { codigo: "desc" },
+  })
+  const siguiente = ultimo
+    ? parseInt(ultimo.codigo!.split("-")[2]) + 1
+    : 1
+  return `PAC-${year}-${String(siguiente).padStart(4, "0")}`
+}
+
 export async function POST(req: Request) {
   const session = await auth()
   if (!session || session.user.role !== "ADMIN") {
@@ -10,19 +22,23 @@ export async function POST(req: Request) {
   }
 
   const body = await req.json()
-  const { name, email, password, telefono } = body
+  const {
+    name, email, password, telefono,
+    fechaNacimiento, genero, ocupacion,
+    direccion, pais, quienRemite, primeraConsulta, motivoConsulta,
+  } = body
 
   if (!name || !email || !password) {
     return NextResponse.json({ error: "Faltan campos obligatorios: nombre, email y contraseña" }, { status: 400 })
   }
 
-  // Verificar si el correo ya existe
   const existingUser = await prisma.user.findUnique({ where: { email } })
   if (existingUser) {
     return NextResponse.json({ error: "El correo electrónico ya está en uso" }, { status: 400 })
   }
 
   const hashedPassword = await bcrypt.hash(password, 10)
+  const codigo = await generarCodigoPaciente()
 
   try {
     const user = await prisma.user.create({
@@ -33,13 +49,20 @@ export async function POST(req: Request) {
         role: "PACIENTE",
         paciente: {
           create: {
+            codigo,
             telefono: telefono || null,
+            fechaNacimiento: fechaNacimiento ? new Date(fechaNacimiento) : null,
+            genero: genero || null,
+            ocupacion: ocupacion || null,
+            direccion: direccion || null,
+            pais: pais || null,
+            quienRemite: quienRemite || null,
+            primeraConsulta: primeraConsulta ?? true,
+            motivoConsulta: motivoConsulta || null,
           }
         }
       },
-      include: {
-        paciente: true
-      }
+      include: { paciente: true }
     })
 
     return NextResponse.json(user)

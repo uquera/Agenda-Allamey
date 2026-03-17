@@ -13,14 +13,20 @@ export async function PATCH(
   }
 
   const { id } = await params
-  const { titulo, contenido, publicado } = await req.json()
+  const { titulo, contenido, publicado, tipoSesion, recomendacion, cantidadSesiones, estadoSeguimiento } = await req.json()
 
   const sesionAntes = await prisma.sesionNota.findUnique({ where: { id } })
   if (!sesionAntes) return NextResponse.json({ error: "No encontrado" }, { status: 404 })
 
   const sesion = await prisma.sesionNota.update({
     where: { id },
-    data: { titulo, contenido, publicado },
+    data: {
+      titulo, contenido, publicado,
+      tipoSesion: tipoSesion || undefined,
+      recomendacion: recomendacion ?? null,
+      cantidadSesiones: cantidadSesiones ? Number(cantidadSesiones) : null,
+      estadoSeguimiento: estadoSeguimiento || null,
+    },
     include: {
       paciente: { include: { user: { select: { name: true, email: true } } } },
     },

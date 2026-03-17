@@ -8,7 +8,8 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Switch } from "@/components/ui/switch"
 import { toast } from "sonner"
-import { Loader2, Settings, Clock } from "lucide-react"
+import { Textarea } from "@/components/ui/textarea"
+import { Loader2, Clock, ShieldAlert } from "lucide-react"
 
 const DIAS = ["Domingo", "Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado"]
 
@@ -20,13 +21,30 @@ interface Disponibilidad {
   activo: boolean
 }
 
-interface Props {
-  disponibilidad: Disponibilidad[]
+interface PoliticaCancelacion {
+  activa: boolean
+  horasAntelacion: number
+  cobrarCancelacion: boolean
+  montoCancelacion?: number | null
+  descripcion?: string | null
 }
 
-export default function ConfiguracionManager({ disponibilidad }: Props) {
+interface Props {
+  disponibilidad: Disponibilidad[]
+  politicaCancelacion?: PoliticaCancelacion | null
+}
+
+export default function ConfiguracionManager({ disponibilidad, politicaCancelacion }: Props) {
   const router = useRouter()
   const [saving, setSaving] = useState<number | null>(null)
+  const [savingPolitica, setSavingPolitica] = useState(false)
+  const [politica, setPolitica] = useState<PoliticaCancelacion>({
+    activa: politicaCancelacion?.activa ?? false,
+    horasAntelacion: politicaCancelacion?.horasAntelacion ?? 24,
+    cobrarCancelacion: politicaCancelacion?.cobrarCancelacion ?? false,
+    montoCancelacion: politicaCancelacion?.montoCancelacion ?? null,
+    descripcion: politicaCancelacion?.descripcion ?? "",
+  })
 
   // Inicializar estado local con los 7 días
   const [horarios, setHorarios] = useState(() => {
@@ -70,6 +88,24 @@ export default function ConfiguracionManager({ disponibilidad }: Props) {
       toast.error("Error al guardar")
     } finally {
       setSaving(null)
+    }
+  }
+
+  async function guardarPolitica() {
+    setSavingPolitica(true)
+    try {
+      const res = await fetch("/api/configuracion/cancelacion", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(politica),
+      })
+      if (!res.ok) throw new Error()
+      toast.success("Política de cancelación guardada")
+      router.refresh()
+    } catch {
+      toast.error("Error al guardar")
+    } finally {
+      setSavingPolitica(false)
     }
   }
 
@@ -152,6 +188,77 @@ export default function ConfiguracionManager({ disponibilidad }: Props) {
               </div>
             ))}
           </div>
+        </CardContent>
+      </Card>
+      {/* Política de cancelación */}
+      <Card className="border-0 shadow-sm">
+        <CardContent className="p-5 space-y-4">
+          <div className="flex items-center gap-2">
+            <ShieldAlert size={16} style={{ color: "#8B1A2C" }} />
+            <h2 className="text-sm font-semibold text-gray-800">Política de cancelación</h2>
+          </div>
+
+          <div className="flex items-center gap-3 py-2 border rounded-lg px-3">
+            <Switch checked={politica.activa} onCheckedChange={v => setPolitica(p => ({ ...p, activa: v }))} id="politica-activa" />
+            <Label htmlFor="politica-activa" className="cursor-pointer">Activar política de cancelación</Label>
+          </div>
+
+          {politica.activa && (
+            <div className="space-y-3">
+              <div>
+                <Label className="text-sm">Horas mínimas de antelación para cancelar sin cargo</Label>
+                <Input
+                  type="number" min={1} max={168}
+                  value={politica.horasAntelacion}
+                  onChange={e => setPolitica(p => ({ ...p, horasAntelacion: Number(e.target.value) }))}
+                  className="mt-1 w-32"
+                />
+              </div>
+
+              <div className="flex items-center gap-3 py-2 border rounded-lg px-3">
+                <Switch
+                  checked={politica.cobrarCancelacion}
+                  onCheckedChange={v => setPolitica(p => ({ ...p, cobrarCancelacion: v }))}
+                  id="cobrar"
+                />
+                <Label htmlFor="cobrar" className="cursor-pointer">Cobrar por cancelación tardía</Label>
+              </div>
+
+              {politica.cobrarCancelacion && (
+                <div>
+                  <Label className="text-sm">Monto a cobrar (USD)</Label>
+                  <Input
+                    type="number" min={0} step={0.01}
+                    value={politica.montoCancelacion ?? ""}
+                    onChange={e => setPolitica(p => ({ ...p, montoCancelacion: e.target.value ? Number(e.target.value) : null }))}
+                    placeholder="Ej: 20.00"
+                    className="mt-1 w-36"
+                  />
+                </div>
+              )}
+
+              <div>
+                <Label className="text-sm">Descripción de la política <span className="text-gray-400 font-normal">(visible para el paciente)</span></Label>
+                <Textarea
+                  value={politica.descripcion ?? ""}
+                  onChange={e => setPolitica(p => ({ ...p, descripcion: e.target.value }))}
+                  placeholder="Describe los términos de cancelación que verán los pacientes..."
+                  rows={3}
+                  className="mt-1"
+                />
+              </div>
+            </div>
+          )}
+
+          <Button
+            onClick={guardarPolitica}
+            disabled={savingPolitica}
+            className="h-9 text-white"
+            style={{ backgroundColor: "#8B1A2C" }}
+          >
+            {savingPolitica ? <Loader2 size={14} className="animate-spin mr-2" /> : null}
+            Guardar política
+          </Button>
         </CardContent>
       </Card>
     </div>

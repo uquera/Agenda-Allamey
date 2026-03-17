@@ -25,7 +25,11 @@ export default async function SesionDetallePage({
       sesion={{
         id: sesion.id,
         titulo: sesion.titulo,
+        tipoSesion: sesion.tipoSesion,
         contenido: sesion.contenido,
+        recomendacion: sesion.recomendacion,
+        cantidadSesiones: sesion.cantidadSesiones,
+        estadoSeguimiento: sesion.estadoSeguimiento,
         publicado: sesion.publicado,
         fechaSesion: sesion.fechaSesion.toISOString(),
         pdfUrl: sesion.pdfUrl,

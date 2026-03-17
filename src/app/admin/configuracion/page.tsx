@@ -4,10 +4,10 @@ import ConfiguracionManager from "@/components/admin/ConfiguracionManager"
 export const dynamic = "force-dynamic"
 
 export default async function ConfiguracionPage() {
-  const disponibilidad = await prisma.disponibilidad.findMany({
-    where: { activo: true },
-    orderBy: { diaSemana: "asc" },
-  })
+  const [disponibilidad, politicaCancelacion] = await Promise.all([
+    prisma.disponibilidad.findMany({ where: { activo: true }, orderBy: { diaSemana: "asc" } }),
+    prisma.politicaCancelacion.findFirst(),
+  ])
 
   return (
     <ConfiguracionManager
@@ -18,6 +18,13 @@ export default async function ConfiguracionPage() {
         horaFin: d.horaFin,
         activo: d.activo,
       }))}
+      politicaCancelacion={politicaCancelacion ? {
+        activa: politicaCancelacion.activa,
+        horasAntelacion: politicaCancelacion.horasAntelacion,
+        cobrarCancelacion: politicaCancelacion.cobrarCancelacion,
+        montoCancelacion: politicaCancelacion.montoCancelacion,
+        descripcion: politicaCancelacion.descripcion,
+      } : null}
     />
   )
 }
