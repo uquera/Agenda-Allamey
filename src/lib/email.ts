@@ -31,9 +31,8 @@ function emailWrapper(content: string): string {
         <table width="600" cellpadding="0" cellspacing="0" style="background:#ffffff;border-radius:12px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,0.08);">
           <!-- Header -->
           <tr>
-            <td style="background:${brandColor};padding:32px 40px;text-align:center;">
-              <h1 style="margin:0;color:#ffffff;font-size:24px;font-weight:700;letter-spacing:1px;">ALLAMEY SANZ</h1>
-              <p style="margin:4px 0 0;color:rgba(255,255,255,0.85);font-size:13px;letter-spacing:2px;">PSICÓLOGA CLÍNICA · SEXÓLOGA</p>
+            <td style="background:#ffffff;padding:28px 40px;text-align:center;border-bottom:3px solid ${brandColor};">
+              <img src="${process.env.NEXT_PUBLIC_APP_URL}/logo-vertical.png" alt="Allamey Sanz" width="160" style="display:block;margin:0 auto;max-width:160px;" />
             </td>
           </tr>
           <!-- Content -->

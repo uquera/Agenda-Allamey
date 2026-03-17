@@ -1,6 +1,7 @@
 import { auth } from "@/auth"
 import { redirect } from "next/navigation"
-import AdminShell from "@/components/admin/AdminShell"
+import AdminSidebar from "@/components/admin/AdminSidebar"
+import AdminHeader from "@/components/admin/AdminHeader"
 
 export default async function AdminLayout({
   children,
@@ -11,8 +12,14 @@ export default async function AdminLayout({
   if (!session || session.user.role !== "ADMIN") redirect("/login")
 
   return (
-    <AdminShell user={session.user}>
-      {children}
-    </AdminShell>
+    <div className="flex h-screen bg-gray-50 overflow-hidden">
+      <AdminSidebar />
+      <div className="flex-1 flex flex-col overflow-hidden">
+        <AdminHeader user={session.user} />
+        <main className="flex-1 overflow-y-auto p-6">
+          {children}
+        </main>
+      </div>
+    </div>
   )
 }
