@@ -58,11 +58,9 @@ export default function EditarCuentaPacienteDialog({ pacienteId, name, email, ac
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        <Button variant="outline" size="sm" className="text-gray-600 bg-white shadow-sm border-gray-200">
-          <Settings size={14} className="mr-2" />
-          Ajustes de Cuenta
-        </Button>
+      <DialogTrigger render={<Button variant="outline" size="sm" className="text-gray-600 bg-white shadow-sm border-gray-200" />}>
+        <Settings size={14} className="mr-2" />
+        Ajustes de Cuenta
       </DialogTrigger>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
@@ -102,7 +100,7 @@ export default function EditarCuentaPacienteDialog({ pacienteId, name, email, ac
               id="activo" 
               checked={form.activo} 
               onChange={(e) => setForm({ ...form, activo: e.target.checked })}
-              className="w-4 h-4 rounded text-[#8B1A2C] focus:ring-[#8B1A2C] cursor-pointer"
+              className="w-4 h-4 rounded text-[var(--brand)] focus:ring-[var(--brand)] cursor-pointer"
             />
             <Label htmlFor="activo" className="cursor-pointer">Paciente Activo</Label>
           </div>
@@ -119,7 +117,7 @@ export default function EditarCuentaPacienteDialog({ pacienteId, name, email, ac
             <Button
               type="submit"
               disabled={saving}
-              className="bg-[#8B1A2C] hover:bg-[#6b1422] text-white"
+              className="bg-[var(--brand)] hover:bg-[var(--brand-dark)] text-white"
             >
               {saving ? <Loader2 size={16} className="animate-spin mr-2" /> : null}
               Guardar Cambios

@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from "react"
 import { useRouter } from "next/navigation"
 import { Card, CardContent } from "@/components/ui/card"
+import { BRAND } from "@/lib/brand"
 import { Button } from "@/components/ui/button"
 import { Textarea } from "@/components/ui/textarea"
 import { Label } from "@/components/ui/label"
@@ -115,7 +116,7 @@ export default function AgendarPage() {
     const estado = estadosMes[fechaStr]
     const seleccionado = fechaSeleccionada?.toDateString() === fecha.toDateString()
 
-    if (seleccionado) return { bg: "bg-[#8B1A2C]", text: "text-white", ring: "", cursor: "cursor-pointer" }
+    if (seleccionado) return { bg: "bg-[var(--brand)]", text: "text-white", ring: "", cursor: "cursor-pointer" }
     if (pasado) return { bg: "bg-transparent", text: "text-gray-200", ring: "", cursor: "cursor-not-allowed" }
 
     switch (estado) {
@@ -158,8 +159,8 @@ export default function AgendarPage() {
   if (paso === 3) {
     return (
       <div className="max-w-lg mx-auto text-center py-12">
-        <div className="w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6" style={{ backgroundColor: "#fff0f2" }}>
-          <CheckCircle size={40} style={{ color: "#8B1A2C" }} />
+        <div className="w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6" style={{ backgroundColor: "var(--brand-light)" }}>
+          <CheckCircle size={40} style={{ color: "var(--brand)" }} />
         </div>
         <h1 className="text-2xl font-bold text-gray-800 mb-2">¡Solicitud enviada!</h1>
         <p className="text-gray-500 mb-2">
@@ -169,12 +170,12 @@ export default function AgendarPage() {
             {" a las "}{horaSeleccionada}
           </strong>{" "}ha sido recibida.
         </p>
-        <p className="text-gray-400 text-sm mb-8">Recibirás un correo cuando la Dra. Allamey confirme tu cita.</p>
+        <p className="text-gray-400 text-sm mb-8">Recibirás un correo cuando {BRAND.doctorTitle} confirme tu cita.</p>
         <div className="flex gap-3 justify-center">
           <Button variant="outline" onClick={() => { setPaso(1); setFechaSeleccionada(null); setHoraSeleccionada(null); setMotivo(""); setNotas("") }}>
             Solicitar otra cita
           </Button>
-          <Button className="text-white" style={{ backgroundColor: "#8B1A2C" }} onClick={() => router.push("/paciente/citas")}>
+          <Button className="text-white" style={{ backgroundColor: "var(--brand)" }} onClick={() => router.push("/paciente/citas")}>
             Ver mis citas
           </Button>
         </div>
@@ -195,7 +196,7 @@ export default function AgendarPage() {
           <div key={n} className="flex items-center gap-2">
             <div
               className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold transition-colors ${paso >= n ? "text-white" : "bg-gray-100 text-gray-400"}`}
-              style={paso >= n ? { backgroundColor: "#8B1A2C" } : {}}
+              style={paso >= n ? { backgroundColor: "var(--brand)" } : {}}
             >{n}</div>
             <span className={`text-sm ${paso >= n ? "text-gray-800 font-medium" : "text-gray-400"}`}>
               {n === 1 ? "Fecha y hora" : "Detalles"}
@@ -289,7 +290,7 @@ export default function AgendarPage() {
             {fechaSeleccionada && (
               <div className="border-t border-gray-100 pt-4">
                 <h3 className="text-sm font-semibold text-gray-800 mb-3 flex items-center gap-2">
-                  <Clock size={14} style={{ color: "#8B1A2C" }} />
+                  <Clock size={14} style={{ color: "var(--brand)" }} />
                   Horarios disponibles —{" "}
                   <span className="capitalize text-gray-500 font-normal">
                     {format(fechaSeleccionada, "EEEE d 'de' MMMM", { locale: es })}
@@ -319,7 +320,7 @@ export default function AgendarPage() {
                               ? "text-white shadow-sm"
                               : "bg-gray-50 text-gray-700 hover:bg-gray-100"
                           }`}
-                          style={!bloqueado && seleccionado ? { backgroundColor: "#8B1A2C" } : {}}
+                          style={!bloqueado && seleccionado ? { backgroundColor: "var(--brand)" } : {}}
                         >
                           {slot.hora}
                           {bloqueado && (
@@ -337,7 +338,7 @@ export default function AgendarPage() {
 
             <Button
               className="w-full h-10 text-white"
-              style={{ backgroundColor: "#8B1A2C" }}
+              style={{ backgroundColor: "var(--brand)" }}
               disabled={!fechaSeleccionada || !horaSeleccionada}
               onClick={() => setPaso(2)}
             >
@@ -366,7 +367,7 @@ export default function AgendarPage() {
                     className={`flex items-center gap-2.5 p-3 rounded-xl border-2 text-sm font-medium transition-all ${
                       modalidad === m ? "border-transparent text-white" : "border-gray-200 text-gray-600 hover:border-gray-300"
                     }`}
-                    style={modalidad === m ? { backgroundColor: "#8B1A2C", borderColor: "#8B1A2C" } : {}}
+                    style={modalidad === m ? { backgroundColor: "var(--brand)", borderColor: "var(--brand)" } : {}}
                   >
                     {m === "ONLINE" ? <Monitor size={16} /> : <MapPin size={16} />}
                     {m === "ONLINE" ? "Online" : "Presencial"}
@@ -391,7 +392,7 @@ export default function AgendarPage() {
 
             <div className="flex gap-3">
               <Button variant="outline" className="flex-1 h-10" onClick={() => setPaso(1)}>Volver</Button>
-              <Button className="flex-1 h-10 text-white" style={{ backgroundColor: "#8B1A2C" }} onClick={confirmarCita} disabled={loading}>
+              <Button className="flex-1 h-10 text-white" style={{ backgroundColor: "var(--brand)" }} onClick={confirmarCita} disabled={loading}>
                 {loading ? <><Loader2 size={14} className="animate-spin mr-2" />Enviando...</> : "Enviar solicitud"}
               </Button>
             </div>

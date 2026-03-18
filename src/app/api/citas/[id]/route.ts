@@ -77,6 +77,27 @@ export async function DELETE(
 
   const { id } = await params
 
+  const cita = await prisma.cita.findUnique({ where: { id } })
+  if (!cita) return NextResponse.json({ error: "Cita no encontrada" }, { status: 404 })
+
+  if (!["PENDIENTE", "APROBADA"].includes(cita.estado)) {
+    return NextResponse.json({ error: "Esta cita no puede cancelarse" }, { status: 400 })
+  }
+
+  if (session.user.role !== "ADMIN") {
+    const paciente = await prisma.paciente.findUnique({ where: { userId: session.user.id } })
+    if (!paciente || cita.pacienteId !== paciente.id) {
+      return NextResponse.json({ error: "No autorizado" }, { status: 403 })
+    }
+    const msRestantes = new Date(cita.fecha).getTime() - Date.now()
+    if (msRestantes < 24 * 60 * 60 * 1000) {
+      return NextResponse.json(
+        { error: "No puedes cancelar con menos de 24 horas de antelación" },
+        { status: 400 }
+      )
+    }
+  }
+
   await prisma.cita.update({
     where: { id },
     data: { estado: "CANCELADA" },

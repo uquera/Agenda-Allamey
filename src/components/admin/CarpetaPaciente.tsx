@@ -276,7 +276,7 @@ export default function CarpetaPaciente({ pacienteId }: CarpetaPacienteProps) {
         <Button
           onClick={() => fileInputRef.current?.click()}
           disabled={subiendo}
-          style={{ backgroundColor: "#8B1A2C" }}
+          style={{ backgroundColor: "var(--brand)" }}
           className="text-white gap-2 hover:opacity-90"
         >
           <Upload size={15} />
@@ -303,7 +303,7 @@ export default function CarpetaPaciente({ pacienteId }: CarpetaPacienteProps) {
             onClick={() => setTab(t.key)}
             className={`px-4 py-2.5 text-sm font-medium border-b-2 transition-colors whitespace-nowrap ${
               tab === t.key
-                ? "border-[#8B1A2C] text-[#8B1A2C]"
+                ? "border-[var(--brand)] text-[var(--brand)]"
                 : "border-transparent text-gray-500 hover:text-gray-700"
             }`}
           >
@@ -312,7 +312,7 @@ export default function CarpetaPaciente({ pacienteId }: CarpetaPacienteProps) {
               <span
                 className={`ml-1.5 text-xs px-1.5 py-0.5 rounded-full ${
                   tab === t.key
-                    ? "bg-[#fff0f2] text-[#8B1A2C]"
+                    ? "bg-[var(--brand-light)] text-[var(--brand)]"
                     : "bg-gray-100 text-gray-500"
                 }`}
               >
@@ -412,7 +412,7 @@ export default function CarpetaPaciente({ pacienteId }: CarpetaPacienteProps) {
               </Button>
               <Button
                 className="flex-1 text-white hover:opacity-90"
-                style={{ backgroundColor: "#8B1A2C" }}
+                style={{ backgroundColor: "var(--brand)" }}
                 onClick={agregarUrl}
               >
                 Agregar enlace

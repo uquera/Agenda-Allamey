@@ -66,22 +66,22 @@
   --popover-foreground: oklch(0.2 0 0);
 
   /* Primary = Brand crimson */
-  --primary: #8B1A2C;
+  --primary: var(--brand);
   --primary-foreground: oklch(0.985 0 0);
 
   --secondary: oklch(0.97 0 0);
   --secondary-foreground: oklch(0.3 0 0);
   --muted: oklch(0.96 0 0);
   --muted-foreground: oklch(0.5 0 0);
-  --accent: #fff0f2;
-  --accent-foreground: #8B1A2C;
+  --accent: var(--brand-light);
+  --accent-foreground: var(--brand);
   --destructive: oklch(0.577 0.245 27.325);
   --border: oklch(0.91 0 0);
   --input: oklch(0.91 0 0);
-  --ring: #8B1A2C;
+  --ring: var(--brand);
   --radius: 0.625rem;
 
-  --chart-1: #8B1A2C;
+  --chart-1: var(--brand);
   --chart-2: #c05070;
   --chart-3: #4A4A4A;
   --chart-4: #888888;
@@ -89,12 +89,12 @@
 
   --sidebar: oklch(0.985 0 0);
   --sidebar-foreground: oklch(0.2 0 0);
-  --sidebar-primary: #8B1A2C;
+  --sidebar-primary: var(--brand);
   --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: #fff0f2;
-  --sidebar-accent-foreground: #8B1A2C;
+  --sidebar-accent: var(--brand-light);
+  --sidebar-accent-foreground: var(--brand);
   --sidebar-border: oklch(0.91 0 0);
-  --sidebar-ring: #8B1A2C;
+  --sidebar-ring: var(--brand);
 }
 
 @layer base {
@@ -117,17 +117,17 @@
   text-transform: capitalize;
 }
 .fc .fc-button-primary {
-  background-color: #8B1A2C !important;
-  border-color: #8B1A2C !important;
+  background-color: var(--brand) !important;
+  border-color: var(--brand) !important;
 }
 .fc .fc-button-primary:hover {
-  background-color: #6B1220 !important;
-  border-color: #6B1220 !important;
+  background-color: var(--brand-dark) !important;
+  border-color: var(--brand-dark) !important;
 }
 .fc .fc-button-primary:not(:disabled):active,
 .fc .fc-button-primary:not(:disabled).fc-button-active {
-  background-color: #6B1220 !important;
-  border-color: #6B1220 !important;
+  background-color: var(--brand-dark) !important;
+  border-color: var(--brand-dark) !important;
 }
 .fc .fc-event {
   border-radius: 6px;
@@ -140,7 +140,7 @@
   background-color: #f59e0b !important;
 }
 .fc .fc-event-aprobada {
-  background-color: #8B1A2C !important;
+  background-color: var(--brand) !important;
 }
 .fc .fc-event-completada {
   background-color: #6b7280 !important;
@@ -154,5 +154,5 @@
   font-size: 0.8rem;
   text-transform: uppercase;
   letter-spacing: 0.05em;
-  color: #6B1220;
+  color: var(--brand-dark);
 }

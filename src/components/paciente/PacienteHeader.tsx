@@ -26,7 +26,7 @@ export default function PacienteHeader({ user }: PacienteHeaderProps) {
       <Avatar className="w-8 h-8">
         <AvatarFallback
           className="text-white text-xs font-semibold"
-          style={{ backgroundColor: "#8B1A2C" }}
+          style={{ backgroundColor: "var(--brand)" }}
         >
           {initials}
         </AvatarFallback>

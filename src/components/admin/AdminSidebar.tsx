@@ -3,6 +3,7 @@
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import Image from "next/image"
+import { BRAND } from "@/lib/brand"
 import {
   LayoutDashboard,
   Users,
@@ -34,14 +35,17 @@ export default function AdminSidebar() {
       {/* Logo */}
       <div className="p-6 border-b border-gray-100">
         <div className="flex items-center gap-3">
-          <div
-            className="w-9 h-9 rounded-lg flex items-center justify-center text-white font-bold text-sm"
-            style={{ backgroundColor: "#8B1A2C" }}
-          >
-            AS
+          <div className="w-10 h-10 rounded-lg overflow-hidden shrink-0">
+            <Image
+              src="/logo-vertical.png"
+              alt={BRAND.name}
+              width={40}
+              height={40}
+              className="w-full h-full object-cover"
+            />
           </div>
           <div>
-            <p className="font-bold text-sm text-gray-800 leading-tight">Allamey Sanz</p>
+            <p className="font-bold text-sm text-gray-800 leading-tight">{BRAND.name}</p>
             <p className="text-xs text-gray-400">Panel administrativo</p>
           </div>
         </div>
@@ -65,7 +69,7 @@ export default function AdminSidebar() {
               )}
               style={
                 isActive
-                  ? { backgroundColor: "#8B1A2C" }
+                  ? { backgroundColor: "var(--brand)" }
                   : undefined
               }
             >

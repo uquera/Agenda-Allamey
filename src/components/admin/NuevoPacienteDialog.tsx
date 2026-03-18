@@ -80,10 +80,8 @@ export default function NuevoPacienteDialog() {
 
   return (
     <Dialog open={open} onOpenChange={(v) => { setOpen(v); if (!v) resetForm() }}>
-      <DialogTrigger asChild>
-        <Button className="bg-[#8B1A2C] hover:bg-[#6d1522] text-white">
-          <UserPlus className="w-4 h-4 mr-2" /> Nuevo Paciente
-        </Button>
+      <DialogTrigger render={<Button className="bg-[var(--brand)] hover:bg-[var(--brand-dark)] text-white" />}>
+        <UserPlus className="w-4 h-4 mr-2" /> Nuevo Paciente
       </DialogTrigger>
 
       <DialogContent className="max-w-lg">
@@ -96,16 +94,16 @@ export default function NuevoPacienteDialog() {
           {PASOS.map((nombre, i) => (
             <div key={i} className="flex items-center gap-1 flex-1">
               <div className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-semibold transition-colors shrink-0 ${
-                i < paso ? "bg-[#8B1A2C] text-white" :
-                i === paso ? "bg-[#8B1A2C] text-white ring-2 ring-[#8B1A2C]/30" :
+                i < paso ? "bg-[var(--brand)] text-white" :
+                i === paso ? "bg-[var(--brand)] text-white ring-2 ring-[var(--brand)]/30" :
                 "bg-gray-100 text-gray-400"
               }`}>
                 {i < paso ? <Check className="w-3 h-3" /> : i + 1}
               </div>
-              <span className={`text-xs hidden sm:block whitespace-nowrap ${i === paso ? "text-[#8B1A2C] font-semibold" : "text-gray-400"}`}>
+              <span className={`text-xs hidden sm:block whitespace-nowrap ${i === paso ? "text-[var(--brand)] font-semibold" : "text-gray-400"}`}>
                 {nombre}
               </span>
-              {i < PASOS.length - 1 && <div className={`flex-1 h-px mx-1 ${i < paso ? "bg-[#8B1A2C]" : "bg-gray-200"}`} />}
+              {i < PASOS.length - 1 && <div className={`flex-1 h-px mx-1 ${i < paso ? "bg-[var(--brand)]" : "bg-gray-200"}`} />}
             </div>
           ))}
         </div>
@@ -144,7 +142,7 @@ export default function NuevoPacienteDialog() {
             <div className="grid grid-cols-2 gap-3">
               <div>
                 <Label>Género</Label>
-                <Select value={form.genero} onValueChange={v => set("genero", v)}>
+                <Select value={form.genero} onValueChange={v => v && set("genero", v)}>
                   <SelectTrigger><SelectValue placeholder="Seleccionar" /></SelectTrigger>
                   <SelectContent>
                     <SelectItem value="Femenino">Femenino</SelectItem>
@@ -165,7 +163,7 @@ export default function NuevoPacienteDialog() {
             </div>
             <div>
               <Label>País</Label>
-              <Select value={form.pais} onValueChange={v => set("pais", v)}>
+              <Select value={form.pais} onValueChange={v => v && set("pais", v)}>
                 <SelectTrigger><SelectValue placeholder="Seleccionar país" /></SelectTrigger>
                 <SelectContent>
                   {PAISES.map(p => <SelectItem key={p} value={p}>{p}</SelectItem>)}
@@ -204,11 +202,11 @@ export default function NuevoPacienteDialog() {
             {paso === 0 ? "Cancelar" : <><ChevronLeft className="w-4 h-4 mr-1" /> Atrás</>}
           </Button>
           {paso < PASOS.length - 1 ? (
-            <Button className="bg-[#8B1A2C] hover:bg-[#6d1522] text-white" onClick={() => { if (validarPaso()) setPaso(p => p + 1) }}>
+            <Button className="bg-[var(--brand)] hover:bg-[var(--brand-dark)] text-white" onClick={() => { if (validarPaso()) setPaso(p => p + 1) }}>
               Siguiente <ChevronRight className="w-4 h-4 ml-1" />
             </Button>
           ) : (
-            <Button className="bg-[#8B1A2C] hover:bg-[#6d1522] text-white" onClick={handleSubmit} disabled={loading}>
+            <Button className="bg-[var(--brand)] hover:bg-[var(--brand-dark)] text-white" onClick={handleSubmit} disabled={loading}>
               {loading ? "Guardando..." : "Crear paciente"}
             </Button>
           )}

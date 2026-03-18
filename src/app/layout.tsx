@@ -2,6 +2,7 @@ import type { Metadata } from "next"
 import { Montserrat } from "next/font/google"
 import "./globals.css"
 import { Toaster } from "@/components/ui/sonner"
+import { BRAND } from "@/lib/brand"
 
 const montserrat = Montserrat({
   subsets: ["latin"],
@@ -10,8 +11,8 @@ const montserrat = Montserrat({
 })
 
 export const metadata: Metadata = {
-  title: "Allamey Sanz — Psicóloga Clínica",
-  description: "Portal de pacientes — Allamey Sanz, Psicóloga Clínica y Sexóloga",
+  title: `${BRAND.name} — ${BRAND.specialty}`,
+  description: `Portal de pacientes — ${BRAND.name}, ${BRAND.specialty}`,
   icons: { icon: "/favicon.ico" },
 }
 
@@ -23,6 +24,9 @@ export default function RootLayout({
   return (
     <html lang="es" suppressHydrationWarning>
       <body className={`${montserrat.variable} antialiased`} suppressHydrationWarning>
+        <style dangerouslySetInnerHTML={{ __html:
+          `:root { --brand: ${BRAND.color}; --brand-dark: ${BRAND.colorDark}; --brand-light: ${BRAND.colorLight}; }`
+        }} />
         {children}
         <Toaster richColors position="top-right" />
       </body>

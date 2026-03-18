@@ -46,7 +46,7 @@ const tipoIcono: Record<string, React.ElementType> = {
 }
 
 const tipoColor: Record<string, { bg: string; text: string }> = {
-  PDF: { bg: "#fff0f2", text: "#8B1A2C" },
+  PDF: { bg: "var(--brand-light)", text: "var(--brand)" },
   VIDEO: { bg: "#eff6ff", text: "#2563eb" },
   ARTICULO: { bg: "#ecfdf5", text: "#059669" },
   EJERCICIO: { bg: "#fffbeb", text: "#d97706" },
@@ -211,7 +211,7 @@ export default function MaterialesManager({ materiales, pacientes }: Props) {
           </div>
           <Button
             className="text-white h-9"
-            style={{ backgroundColor: "#8B1A2C" }}
+            style={{ backgroundColor: "var(--brand)" }}
             onClick={() => setModalNuevo(true)}
           >
             <Plus size={16} className="mr-2" />
@@ -225,7 +225,7 @@ export default function MaterialesManager({ materiales, pacientes }: Props) {
             <p className="text-gray-400 mb-4">No hay materiales aún</p>
             <Button
               className="text-white"
-              style={{ backgroundColor: "#8B1A2C" }}
+              style={{ backgroundColor: "var(--brand)" }}
               onClick={() => setModalNuevo(true)}
             >
               Crear primer material
@@ -390,7 +390,7 @@ export default function MaterialesManager({ materiales, pacientes }: Props) {
                 onClick={crearMaterial}
                 disabled={loading || !form.titulo}
                 className="flex-1 h-9 text-white"
-                style={{ backgroundColor: "#8B1A2C" }}
+                style={{ backgroundColor: "var(--brand)" }}
               >
                 {loading && <Loader2 size={14} className="animate-spin mr-1" />}
                 Crear material
@@ -466,7 +466,7 @@ export default function MaterialesManager({ materiales, pacientes }: Props) {
                 onClick={guardarEdicion}
                 disabled={loading || !formEditar.titulo}
                 className="flex-1 h-9 text-white"
-                style={{ backgroundColor: "#8B1A2C" }}
+                style={{ backgroundColor: "var(--brand)" }}
               >
                 {loading && <Loader2 size={14} className="animate-spin mr-1" />}
                 Guardar cambios
@@ -503,7 +503,7 @@ export default function MaterialesManager({ materiales, pacientes }: Props) {
                       }`}
                       style={
                         pacientesSeleccionados.includes(p.id)
-                          ? { backgroundColor: "#8B1A2C" }
+                          ? { backgroundColor: "var(--brand)" }
                           : undefined
                       }
                     >
@@ -513,7 +513,7 @@ export default function MaterialesManager({ materiales, pacientes }: Props) {
                         }`}
                         style={
                           !pacientesSeleccionados.includes(p.id)
-                            ? { backgroundColor: "#fff0f2", color: "#8B1A2C" }
+                            ? { backgroundColor: "var(--brand-light)", color: "var(--brand)" }
                             : undefined
                         }
                       >
@@ -537,7 +537,7 @@ export default function MaterialesManager({ materiales, pacientes }: Props) {
                   onClick={asignarMaterial}
                   disabled={loading || pacientesSeleccionados.length === 0}
                   className="flex-1 h-9 text-white"
-                  style={{ backgroundColor: "#8B1A2C" }}
+                  style={{ backgroundColor: "var(--brand)" }}
                 >
                   {loading && <Loader2 size={14} className="animate-spin mr-1" />}
                   Asignar ({pacientesSeleccionados.length})

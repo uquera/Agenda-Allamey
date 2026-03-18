@@ -6,6 +6,7 @@ import { format } from "date-fns"
 import { es } from "date-fns/locale"
 import fs from "fs"
 import path from "path"
+import { BRAND } from "@/lib/brand"
 
 export async function GET() {
   const session = await auth()
@@ -125,7 +126,7 @@ export async function POST(req: Request) {
 
   <div class="clausula">
     <h3>✓ Consentimiento voluntario</h3>
-    <p>El paciente declara participar voluntariamente en el proceso terapéutico y que puede retirar su consentimiento en cualquier momento. Autoriza a Allamey Sanz, Psicóloga Clínica y Sexóloga, a brindarle los servicios descritos.</p>
+    <p>El paciente declara participar voluntariamente en el proceso terapéutico y que puede retirar su consentimiento en cualquier momento. Autoriza a ${BRAND.name}, ${BRAND.specialty}, a brindarle los servicios descritos.</p>
   </div>
 
   <div class="firma-box">
@@ -147,9 +148,9 @@ export async function POST(req: Request) {
   </div>
 
   <div class="footer">
-    <p>Este documento fue firmado digitalmente a través del portal de pacientes de Allamey Sanz.</p>
+    <p>Este documento fue firmado digitalmente a través del portal de pacientes de ${BRAND.name}.</p>
     <p>Documento generado el ${format(fechaFirma, "d/MM/yyyy 'a las' HH:mm", { locale: es })} · Referencia: ${consentimiento.id}</p>
-    <p>Allamey Sanz — Psicóloga Clínica y Sexóloga</p>
+    <p>${BRAND.name} — ${BRAND.specialty}</p>
   </div>
 </body>
 </html>`

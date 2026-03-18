@@ -2,12 +2,13 @@ import { prisma } from "@/lib/prisma"
 import { notFound } from "next/navigation"
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { CalendarDays, FileText, BookOpen, CreditCard, ArrowLeft, Phone, Mail, User, FolderOpen, ShieldCheck, ShieldAlert } from "lucide-react"
+import { CalendarDays, FileText, BookOpen, CreditCard, ArrowLeft, Phone, Mail, User, FolderOpen, ShieldCheck, ShieldAlert, ClipboardList } from "lucide-react"
 import { format } from "date-fns"
 import { es } from "date-fns/locale"
 import Link from "next/link"
 import PacienteFichaEditor from "@/components/admin/PacienteFichaEditor"
 import EditarCuentaPacienteDialog from "@/components/admin/EditarCuentaPacienteDialog"
+import { mergeConfig, AnamnesisConfigData } from "@/lib/anamnesis-config"
 
 export const dynamic = "force-dynamic"
 
@@ -18,7 +19,7 @@ export default async function PacienteDetallePage({
 }) {
   const { id } = await params
 
-  const paciente = await prisma.paciente.findUnique({
+  const [paciente, configStored] = await Promise.all([prisma.paciente.findUnique({
     where: { id },
     include: {
       user: true,
@@ -31,10 +32,13 @@ export default async function PacienteDetallePage({
       },
       pagos: { orderBy: { createdAt: "desc" }, take: 5 },
       consentimiento: true,
+      anamnesis: true,
     },
-  })
+  }), prisma.configAnamnesis.findUnique({ where: { id: "singleton" } })])
 
   if (!paciente) notFound()
+
+  const anamnesisConfig = mergeConfig(configStored?.campos as AnamnesisConfigData | null)
 
   const initials = paciente.user.name
     ? paciente.user.name.split(" ").map((n) => n[0]).join("").toUpperCase().slice(0, 2)
@@ -71,7 +75,7 @@ export default async function PacienteDetallePage({
         <div className="flex items-center gap-4">
           <div
             className="w-12 h-12 rounded-full flex items-center justify-center text-white font-bold"
-            style={{ backgroundColor: "#8B1A2C" }}
+            style={{ backgroundColor: "var(--brand)" }}
           >
             {initials}
           </div>
@@ -150,7 +154,7 @@ export default async function PacienteDetallePage({
             <CardContent className="p-4">
               <div className="flex items-center justify-between mb-3">
                 <h2 className="text-sm font-semibold text-gray-800 flex items-center gap-2">
-                  <CalendarDays size={15} style={{ color: "#8B1A2C" }} />
+                  <CalendarDays size={15} style={{ color: "var(--brand)" }} />
                   Citas recientes
                 </h2>
                 <span className="text-xs text-gray-400">{paciente.citas.length} total</span>
@@ -184,7 +188,7 @@ export default async function PacienteDetallePage({
             <CardContent className="p-4">
               <div className="flex items-center justify-between mb-3">
                 <h2 className="text-sm font-semibold text-gray-800 flex items-center gap-2">
-                  <FileText size={15} style={{ color: "#8B1A2C" }} />
+                  <FileText size={15} style={{ color: "var(--brand)" }} />
                   Sesiones publicadas
                 </h2>
               </div>
@@ -210,6 +214,74 @@ export default async function PacienteDetallePage({
           </Card>
         </div>
       </div>
+
+      {/* Anamnesis */}
+      {paciente.anamnesis ? (
+        <Card className="border-0 shadow-sm">
+          <CardContent className="p-5">
+            <div className="flex items-center justify-between mb-5">
+              <h2 className="text-sm font-semibold text-gray-800 flex items-center gap-2">
+                <ClipboardList size={15} style={{ color: "var(--brand)" }} />
+                Historia clínica
+              </h2>
+              <span className="text-xs bg-green-50 text-green-700 font-medium px-2.5 py-1 rounded-full">
+                ✓ Completada
+              </span>
+            </div>
+
+            {(() => {
+              const a = paciente.anamnesis!
+              const extra = (a.camposExtra ?? {}) as Record<string, string>
+              const fixedValues: Record<string, string | null> = {
+                motivoPrincipal: a.motivoPrincipal, tiempoEvolucion: a.tiempoEvolucion,
+                antecedentesMedicos: a.antecedentesMedicos, antecedentesPsicologicos: a.antecedentesPsicologicos,
+                medicacionActual: a.medicacionActual, estadoCivil: a.estadoCivil,
+                hijosCantidad: a.hijosCantidad, situacionLaboral: a.situacionLaboral,
+                nivelEducativo: a.nivelEducativo, redApoyo: a.redApoyo,
+                calidadSueno: a.calidadSueno, actividadFisica: a.actividadFisica,
+                consumoSustancias: a.consumoSustancias, relacionPareja: a.relacionPareja,
+                vidaSexual: a.vidaSexual, expectativasTerapia: a.expectativasTerapia,
+                intentosAnteriores: a.intentosAnteriores,
+              }
+              return (
+                <div className="space-y-5">
+                  {anamnesisConfig.secciones.map((sec) => {
+                    const campos = sec.campos
+                      .map(k => ({
+                        label: anamnesisConfig.campos[k]?.label ?? k,
+                        valor: anamnesisConfig.campos[k]?.custom ? extra[k] : fixedValues[k],
+                      }))
+                      .filter(c => c.valor)
+                    if (campos.length === 0) return null
+                    return (
+                      <div key={sec.titulo}>
+                        <h3 className="text-xs font-bold text-gray-500 uppercase tracking-wide mb-2">{sec.titulo}</h3>
+                        <div className="space-y-2">
+                          {campos.map(({ label, valor }) => (
+                            <div key={label} className="grid grid-cols-3 gap-2">
+                              <span className="text-xs text-gray-400 col-span-1 pt-0.5">{label}</span>
+                              <p className="text-sm text-gray-700 col-span-2 leading-relaxed">{valor}</p>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )
+                  })}
+                </div>
+              )
+            })()}
+          </CardContent>
+        </Card>
+      ) : (
+        <Card className="border-0 shadow-sm">
+          <CardContent className="p-5">
+            <div className="flex items-center gap-3">
+              <ClipboardList size={15} className="text-gray-300" />
+              <p className="text-sm text-gray-400">El paciente aún no ha completado su historia clínica.</p>
+            </div>
+          </CardContent>
+        </Card>
+      )}
     </div>
   )
 }

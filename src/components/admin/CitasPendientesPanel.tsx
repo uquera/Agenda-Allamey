@@ -120,7 +120,7 @@ export default function CitasPendientesPanel({ pendientes }: Props) {
                 <div className="flex items-start gap-3">
                   <div
                     className="w-9 h-9 rounded-full flex items-center justify-center text-white text-xs font-bold shrink-0 mt-0.5"
-                    style={{ backgroundColor: "#8B1A2C" }}
+                    style={{ backgroundColor: "var(--brand)" }}
                   >
                     {cita.paciente.nombre.split(" ").map((n) => n[0]).join("").slice(0, 2).toUpperCase()}
                   </div>

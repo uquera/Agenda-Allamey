@@ -33,9 +33,9 @@ export default async function CarpetaPacientePage({
         <div className="flex items-center gap-3">
           <div
             className="w-10 h-10 rounded-xl flex items-center justify-center"
-            style={{ backgroundColor: "#fff0f2" }}
+            style={{ backgroundColor: "var(--brand-light)" }}
           >
-            <FolderOpen size={18} style={{ color: "#8B1A2C" }} />
+            <FolderOpen size={18} style={{ color: "var(--brand)" }} />
           </div>
           <div>
             <h1 className="text-xl font-bold text-gray-800">

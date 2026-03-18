@@ -1,6 +1,7 @@
 import nodemailer from "nodemailer"
 import { format } from "date-fns"
 import { es } from "date-fns/locale"
+import { BRAND } from "@/lib/brand"
 
 const transporter = nodemailer.createTransport({
   host: process.env.EMAIL_HOST,
@@ -12,7 +13,7 @@ const transporter = nodemailer.createTransport({
   },
 })
 
-const brandColor = "#8B1A2C"
+const brandColor = BRAND.color
 const grayColor = "#4A4A4A"
 
 function emailWrapper(content: string): string {
@@ -22,37 +23,62 @@ function emailWrapper(content: string): string {
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Allamey Sanz</title>
+  <title>${BRAND.name}</title>
 </head>
 <body style="margin:0;padding:0;background-color:#f5f5f5;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;">
   <table width="100%" cellpadding="0" cellspacing="0" style="background-color:#f5f5f5;padding:40px 20px;">
     <tr>
       <td align="center">
         <table width="600" cellpadding="0" cellspacing="0" style="background:#ffffff;border-radius:12px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,0.08);">
-          <!-- Header -->
+
+          <!-- Header: barra superior crimson -->
           <tr>
-            <td style="background:#ffffff;padding:28px 40px;text-align:center;border-bottom:3px solid ${brandColor};">
-              <img src="${process.env.NEXT_PUBLIC_APP_URL}/logo-vertical.png" alt="Allamey Sanz" width="160" style="display:block;margin:0 auto;max-width:160px;" />
+            <td style="background-color:${brandColor};height:6px;font-size:0;line-height:0;">&nbsp;</td>
+          </tr>
+
+          <!-- Header: logo -->
+          <tr>
+            <td style="background-color:#ffffff;padding:28px 40px 24px;text-align:center;">
+              <img
+                src="${process.env.NEXT_PUBLIC_APP_URL}/logo-email.png"
+                alt="${BRAND.name} — ${BRAND.specialty}"
+                width="300"
+                style="display:block;margin:0 auto;max-width:300px;height:auto;"
+              />
             </td>
           </tr>
+
+          <!-- Header: separador decorativo -->
+          <tr>
+            <td style="padding:0 40px;">
+              <table width="100%" cellpadding="0" cellspacing="0">
+                <tr>
+                  <td style="background-color:#f0d0d4;height:1px;font-size:0;line-height:0;">&nbsp;</td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+
           <!-- Content -->
           <tr>
-            <td style="padding:40px;">
+            <td style="padding:36px 40px 40px;">
               ${content}
             </td>
           </tr>
+
           <!-- Footer -->
           <tr>
-            <td style="background:#f9f9f9;padding:24px 40px;border-top:1px solid #eeeeee;text-align:center;">
-              <p style="margin:0;color:#999999;font-size:12px;">
-                Este es un mensaje automático de la consulta de Allamey Sanz.<br>
+            <td style="background-color:#fafafa;padding:24px 40px;border-top:1px solid #eeeeee;text-align:center;">
+              <p style="margin:0;color:#999999;font-size:12px;line-height:1.6;">
+                Este es un mensaje automático de la consulta de ${BRAND.name}.<br>
                 Por favor no respondas directamente a este correo.
               </p>
-              <p style="margin:8px 0 0;color:#cccccc;font-size:11px;">
-                © ${new Date().getFullYear()} Allamey Sanz — Psicóloga Clínica
+              <p style="margin:10px 0 0;color:#cccccc;font-size:11px;">
+                &copy; ${new Date().getFullYear()} ${BRAND.name} &mdash; ${BRAND.specialty}
               </p>
             </td>
           </tr>
+
         </table>
       </td>
     </tr>
@@ -77,12 +103,12 @@ export async function enviarConfirmacionSolicitud(
     <p style="color:${grayColor};font-size:15px;line-height:1.6;">Hola <strong>${nombre}</strong>,</p>
     <p style="color:${grayColor};font-size:15px;line-height:1.6;">
       Hemos recibido tu solicitud de cita para el <strong style="color:${brandColor};">${fechaStr}</strong>.<br>
-      La Dra. Allamey revisará tu solicitud y recibirás una confirmación por este medio.
+      ${BRAND.doctorTitle} revisará tu solicitud y recibirás una confirmación por este medio.
     </p>
 
     <div style="background:#fff8f8;border-left:4px solid ${brandColor};padding:16px 20px;border-radius:0 8px 8px 0;margin:24px 0;">
       <p style="margin:0;color:${grayColor};font-size:14px;font-weight:600;">Estado: Pendiente de aprobación</p>
-      <p style="margin:4px 0 0;color:#888;font-size:13px;">Te notificaremos cuando la Dra. Allamey confirme tu cita.</p>
+      <p style="margin:4px 0 0;color:#888;font-size:13px;">Te notificaremos cuando ${BRAND.doctorTitle} confirme tu cita.</p>
     </div>
 
     <p style="color:#888;font-size:13px;margin:24px 0 0;">
@@ -93,7 +119,7 @@ export async function enviarConfirmacionSolicitud(
   await transporter.sendMail({
     from: process.env.EMAIL_FROM,
     to: email,
-    subject: "Solicitud de cita recibida — Allamey Sanz",
+    subject: `Solicitud de cita recibida — ${BRAND.name}`,
     html,
   })
 }
@@ -114,7 +140,7 @@ export async function enviarAprobacionCita(
 
     <p style="color:${grayColor};font-size:15px;line-height:1.6;">Hola <strong>${nombre}</strong>,</p>
     <p style="color:${grayColor};font-size:15px;line-height:1.6;">
-      La Dra. Allamey ha <strong style="color:#2d7a3a;">confirmado tu cita</strong> para el:<br>
+      ${BRAND.doctorTitle} ha <strong style="color:#2d7a3a;">confirmado tu cita</strong> para el:<br>
       <strong style="color:${brandColor};font-size:17px;">${fechaStr}</strong>
     </p>
 
@@ -130,7 +156,7 @@ export async function enviarAprobacionCita(
   await transporter.sendMail({
     from: process.env.EMAIL_FROM,
     to: email,
-    subject: "Cita confirmada — Allamey Sanz",
+    subject: `Cita confirmada — ${BRAND.name}`,
     html,
   })
 }
@@ -171,7 +197,7 @@ export async function enviarRechazoRcita(
   await transporter.sendMail({
     from: process.env.EMAIL_FROM,
     to: email,
-    subject: "Actualización de tu solicitud — Allamey Sanz",
+    subject: `Actualización de tu solicitud — ${BRAND.name}`,
     html,
   })
 }
@@ -209,7 +235,7 @@ export async function enviarRecordatorio24h(
   await transporter.sendMail({
     from: process.env.EMAIL_FROM,
     to: email,
-    subject: "Recordatorio: Cita mañana — Allamey Sanz",
+    subject: `Recordatorio: Cita mañana — ${BRAND.name}`,
     html,
   })
 }
@@ -221,11 +247,11 @@ export async function enviarNuevoMaterial(
 ) {
   const html = emailWrapper(`
     <h2 style="margin:0 0 8px;color:${grayColor};font-size:22px;">Nuevo material disponible</h2>
-    <p style="margin:0 0 24px;color:#888;font-size:14px;">La Dra. Allamey te ha asignado un recurso</p>
+    <p style="margin:0 0 24px;color:#888;font-size:14px;">${BRAND.doctorTitle} te ha asignado un recurso</p>
 
     <p style="color:${grayColor};font-size:15px;line-height:1.6;">Hola <strong>${nombre}</strong>,</p>
     <p style="color:${grayColor};font-size:15px;line-height:1.6;">
-      La Dra. Allamey ha compartido contigo el siguiente material de apoyo:
+      ${BRAND.doctorTitle} ha compartido contigo el siguiente material de apoyo:
     </p>
 
     <div style="background:#fff8f8;border-left:4px solid ${brandColor};padding:16px 20px;border-radius:0 8px 8px 0;margin:24px 0;">
@@ -243,7 +269,7 @@ export async function enviarNuevoMaterial(
   await transporter.sendMail({
     from: process.env.EMAIL_FROM,
     to: email,
-    subject: `Nuevo material: ${tituloMaterial} — Allamey Sanz`,
+    subject: `Nuevo material: ${tituloMaterial} — ${BRAND.name}`,
     html,
   })
 }
@@ -288,20 +314,61 @@ export async function enviarConfirmacionPago(
     </div>
 
     <p style="color:${grayColor};font-size:15px;line-height:1.6;">
-      Gracias por confiar en la Dra. Allamey Sanz para acompañarte en el cuidado de tu salud mental.
+      Gracias por confiar en ${BRAND.doctorTitle} para acompañarte en el cuidado de tu salud mental.
       Seguimos aquí para ti en cada paso de tu proceso terapéutico.
     </p>
 
     <p style="color:#888;font-size:13px;margin-top:24px;">
       Si tienes alguna duda sobre este pago, no dudes en contactarnos por WhatsApp al
-      <a href="https://wa.me/584149009020" style="color:${brandColor};">+58 414 900 9020</a>.
+      <a href="https://wa.me/${BRAND.whatsapp}" style="color:${brandColor};">+${BRAND.whatsapp}</a>.
     </p>
   `)
 
   await transporter.sendMail({
     from: process.env.EMAIL_FROM,
     to: email,
-    subject: "Pago confirmado — Allamey Sanz",
+    subject: `Pago confirmado — ${BRAND.name}`,
+    html,
+  })
+}
+
+export async function enviarRecuperacionClave(
+  email: string,
+  nombre: string,
+  linkReset: string
+) {
+  const html = emailWrapper(`
+    <h2 style="margin:0 0 8px;color:${grayColor};font-size:22px;">Restablecer contraseña</h2>
+    <p style="margin:0 0 24px;color:#888;font-size:14px;">Solicitud de cambio de clave</p>
+
+    <p style="color:${grayColor};font-size:15px;line-height:1.6;">Hola <strong>${nombre}</strong>,</p>
+    <p style="color:${grayColor};font-size:15px;line-height:1.6;">
+      Recibimos una solicitud para restablecer la contraseña de tu cuenta.
+      Haz clic en el botón de abajo para crear una nueva:
+    </p>
+
+    <div style="text-align:center;margin:32px 0;">
+      <a href="${linkReset}"
+         style="background:${brandColor};color:#ffffff;padding:14px 32px;border-radius:8px;text-decoration:none;font-size:15px;font-weight:600;">
+        Crear nueva contraseña
+      </a>
+    </div>
+
+    <div style="background:#fff8f8;border-left:4px solid ${brandColor};padding:16px 20px;border-radius:0 8px 8px 0;margin:24px 0;">
+      <p style="margin:0;color:${grayColor};font-size:13px;">
+        Este enlace expira en <strong>1 hora</strong> y solo puede usarse una vez.
+      </p>
+    </div>
+
+    <p style="color:#888;font-size:13px;margin-top:16px;">
+      Si no solicitaste este cambio, puedes ignorar este correo. Tu contraseña actual permanecerá sin cambios.
+    </p>
+  `)
+
+  await transporter.sendMail({
+    from: process.env.EMAIL_FROM,
+    to: email,
+    subject: `Restablecer contraseña — ${BRAND.name}`,
     html,
   })
 }
@@ -319,7 +386,7 @@ export async function enviarResumenSesion(
 
     <p style="color:${grayColor};font-size:15px;line-height:1.6;">Hola <strong>${nombre}</strong>,</p>
     <p style="color:${grayColor};font-size:15px;line-height:1.6;">
-      La Dra. Allamey ha publicado el resumen de tu sesión del <strong>${fechaStr}</strong>.
+      ${BRAND.doctorTitle} ha publicado el resumen de tu sesión del <strong>${fechaStr}</strong>.
       Puedes consultarlo en tu portal cuando lo desees.
     </p>
 
@@ -338,7 +405,7 @@ export async function enviarResumenSesion(
   await transporter.sendMail({
     from: process.env.EMAIL_FROM,
     to: email,
-    subject: `Resumen de sesión disponible — Allamey Sanz`,
+    subject: `Resumen de sesión disponible — ${BRAND.name}`,
     html,
   })
 }

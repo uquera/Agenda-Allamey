@@ -112,7 +112,7 @@ export default function PagosManager({ pagos, pacientes, resumen }: Props) {
           </div>
           <Button
             className="text-white h-9"
-            style={{ backgroundColor: "#8B1A2C" }}
+            style={{ backgroundColor: "var(--brand)" }}
             onClick={() => setModalNuevo(true)}
           >
             <Plus size={16} className="mr-2" />
@@ -311,7 +311,7 @@ export default function PagosManager({ pagos, pacientes, resumen }: Props) {
                 onClick={crearPago}
                 disabled={loading || !form.pacienteId || !form.monto}
                 className="flex-1 h-9 text-white"
-                style={{ backgroundColor: "#8B1A2C" }}
+                style={{ backgroundColor: "var(--brand)" }}
               >
                 {loading && <Loader2 size={14} className="animate-spin mr-1" />}
                 Registrar

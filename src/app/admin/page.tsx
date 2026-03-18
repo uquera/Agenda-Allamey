@@ -3,7 +3,7 @@ import { auth } from "@/auth"
 import { redirect } from "next/navigation"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { Users, CalendarDays, Clock, CheckCircle } from "lucide-react"
+import { Users, CalendarDays, Clock, CheckCircle, DollarSign, TrendingUp, AlertCircle } from "lucide-react"
 import { format } from "date-fns"
 import { es } from "date-fns/locale"
 import Link from "next/link"
@@ -15,6 +15,10 @@ export default async function AdminDashboard() {
   const hoy = new Date()
   const inicioHoy = new Date(hoy.getFullYear(), hoy.getMonth(), hoy.getDate())
   const finHoy = new Date(inicioHoy.getTime() + 24 * 60 * 60 * 1000)
+  const inicioMes    = new Date(hoy.getFullYear(), hoy.getMonth(), 1)
+  const inicioMesSig = new Date(hoy.getFullYear(), hoy.getMonth() + 1, 1)
+  const inicioMesAnt = new Date(hoy.getFullYear(), hoy.getMonth() - 1, 1)
+  const inicio6Meses = new Date(hoy.getFullYear(), hoy.getMonth() - 5, 1)
 
   const [
     totalPacientes,
@@ -22,6 +26,11 @@ export default async function AdminDashboard() {
     citasHoy,
     citasProximas,
     ultimosPacientes,
+    pagosMesActual,
+    pagosMesAnterior,
+    pagosPendientes,
+    pagos6Meses,
+    sesionesCompletadasMes,
   ] = await Promise.all([
     prisma.paciente.count({ where: { activo: true } }),
     prisma.cita.count({ where: { estado: "PENDIENTE" } }),
@@ -40,7 +49,61 @@ export default async function AdminDashboard() {
       take: 4,
       include: { user: true },
     }),
+    prisma.pago.findMany({
+      where: { estado: "PAGADO", fechaPago: { gte: inicioMes, lt: inicioMesSig } },
+      select: { monto: true, moneda: true, metodoPago: true },
+    }),
+    prisma.pago.findMany({
+      where: { estado: "PAGADO", fechaPago: { gte: inicioMesAnt, lt: inicioMes } },
+      select: { monto: true, moneda: true },
+    }),
+    prisma.pago.findMany({
+      where: { estado: "PENDIENTE" },
+      select: { monto: true, moneda: true },
+    }),
+    prisma.pago.findMany({
+      where: { estado: "PAGADO", moneda: "USD", fechaPago: { gte: inicio6Meses } },
+      select: { monto: true, fechaPago: true },
+    }),
+    prisma.cita.count({
+      where: { estado: "COMPLETADA", fecha: { gte: inicioMes, lt: inicioMesSig } },
+    }),
   ])
+
+  // ── Cálculos financieros ───────────────────────────────────────────────────
+  const ingresosUSDMes    = pagosMesActual.filter(p => p.moneda === "USD").reduce((s, p) => s + p.monto, 0)
+  const ingresosBSMes     = pagosMesActual.filter(p => p.moneda === "BS").reduce((s, p) => s + p.monto, 0)
+  const ingresosUSDMesAnt = pagosMesAnterior.filter(p => p.moneda === "USD").reduce((s, p) => s + p.monto, 0)
+  const cambioPct         = ingresosUSDMesAnt > 0
+    ? Math.round(((ingresosUSDMes - ingresosUSDMesAnt) / ingresosUSDMesAnt) * 100)
+    : null
+  const pendientesCount = pagosPendientes.length
+  const pendientesUSD   = pagosPendientes.filter(p => p.moneda === "USD").reduce((s, p) => s + p.monto, 0)
+
+  const metodoPagoLabel: Record<string, string> = {
+    ZELLE: "Zelle", PAGO_MOVIL: "Pago Móvil", BINANCE: "Binance",
+    TRANSFERENCIA_USD: "Transfer. USD", TRANSFERENCIA_BS: "Transfer. Bs", EFECTIVO: "Efectivo",
+  }
+  const desgloseMap: Record<string, number> = {}
+  for (const p of pagosMesActual) {
+    desgloseMap[p.metodoPago] = (desgloseMap[p.metodoPago] ?? 0) + p.monto
+  }
+  const desglose = Object.entries(desgloseMap)
+    .map(([metodo, total]) => ({ metodo, label: metodoPagoLabel[metodo] ?? metodo, total }))
+    .sort((a, b) => b.total - a.total)
+  const maxMetodo = Math.max(...desglose.map(d => d.total), 1)
+
+  const datosMeses = Array.from({ length: 6 }, (_, i) => {
+    const d = new Date(hoy.getFullYear(), hoy.getMonth() - 5 + i, 1)
+    return { year: d.getFullYear(), month: d.getMonth(), label: format(d, "MMM", { locale: es }), total: 0, esMesActual: i === 5 }
+  })
+  for (const p of pagos6Meses) {
+    if (!p.fechaPago) continue
+    const d = new Date(p.fechaPago)
+    const idx = datosMeses.findIndex(m => m.year === d.getFullYear() && m.month === d.getMonth())
+    if (idx !== -1) datosMeses[idx].total += p.monto
+  }
+  const maxIngresos = Math.max(...datosMeses.map(m => m.total), 1)
 
   const estadoLabel: Record<string, string> = {
     PENDIENTE: "Pendiente",
@@ -73,8 +136,8 @@ export default async function AdminDashboard() {
                 </p>
                 <p className="text-3xl font-bold text-gray-800 mt-1">{totalPacientes}</p>
               </div>
-              <div className="w-11 h-11 rounded-xl flex items-center justify-center" style={{ backgroundColor: "#fff0f2" }}>
-                <Users size={20} style={{ color: "#8B1A2C" }} />
+              <div className="w-11 h-11 rounded-xl flex items-center justify-center" style={{ backgroundColor: "var(--brand-light)" }}>
+                <Users size={20} style={{ color: "var(--brand)" }} />
               </div>
             </div>
           </CardContent>
@@ -141,7 +204,7 @@ export default async function AdminDashboard() {
                 <Link
                   href="/admin/agenda"
                   className="text-xs font-medium hover:underline"
-                  style={{ color: "#8B1A2C" }}
+                  style={{ color: "var(--brand)" }}
                 >
                   Ver agenda →
                 </Link>
@@ -161,7 +224,7 @@ export default async function AdminDashboard() {
                     >
                       <div
                         className="w-2 h-10 rounded-full shrink-0"
-                        style={{ backgroundColor: cita.estado === "PENDIENTE" ? "#f59e0b" : "#8B1A2C" }}
+                        style={{ backgroundColor: cita.estado === "PENDIENTE" ? "#f59e0b" : "var(--brand)" }}
                       />
                       <div className="flex-1 min-w-0">
                         <p className="text-sm font-semibold text-gray-800 truncate">
@@ -196,7 +259,7 @@ export default async function AdminDashboard() {
                 <Link
                   href="/admin/pacientes"
                   className="text-xs font-medium hover:underline"
-                  style={{ color: "#8B1A2C" }}
+                  style={{ color: "var(--brand)" }}
                 >
                   Ver todos →
                 </Link>
@@ -221,7 +284,7 @@ export default async function AdminDashboard() {
                       >
                         <div
                           className="w-9 h-9 rounded-full flex items-center justify-center text-white text-xs font-bold shrink-0"
-                          style={{ backgroundColor: "#8B1A2C" }}
+                          style={{ backgroundColor: "var(--brand)" }}
                         >
                           {initials}
                         </div>
@@ -238,6 +301,144 @@ export default async function AdminDashboard() {
               )}
             </CardContent>
           </Card>
+        </div>
+      </div>
+
+      {/* ── Métricas financieras ──────────────────────────────────────────── */}
+      <div className="space-y-4">
+        <h2 className="text-sm font-semibold text-gray-400 uppercase tracking-wide">
+          Métricas financieras — {format(hoy, "MMMM yyyy", { locale: es })}
+        </h2>
+
+        {/* Cards */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
+          {/* Ingresos USD */}
+          <Card className="border-0 shadow-sm">
+            <CardContent className="p-5">
+              <div className="flex items-center justify-between mb-3">
+                <div className="w-11 h-11 rounded-xl flex items-center justify-center" style={{ backgroundColor: "var(--brand-light)" }}>
+                  <DollarSign size={20} style={{ color: "var(--brand)" }} />
+                </div>
+                {cambioPct !== null && (
+                  <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${cambioPct >= 0 ? "bg-green-50 text-green-700" : "bg-red-50 text-red-600"}`}>
+                    {cambioPct >= 0 ? "+" : ""}{cambioPct}%
+                  </span>
+                )}
+              </div>
+              <p className="text-2xl font-bold text-gray-800">${ingresosUSDMes.toFixed(2)}</p>
+              <p className="text-xs text-gray-500 mt-1">Ingresos USD este mes</p>
+            </CardContent>
+          </Card>
+
+          {/* Ingresos Bs */}
+          <Card className="border-0 shadow-sm">
+            <CardContent className="p-5">
+              <div className="flex items-center justify-between mb-3">
+                <div className="w-11 h-11 rounded-xl bg-amber-50 flex items-center justify-center">
+                  <DollarSign size={20} className="text-amber-600" />
+                </div>
+              </div>
+              <p className="text-2xl font-bold text-gray-800">Bs. {ingresosBSMes.toFixed(2)}</p>
+              <p className="text-xs text-gray-500 mt-1">Ingresos Bs este mes</p>
+            </CardContent>
+          </Card>
+
+          {/* Por cobrar */}
+          <Card className="border-0 shadow-sm">
+            <CardContent className="p-5">
+              <div className="flex items-center justify-between mb-3">
+                <div className="w-11 h-11 rounded-xl bg-orange-50 flex items-center justify-center">
+                  <AlertCircle size={20} className="text-orange-500" />
+                </div>
+                {pendientesCount > 0 && (
+                  <span className="text-xs font-semibold bg-orange-50 text-orange-600 px-2 py-0.5 rounded-full">
+                    {pendientesCount} pagos
+                  </span>
+                )}
+              </div>
+              <p className="text-2xl font-bold text-gray-800">${pendientesUSD.toFixed(2)}</p>
+              <p className="text-xs text-gray-500 mt-1">Por cobrar (USD)</p>
+            </CardContent>
+          </Card>
+
+          {/* Sesiones completadas */}
+          <Card className="border-0 shadow-sm">
+            <CardContent className="p-5">
+              <div className="flex items-center justify-between mb-3">
+                <div className="w-11 h-11 rounded-xl bg-green-50 flex items-center justify-center">
+                  <TrendingUp size={20} className="text-green-600" />
+                </div>
+              </div>
+              <p className="text-2xl font-bold text-gray-800">{sesionesCompletadasMes}</p>
+              <p className="text-xs text-gray-500 mt-1">Sesiones completadas este mes</p>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Gráfica + desglose */}
+        <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
+          {/* Gráfica de barras */}
+          <div className="xl:col-span-2">
+            <Card className="border-0 shadow-sm">
+              <CardHeader className="pb-0">
+                <CardTitle className="text-base font-semibold text-gray-800">
+                  Ingresos USD — últimos 6 meses
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="pt-4">
+                <div className="flex items-end gap-2 h-36">
+                  {datosMeses.map((mes) => (
+                    <div key={`${mes.year}-${mes.month}`} className="flex-1 flex flex-col items-center gap-1.5">
+                      <span className="text-[10px] font-medium" style={{ color: mes.esMesActual ? "var(--brand)" : "#aaa" }}>
+                        {mes.total > 0 ? `$${mes.total.toFixed(0)}` : "—"}
+                      </span>
+                      <div
+                        className="w-full rounded-t-sm"
+                        style={{
+                          height: `${Math.max((mes.total / maxIngresos) * 88, mes.total > 0 ? 6 : 2)}px`,
+                          backgroundColor: mes.esMesActual ? "var(--brand)" : "#f0d0d4",
+                          transition: "height 0.3s",
+                        }}
+                      />
+                      <span className="text-[10px] text-gray-400 capitalize">{mes.label}</span>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Desglose por método */}
+          <div>
+            <Card className="border-0 shadow-sm h-full">
+              <CardHeader className="pb-2">
+                <CardTitle className="text-base font-semibold text-gray-800">Métodos de pago</CardTitle>
+                <p className="text-xs text-gray-400">Mes actual</p>
+              </CardHeader>
+              <CardContent>
+                {desglose.length === 0 ? (
+                  <p className="text-sm text-gray-400 text-center py-6">Sin pagos registrados este mes</p>
+                ) : (
+                  <div className="space-y-3">
+                    {desglose.map(({ metodo, label, total }) => (
+                      <div key={metodo}>
+                        <div className="flex justify-between text-xs text-gray-600 mb-1">
+                          <span className="font-medium">{label}</span>
+                          <span className="tabular-nums">${total.toFixed(2)}</span>
+                        </div>
+                        <div className="h-1.5 bg-gray-100 rounded-full overflow-hidden">
+                          <div
+                            className="h-full rounded-full"
+                            style={{ width: `${Math.round((total / maxMetodo) * 100)}%`, backgroundColor: "var(--brand)" }}
+                          />
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </div>
         </div>
       </div>
     </div>

@@ -271,7 +271,7 @@ export default function SesionEditor({ sesion }: Props) {
         <div className="grid grid-cols-2 gap-3">
           <div className="space-y-1.5">
             <Label className="text-sm font-medium text-gray-700">Tipo de sesión</Label>
-            <Select value={tipoSesion} onValueChange={setTipoSesion}>
+            <Select value={tipoSesion} onValueChange={v => v && setTipoSesion(v)}>
               <SelectTrigger><SelectValue /></SelectTrigger>
               <SelectContent>
                 <SelectItem value="INDIVIDUAL">Individual</SelectItem>
@@ -282,7 +282,7 @@ export default function SesionEditor({ sesion }: Props) {
           </div>
           <div className="space-y-1.5">
             <Label className="text-sm font-medium text-gray-700">Estado de seguimiento</Label>
-            <Select value={estadoSeguimiento} onValueChange={setEstadoSeguimiento}>
+            <Select value={estadoSeguimiento} onValueChange={v => v && setEstadoSeguimiento(v)}>
               <SelectTrigger><SelectValue placeholder="Sin estado" /></SelectTrigger>
               <SelectContent>
                 {ESTADOS_SEGUIMIENTO.map(e => (
@@ -308,7 +308,7 @@ export default function SesionEditor({ sesion }: Props) {
             <button
               key={btn.title} title={btn.title} onClick={btn.action}
               className={`p-1.5 rounded-lg transition-colors ${btn.active ? "text-white" : "text-gray-500 hover:bg-gray-200 hover:text-gray-800"}`}
-              style={btn.active ? { backgroundColor: "#8B1A2C" } : {}}
+              style={btn.active ? { backgroundColor: "var(--brand)" } : {}}
             >
               <btn.icon size={16} />
             </button>
@@ -382,7 +382,7 @@ export default function SesionEditor({ sesion }: Props) {
                 {/* Audio: reproductor inline */}
                 {a.tipo === "audio" && (
                   <div className="mb-2">
-                    <audio controls src={a.url} className="w-full h-9" style={{ accentColor: "#8B1A2C" }} />
+                    <audio controls src={a.url} className="w-full h-9" style={{ accentColor: "var(--brand)" }} />
                   </div>
                 )}
                 {/* Imagen: thumbnail */}
@@ -450,7 +450,7 @@ export default function SesionEditor({ sesion }: Props) {
           Generar PDF
         </Button>
         {!publicado ? (
-          <Button className="h-10 text-white" style={{ backgroundColor: "#8B1A2C" }} onClick={() => guardar(true)} disabled={saving}>
+          <Button className="h-10 text-white" style={{ backgroundColor: "var(--brand)" }} onClick={() => guardar(true)} disabled={saving}>
             <Eye size={15} className="mr-2" />
             Publicar para el paciente
           </Button>

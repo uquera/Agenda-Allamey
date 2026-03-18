@@ -7,6 +7,7 @@ import { CalendarDays, BookOpen, FileText, Clock } from "lucide-react"
 import { format } from "date-fns"
 import { es } from "date-fns/locale"
 import Link from "next/link"
+import { MODULES } from "@/lib/modules"
 
 export const dynamic = "force-dynamic"
 
@@ -17,24 +18,23 @@ export default async function PacienteDashboard() {
   const paciente = await prisma.paciente.findUnique({
     where: { userId: session.user.id },
     include: {
-      citas: {
-        where: {
-          fecha: { gte: new Date() },
-          estado: { in: ["PENDIENTE", "APROBADA"] },
-        },
-        orderBy: { fecha: "asc" },
-        take: 3,
-      },
-      materiales: {
-        where: { visto: false },
-        include: { material: true },
-        take: 3,
-      },
-      sesiones: {
-        where: { publicado: true },
-        orderBy: { fechaSesion: "desc" },
-        take: 2,
-      },
+      citas: MODULES.agendar
+        ? {
+            where: {
+              fecha: { gte: new Date() },
+              estado: { in: ["PENDIENTE", "APROBADA"] },
+            },
+            orderBy: { fecha: "asc" },
+            take: 3,
+          }
+        : false,
+      materiales: MODULES.materiales
+        ? {
+            where: { visto: false },
+            include: { material: true },
+            take: 3,
+          }
+        : false,
     },
   })
 
@@ -70,11 +70,11 @@ export default async function PacienteDashboard() {
       {/* Accesos rápidos */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
         {[
-          { href: "/paciente/agendar", icon: CalendarDays, label: "Solicitar cita", color: "#8B1A2C", bg: "#fff0f2" },
-          { href: "/paciente/citas", icon: Clock, label: "Mis citas", color: "#2563eb", bg: "#eff6ff" },
-          { href: "/paciente/sesiones", icon: FileText, label: "Sesiones", color: "#7c3aed", bg: "#f5f3ff" },
-          { href: "/paciente/materiales", icon: BookOpen, label: "Materiales", color: "#059669", bg: "#ecfdf5" },
-        ].map((item) => (
+          MODULES.agendar    && { href: "/paciente/agendar",    icon: CalendarDays, label: "Solicitar cita", color: "var(--brand)", bg: "var(--brand-light)" },
+          MODULES.agendar    && { href: "/paciente/citas",       icon: Clock,        label: "Mis citas",      color: "#2563eb",       bg: "#eff6ff" },
+          MODULES.sesiones   && { href: "/paciente/sesiones",    icon: FileText,     label: "Sesiones",       color: "#7c3aed",       bg: "#f5f3ff" },
+          MODULES.materiales && { href: "/paciente/materiales",  icon: BookOpen,     label: "Materiales",     color: "#059669",       bg: "#ecfdf5" },
+        ].filter(Boolean).map((item) => (
           <Link
             key={item.href}
             href={item.href}
@@ -91,16 +91,17 @@ export default async function PacienteDashboard() {
         ))}
       </div>
 
+      {(MODULES.agendar || MODULES.materiales) && (
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Próximas citas */}
-        <Card className="border-0 shadow-sm">
+        {MODULES.agendar && <Card className="border-0 shadow-sm">
           <CardContent className="p-5">
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-sm font-semibold text-gray-800">Próximas citas</h2>
               <Link
                 href="/paciente/citas"
                 className="text-xs font-medium hover:underline"
-                style={{ color: "#8B1A2C" }}
+                style={{ color: "var(--brand)" }}
               >
                 Ver todas →
               </Link>
@@ -113,7 +114,7 @@ export default async function PacienteDashboard() {
                 <Link
                   href="/paciente/agendar"
                   className="text-xs font-medium mt-2 inline-block hover:underline"
-                  style={{ color: "#8B1A2C" }}
+                  style={{ color: "var(--brand)" }}
                 >
                   Solicitar una cita
                 </Link>
@@ -124,7 +125,7 @@ export default async function PacienteDashboard() {
                   <div key={cita.id} className="flex items-center gap-3 p-3 rounded-lg bg-gray-50">
                     <div
                       className="w-1.5 h-10 rounded-full shrink-0"
-                      style={{ backgroundColor: cita.estado === "PENDIENTE" ? "#f59e0b" : "#8B1A2C" }}
+                      style={{ backgroundColor: cita.estado === "PENDIENTE" ? "#f59e0b" : "var(--brand)" }}
                     />
                     <div className="flex-1">
                       <p className="text-sm font-medium text-gray-800 capitalize">
@@ -143,30 +144,30 @@ export default async function PacienteDashboard() {
               </div>
             )}
           </CardContent>
-        </Card>
+        </Card>}
 
         {/* Materiales sin ver */}
-        <Card className="border-0 shadow-sm">
+        {MODULES.materiales && <Card className="border-0 shadow-sm">
           <CardContent className="p-5">
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-sm font-semibold text-gray-800">Materiales nuevos</h2>
               <Link
                 href="/paciente/materiales"
                 className="text-xs font-medium hover:underline"
-                style={{ color: "#8B1A2C" }}
+                style={{ color: "var(--brand)" }}
               >
                 Ver todos →
               </Link>
             </div>
 
-            {paciente.materiales.length === 0 ? (
+            {paciente.materiales!.length === 0 ? (
               <div className="text-center py-6">
                 <BookOpen size={32} className="mx-auto text-gray-300 mb-2" />
                 <p className="text-sm text-gray-400">No hay materiales nuevos</p>
               </div>
             ) : (
               <div className="space-y-3">
-                {paciente.materiales.map((ma) => (
+                {paciente.materiales!.map((ma) => (
                   <Link
                     key={ma.id}
                     href="/paciente/materiales"
@@ -189,8 +190,9 @@ export default async function PacienteDashboard() {
               </div>
             )}
           </CardContent>
-        </Card>
+        </Card>}
       </div>
+      )}
     </div>
   )
 }

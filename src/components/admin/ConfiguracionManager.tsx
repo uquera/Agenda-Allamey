@@ -127,7 +127,7 @@ export default function ConfiguracionManager({ disponibilidad, politicaCancelaci
       <Card className="border-0 shadow-sm">
         <CardContent className="p-5">
           <div className="flex items-center gap-2 mb-5">
-            <Clock size={16} style={{ color: "#8B1A2C" }} />
+            <Clock size={16} style={{ color: "var(--brand)" }} />
             <h2 className="text-sm font-semibold text-gray-800">Horario de atención semanal</h2>
           </div>
 
@@ -144,7 +144,7 @@ export default function ConfiguracionManager({ disponibilidad, politicaCancelaci
                   checked={h.activo}
                   onCheckedChange={(v) => updateHorario(h.diaSemana, "activo", v)}
                   className="shrink-0"
-                  style={h.activo ? { backgroundColor: "#8B1A2C" } : {}}
+                  style={h.activo ? { backgroundColor: "var(--brand)" } : {}}
                 />
 
                 {/* Nombre del día */}
@@ -194,7 +194,7 @@ export default function ConfiguracionManager({ disponibilidad, politicaCancelaci
       <Card className="border-0 shadow-sm">
         <CardContent className="p-5 space-y-4">
           <div className="flex items-center gap-2">
-            <ShieldAlert size={16} style={{ color: "#8B1A2C" }} />
+            <ShieldAlert size={16} style={{ color: "var(--brand)" }} />
             <h2 className="text-sm font-semibold text-gray-800">Política de cancelación</h2>
           </div>
 
@@ -254,7 +254,7 @@ export default function ConfiguracionManager({ disponibilidad, politicaCancelaci
             onClick={guardarPolitica}
             disabled={savingPolitica}
             className="h-9 text-white"
-            style={{ backgroundColor: "#8B1A2C" }}
+            style={{ backgroundColor: "var(--brand)" }}
           >
             {savingPolitica ? <Loader2 size={14} className="animate-spin mr-2" /> : null}
             Guardar política

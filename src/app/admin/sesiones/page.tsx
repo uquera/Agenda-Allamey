@@ -38,7 +38,7 @@ export default async function SesionesAdminPage() {
         <Link
           href="/admin/sesiones/nueva"
           className="flex items-center gap-2 text-sm font-medium px-4 py-2 rounded-lg text-white hover:opacity-90 transition-opacity"
-          style={{ backgroundColor: "#8B1A2C" }}
+          style={{ backgroundColor: "var(--brand)" }}
         >
           <Plus size={15} />
           Nueva sesión
@@ -80,9 +80,9 @@ export default async function SesionesAdminPage() {
         <div className="text-center py-16">
           <div
             className="w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-4"
-            style={{ backgroundColor: "#fff0f2" }}
+            style={{ backgroundColor: "var(--brand-light)" }}
           >
-            <FileText size={28} style={{ color: "#8B1A2C" }} />
+            <FileText size={28} style={{ color: "var(--brand)" }} />
           </div>
           <p className="text-gray-500 font-medium">No hay notas de sesión aún</p>
           <p className="text-sm text-gray-400 mt-1 mb-6">
@@ -91,7 +91,7 @@ export default async function SesionesAdminPage() {
           <Link
             href="/admin/sesiones/nueva"
             className="inline-flex items-center gap-2 text-sm font-medium px-5 py-2.5 rounded-lg text-white"
-            style={{ backgroundColor: "#8B1A2C" }}
+            style={{ backgroundColor: "var(--brand)" }}
           >
             <Plus size={15} />
             Nueva sesión
@@ -106,9 +106,9 @@ export default async function SesionesAdminPage() {
                   <div className="flex items-center gap-4">
                     <div
                       className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0"
-                      style={{ backgroundColor: "#fff0f2" }}
+                      style={{ backgroundColor: "var(--brand-light)" }}
                     >
-                      <FileText size={18} style={{ color: "#8B1A2C" }} />
+                      <FileText size={18} style={{ color: "var(--brand)" }} />
                     </div>
                     <div className="flex-1 min-w-0">
                       <p className="text-sm font-semibold text-gray-800">{s.titulo}</p>

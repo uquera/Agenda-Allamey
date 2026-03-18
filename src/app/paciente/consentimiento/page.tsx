@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation"
 import { toast } from "sonner"
 import { Button } from "@/components/ui/button"
 import { Loader2, ShieldCheck, CheckSquare, Square, FileText, Download } from "lucide-react"
+import { BRAND } from "@/lib/brand"
 
 const CLAUSULAS = [
   {
@@ -41,7 +42,7 @@ const CLAUSULAS = [
     id: "voluntario",
     titulo: "Consentimiento voluntario",
     texto:
-      "Declaro que he leído y comprendido este documento, que participo voluntariamente en el proceso terapéutico y que puedo retirar mi consentimiento en cualquier momento. Autorizo a Allamey Sanz, Psicóloga Clínica y Sexóloga, a brindarme los servicios descritos.",
+      `Declaro que he leído y comprendido este documento, que participo voluntariamente en el proceso terapéutico y que puedo retirar mi consentimiento en cualquier momento. Autorizo a ${BRAND.name}, ${BRAND.specialty}, a brindarme los servicios descritos.`,
   },
 ]
 
@@ -131,7 +132,7 @@ export default function ConsentimientoPage() {
         <div className="flex flex-col gap-3">
           <Button
             className="w-full text-white"
-            style={{ backgroundColor: "#8B1A2C" }}
+            style={{ backgroundColor: "var(--brand)" }}
             onClick={() => router.push("/paciente")}
           >
             Volver al inicio
@@ -148,9 +149,9 @@ export default function ConsentimientoPage() {
       <div className="text-center pt-2">
         <div
           className="w-12 h-12 rounded-2xl flex items-center justify-center mx-auto mb-3"
-          style={{ backgroundColor: "#fff0f2" }}
+          style={{ backgroundColor: "var(--brand-light)" }}
         >
-          <ShieldCheck size={24} style={{ color: "#8B1A2C" }} />
+          <ShieldCheck size={24} style={{ color: "var(--brand)" }} />
         </div>
         <h1 className="text-xl font-bold text-gray-800">Consentimiento informado</h1>
         <p className="text-sm text-gray-500 mt-1">
@@ -161,10 +162,10 @@ export default function ConsentimientoPage() {
       {/* Encabezado del documento */}
       <div className="bg-white border border-gray-100 rounded-xl p-5 shadow-sm">
         <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1">
-          Psicóloga Clínica · Sexóloga
+          {BRAND.specialty}
         </p>
-        <h2 className="text-base font-bold" style={{ color: "#8B1A2C" }}>
-          Allamey Sanz
+        <h2 className="text-base font-bold" style={{ color: "var(--brand)" }}>
+          {BRAND.name}
         </h2>
         <p className="text-xs text-gray-500 mt-2 leading-relaxed">
           Para usar el portal de pacientes necesitas leer y aceptar cada uno de los
@@ -220,7 +221,7 @@ export default function ConsentimientoPage() {
             className="h-full rounded-full transition-all duration-300"
             style={{
               width: `${(aceptadosCount / CLAUSULAS.length) * 100}%`,
-              backgroundColor: todosAceptados ? "#16a34a" : "#8B1A2C",
+              backgroundColor: todosAceptados ? "#16a34a" : "var(--brand)",
             }}
           />
         </div>
@@ -238,7 +239,7 @@ export default function ConsentimientoPage() {
       <Button
         className="w-full h-12 text-white font-semibold text-sm"
         style={{
-          backgroundColor: todosAceptados ? "#16a34a" : "#8B1A2C",
+          backgroundColor: todosAceptados ? "#16a34a" : "var(--brand)",
           opacity: !todosAceptados ? 0.5 : 1,
         }}
         onClick={handleFirmar}

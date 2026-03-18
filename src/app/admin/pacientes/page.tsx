@@ -46,7 +46,7 @@ export default async function PacientesPage() {
                     <div className="flex items-center gap-4">
                       <div
                         className="w-10 h-10 rounded-full flex items-center justify-center text-white text-sm font-bold shrink-0"
-                        style={{ backgroundColor: "#8B1A2C" }}
+                        style={{ backgroundColor: "var(--brand)" }}
                       >
                         {initials}
                       </div>

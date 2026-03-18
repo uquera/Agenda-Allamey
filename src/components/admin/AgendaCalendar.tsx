@@ -105,8 +105,8 @@ export default function AgendaCalendar({ eventos, bloqueosIniciales }: Props) {
 
   const eventosColoreados = eventos.map((ev) => ({
     ...ev,
-    backgroundColor: estadoBg[ev.extendedProps.estado] || "#8B1A2C",
-    borderColor: estadoBg[ev.extendedProps.estado] || "#8B1A2C",
+    backgroundColor: estadoBg[ev.extendedProps.estado] || "var(--brand)",
+    borderColor: estadoBg[ev.extendedProps.estado] || "var(--brand)",
     textColor: "#ffffff",
   }))
 
@@ -258,7 +258,7 @@ export default function AgendaCalendar({ eventos, bloqueosIniciales }: Props) {
             </div>
             <div className="flex gap-3 pt-1">
               <Button variant="outline" className="flex-1" onClick={() => setBloqueoOpen(false)}>Cancelar</Button>
-              <Button className="flex-1 bg-[#8B1A2C] hover:bg-[#6d1522] text-white" onClick={guardarBloqueo} disabled={guardandoBloqueo}>
+              <Button className="flex-1 bg-[var(--brand)] hover:bg-[var(--brand-dark)] text-white" onClick={guardarBloqueo} disabled={guardandoBloqueo}>
                 {guardandoBloqueo ? "Guardando..." : "Bloquear"}
               </Button>
             </div>

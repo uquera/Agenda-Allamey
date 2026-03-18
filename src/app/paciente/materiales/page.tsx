@@ -3,6 +3,7 @@ import { auth } from "@/auth"
 import { redirect } from "next/navigation"
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
+import { BRAND } from "@/lib/brand"
 import { BookOpen, FileText, Video, Link as LinkIcon, Music, Dumbbell, Download, ExternalLink } from "lucide-react"
 import { format } from "date-fns"
 import { es } from "date-fns/locale"
@@ -19,7 +20,7 @@ const tipoIcono: Record<string, React.ElementType> = {
 }
 
 const tipoColor: Record<string, { bg: string; text: string }> = {
-  PDF: { bg: "#fff0f2", text: "#8B1A2C" },
+  PDF: { bg: "var(--brand-light)", text: "var(--brand)" },
   VIDEO: { bg: "#eff6ff", text: "#2563eb" },
   ARTICULO: { bg: "#ecfdf5", text: "#059669" },
   EJERCICIO: { bg: "#fffbeb", text: "#d97706" },
@@ -92,7 +93,7 @@ export default async function MaterialesPacientePage() {
                     href={ma.material.archivoUrl}
                     download
                     className="flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-lg border transition-colors hover:bg-gray-50"
-                    style={{ color: "#8B1A2C", borderColor: "#8B1A2C" }}
+                    style={{ color: "var(--brand)", borderColor: "var(--brand)" }}
                   >
                     <Download size={12} />
                     Descargar
@@ -104,7 +105,7 @@ export default async function MaterialesPacientePage() {
                     target="_blank"
                     rel="noopener noreferrer"
                     className="flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-lg border transition-colors hover:bg-gray-50"
-                    style={{ color: "#8B1A2C", borderColor: "#8B1A2C" }}
+                    style={{ color: "var(--brand)", borderColor: "var(--brand)" }}
                   >
                     <ExternalLink size={12} />
                     {ma.material.tipo === "VIDEO" ? "Ver video" :
@@ -128,7 +129,7 @@ export default async function MaterialesPacientePage() {
       <div>
         <h1 className="text-xl font-bold text-gray-800">Mis materiales</h1>
         <p className="text-sm text-gray-500 mt-1">
-          Recursos asignados por la Dra. Allamey para tu proceso
+          Recursos asignados por {BRAND.doctorTitle} para tu proceso
         </p>
       </div>
 

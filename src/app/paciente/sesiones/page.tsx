@@ -3,6 +3,7 @@ import { auth } from "@/auth"
 import { redirect } from "next/navigation"
 import { Card, CardContent } from "@/components/ui/card"
 import { FileText, Download, FileSpreadsheet, FileText as FileDoc, Music, File } from "lucide-react"
+import { BRAND } from "@/lib/brand"
 import { format } from "date-fns"
 import { es } from "date-fns/locale"
 
@@ -28,7 +29,7 @@ export default async function SesionesPacientePage() {
       <div>
         <h1 className="text-xl font-bold text-gray-800">Mis sesiones</h1>
         <p className="text-sm text-gray-500 mt-1">
-          Resúmenes de tus sesiones compartidos por la Dra. Allamey
+          Resúmenes de tus sesiones compartidos por {BRAND.doctorTitle}
         </p>
       </div>
 
@@ -37,7 +38,7 @@ export default async function SesionesPacientePage() {
           <FileText size={48} className="mx-auto text-gray-200 mb-4" />
           <p className="text-gray-400">Aún no hay resúmenes disponibles</p>
           <p className="text-gray-300 text-sm mt-1">
-            La Dra. Allamey compartirá los resúmenes después de cada sesión
+            {BRAND.doctorTitle} compartirá los resúmenes después de cada sesión
           </p>
         </div>
       ) : (
@@ -49,9 +50,9 @@ export default async function SesionesPacientePage() {
                   <div className="flex items-start gap-3">
                     <div
                       className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0"
-                      style={{ backgroundColor: "#fff0f2" }}
+                      style={{ backgroundColor: "var(--brand-light)" }}
                     >
-                      <FileText size={18} style={{ color: "#8B1A2C" }} />
+                      <FileText size={18} style={{ color: "var(--brand)" }} />
                     </div>
                     <div>
                       <h3 className="text-sm font-semibold text-gray-800">{sesion.titulo}</h3>
@@ -67,7 +68,7 @@ export default async function SesionesPacientePage() {
                       href={sesion.pdfUrl}
                       download
                       className="flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-lg border transition-colors hover:bg-gray-50 shrink-0"
-                      style={{ color: "#8B1A2C", borderColor: "#8B1A2C" }}
+                      style={{ color: "var(--brand)", borderColor: "var(--brand)" }}
                     >
                       <Download size={13} />
                       PDF

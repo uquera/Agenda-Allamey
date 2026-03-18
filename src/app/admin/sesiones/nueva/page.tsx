@@ -121,9 +121,9 @@ export default function NuevaSesionPage() {
         <div className="flex items-center gap-3">
           <div
             className="w-10 h-10 rounded-xl flex items-center justify-center"
-            style={{ backgroundColor: "#fff0f2" }}
+            style={{ backgroundColor: "var(--brand-light)" }}
           >
-            <FileText size={18} style={{ color: "#8B1A2C" }} />
+            <FileText size={18} style={{ color: "var(--brand)" }} />
           </div>
           <div>
             <h1 className="text-xl font-bold text-gray-800">Nueva nota de sesión</h1>
@@ -143,7 +143,7 @@ export default function NuevaSesionPage() {
               <select
                 value={form.citaId}
                 onChange={(e) => handleCitaChange(e.target.value)}
-                className="w-full h-10 rounded-lg border border-gray-200 bg-gray-50 px-3 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-[#8B1A2C]/20"
+                className="w-full h-10 rounded-lg border border-gray-200 bg-gray-50 px-3 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-[var(--brand)]/20"
               >
                 <option value="">— Sin vincular a cita —</option>
                 {citasPendientes.map((c) => (
@@ -171,7 +171,7 @@ export default function NuevaSesionPage() {
             <select
               value={form.pacienteId}
               onChange={(e) => setForm((f) => ({ ...f, pacienteId: e.target.value }))}
-              className="w-full h-10 rounded-lg border border-gray-200 bg-gray-50 px-3 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-[#8B1A2C]/20"
+              className="w-full h-10 rounded-lg border border-gray-200 bg-gray-50 px-3 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-[var(--brand)]/20"
             >
               <option value="">— Seleccionar paciente —</option>
               {pacientes.map((p) => (
@@ -210,7 +210,7 @@ export default function NuevaSesionPage() {
 
           <Button
             className="w-full h-11 text-white mt-2"
-            style={{ backgroundColor: "#8B1A2C" }}
+            style={{ backgroundColor: "var(--brand)" }}
             onClick={crear}
             disabled={guardando || !form.pacienteId}
           >

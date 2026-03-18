@@ -66,6 +66,17 @@ model VerificationToken {
   @@map("verification_tokens")
 }
 
+model PasswordResetToken {
+  id        String   @id @default(cuid())
+  email     String
+  token     String   @unique
+  expires   DateTime
+  usado     Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  @@map("password_reset_tokens")
+}
+
 enum Role {
   ADMIN
   PACIENTE
@@ -98,6 +109,7 @@ model Paciente {
   pagos           Pago[]
   archivos        ArchivoPaciente[]
   consentimiento  ConsentimientoInformado?
+  anamnesis       Anamnesis?
 
   @@map("pacientes")
 }
@@ -298,6 +310,62 @@ enum TipoMaterial {
   ARTICULO
   EJERCICIO
   AUDIO
+}
+
+// ─── ANAMNESIS ─────────────────────────────────────────────────────────────────
+
+model Anamnesis {
+  id                       String   @id @default(cuid())
+  pacienteId               String   @unique
+
+  // Motivo de consulta
+  motivoPrincipal          String?
+  tiempoEvolucion          String?
+
+  // Antecedentes
+  antecedentesMedicos      String?
+  antecedentesPsicologicos String?
+  medicacionActual         String?
+
+  // Situación actual
+  estadoCivil              String?
+  hijosCantidad            String?
+  situacionLaboral         String?
+  nivelEducativo           String?
+  redApoyo                 String?
+
+  // Hábitos
+  calidadSueno             String?
+  actividadFisica          String?
+  consumoSustancias        String?
+
+  // Vida afectiva y sexual
+  relacionPareja           String?
+  vidaSexual               String?
+
+  // Expectativas
+  expectativasTerapia      String?
+  intentosAnteriores       String?
+
+  camposExtra              Json?
+
+  completado               Boolean  @default(false)
+  createdAt                DateTime @default(now())
+  updatedAt                DateTime @updatedAt
+
+  paciente Paciente @relation(fields: [pacienteId], references: [id], onDelete: Cascade)
+
+  @@map("anamnesis")
+}
+
+// ─── CONFIG ANAMNESIS ──────────────────────────────────────────────────────────
+
+model ConfigAnamnesis {
+  id        String   @id @default("singleton")
+  campos    Json
+  updatedAt DateTime @updatedAt
+
+  @@map("config_anamnesis")
 }
 
 // ─── PAGOS ─────────────────────────────────────────────────────────────────────

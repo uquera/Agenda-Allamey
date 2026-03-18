@@ -5,6 +5,7 @@ import { format } from "date-fns"
 import { es } from "date-fns/locale"
 import fs from "fs"
 import path from "path"
+import { BRAND } from "@/lib/brand"
 
 export async function POST(
   req: Request,
@@ -70,7 +71,7 @@ export async function POST(
   </div>
   <div class="footer">
     <p>Este documento es de carácter confidencial y de uso exclusivo del paciente.</p>
-    <p>Allamey Sanz — Psicóloga Clínica y Sexóloga</p>
+    <p>${BRAND.name} — ${BRAND.specialty}</p>
   </div>
 </body>
 </html>`

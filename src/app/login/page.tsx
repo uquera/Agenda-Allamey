@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation"
 import Link from "next/link"
 import Image from "next/image"
 import { toast } from "sonner"
+import { BRAND } from "@/lib/brand"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -79,7 +80,7 @@ export default function LoginPage() {
           >
             <Image
               src="/logo-vertical.png"
-              alt="Allamey Sanz"
+              alt={BRAND.name}
               width={240}
               height={240}
               className="mx-auto"
@@ -126,7 +127,7 @@ export default function LoginPage() {
           <div className="lg:hidden text-center mb-10">
             <Image
               src="/logo-vertical.png"
-              alt="Allamey Sanz"
+              alt={BRAND.name}
               width={140}
               height={140}
               className="mx-auto mb-3"
@@ -135,7 +136,7 @@ export default function LoginPage() {
 
           {/* Encabezado */}
           <div className="mb-8">
-            <p className="text-xs font-semibold tracking-[3px] uppercase mb-2" style={{ color: "#8B1A2C" }}>
+            <p className="text-xs font-semibold tracking-[3px] uppercase mb-2" style={{ color: "var(--brand)" }}>
               Bienvenido de nuevo
             </p>
             <h1 className="text-3xl font-bold text-gray-800 leading-tight">
@@ -161,7 +162,7 @@ export default function LoginPage() {
                 value={form.email}
                 onChange={(e) => setForm({ ...form, email: e.target.value })}
                 required
-                className="h-12 border-gray-200 bg-gray-50 focus-visible:bg-white focus-visible:ring-[#8B1A2C]/20 focus-visible:border-[#8B1A2C] transition-colors"
+                className="h-12 border-gray-200 bg-gray-50 focus-visible:bg-white focus-visible:ring-[var(--brand)]/20 focus-visible:border-[var(--brand)] transition-colors"
               />
             </div>
 
@@ -177,7 +178,7 @@ export default function LoginPage() {
                   value={form.password}
                   onChange={(e) => setForm({ ...form, password: e.target.value })}
                   required
-                  className="h-12 pr-11 border-gray-200 bg-gray-50 focus-visible:bg-white focus-visible:ring-[#8B1A2C]/20 focus-visible:border-[#8B1A2C] transition-colors"
+                  className="h-12 pr-11 border-gray-200 bg-gray-50 focus-visible:bg-white focus-visible:ring-[var(--brand)]/20 focus-visible:border-[var(--brand)] transition-colors"
                 />
                 <button
                   type="button"
@@ -193,7 +194,7 @@ export default function LoginPage() {
               type="submit"
               disabled={loading}
               className="w-full h-12 font-semibold text-white text-base rounded-xl shadow-md hover:shadow-lg transition-all mt-2"
-              style={{ backgroundColor: "#8B1A2C" }}
+              style={{ backgroundColor: "var(--brand)" }}
             >
               {loading ? (
                 <><Loader2 size={17} className="animate-spin mr-2" /> Ingresando...</>
@@ -210,16 +211,27 @@ export default function LoginPage() {
             <div className="h-px flex-1 bg-gray-100" />
           </div>
 
-          <p className="text-center text-sm text-gray-500">
-            ¿No tienes cuenta?{" "}
-            <Link
-              href="/registro"
-              className="font-semibold hover:underline"
-              style={{ color: "#8B1A2C" }}
-            >
-              Regístrate aquí
-            </Link>
-          </p>
+          <div className="space-y-3 text-center">
+            <p className="text-sm text-gray-500">
+              ¿No tienes cuenta?{" "}
+              <Link
+                href="/registro"
+                className="font-semibold hover:underline"
+                style={{ color: "var(--brand)" }}
+              >
+                Regístrate aquí
+              </Link>
+            </p>
+            <p className="text-sm text-gray-400">
+              <Link
+                href="/olvide-clave"
+                className="hover:underline"
+                style={{ color: "var(--brand)" }}
+              >
+                ¿Olvidaste tu contraseña?
+              </Link>
+            </p>
+          </div>
 
           {/* Copyright mobile */}
           <p className="lg:hidden mt-10 text-center text-xs text-gray-300">

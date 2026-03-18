@@ -59,7 +59,7 @@ export default function PacienteFichaEditor({
     <Card className="border-0 shadow-sm">
       <CardContent className="p-4 space-y-4">
         <h2 className="text-sm font-semibold text-gray-800 flex items-center gap-2">
-          <User size={15} style={{ color: "#8B1A2C" }} />
+          <User size={15} style={{ color: "var(--brand)" }} />
           Ficha del paciente
         </h2>
 
@@ -119,7 +119,7 @@ export default function PacienteFichaEditor({
           onClick={guardar}
           disabled={saving}
           className="w-full h-8 text-sm text-white"
-          style={{ backgroundColor: "#8B1A2C" }}
+          style={{ backgroundColor: "var(--brand)" }}
         >
           {saving ? (
             <Loader2 size={13} className="animate-spin mr-1.5" />

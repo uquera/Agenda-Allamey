@@ -67,11 +67,11 @@ export default function RegistroPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-[#fff0f2] p-4">
+    <div className="min-h-screen flex items-center justify-center bg-[var(--brand-light)] p-4">
       <div className="w-full max-w-md bg-white rounded-2xl shadow-sm border border-gray-100 p-8">
         {/* Header */}
         <div className="text-center mb-6">
-          <h1 className="text-2xl font-bold" style={{ color: "#8B1A2C" }}>ALLAMEY SANZ</h1>
+          <h1 className="text-2xl font-bold" style={{ color: "var(--brand)" }}>ALLAMEY SANZ</h1>
           <p className="text-xs tracking-widest text-gray-400 mt-1">PSICÓLOGA CLÍNICA · SEXÓLOGA</p>
           <p className="text-gray-500 text-sm mt-3">Crea tu cuenta de paciente</p>
         </div>
@@ -81,16 +81,16 @@ export default function RegistroPage() {
           {PASOS.map((nombre, i) => (
             <div key={i} className="flex items-center gap-1 flex-1">
               <div className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-semibold shrink-0 transition-colors ${
-                i < paso ? "bg-[#8B1A2C] text-white" :
-                i === paso ? "bg-[#8B1A2C] text-white ring-2 ring-[#8B1A2C]/30" :
+                i < paso ? "bg-[var(--brand)] text-white" :
+                i === paso ? "bg-[var(--brand)] text-white ring-2 ring-[var(--brand)]/30" :
                 "bg-gray-100 text-gray-400"
               }`}>
                 {i < paso ? <Check className="w-3 h-3" /> : i + 1}
               </div>
-              <span className={`text-xs hidden sm:block whitespace-nowrap ${i === paso ? "text-[#8B1A2C] font-semibold" : "text-gray-400"}`}>
+              <span className={`text-xs hidden sm:block whitespace-nowrap ${i === paso ? "text-[var(--brand)] font-semibold" : "text-gray-400"}`}>
                 {nombre}
               </span>
-              {i < PASOS.length - 1 && <div className={`flex-1 h-px mx-1 ${i < paso ? "bg-[#8B1A2C]" : "bg-gray-200"}`} />}
+              {i < PASOS.length - 1 && <div className={`flex-1 h-px mx-1 ${i < paso ? "bg-[var(--brand)]" : "bg-gray-200"}`} />}
             </div>
           ))}
         </div>
@@ -150,7 +150,7 @@ export default function RegistroPage() {
             <div className="grid grid-cols-2 gap-3">
               <div>
                 <Label>Género</Label>
-                <Select value={form.genero} onValueChange={v => set("genero", v)}>
+                <Select value={form.genero} onValueChange={v => v && set("genero", v)}>
                   <SelectTrigger className="mt-1"><SelectValue placeholder="Seleccionar" /></SelectTrigger>
                   <SelectContent>
                     <SelectItem value="Femenino">Femenino</SelectItem>
@@ -171,7 +171,7 @@ export default function RegistroPage() {
             </div>
             <div>
               <Label>País</Label>
-              <Select value={form.pais} onValueChange={v => set("pais", v)}>
+              <Select value={form.pais} onValueChange={v => v && set("pais", v)}>
                 <SelectTrigger className="mt-1"><SelectValue placeholder="Seleccionar país" /></SelectTrigger>
                 <SelectContent>
                   {PAISES.map(p => <SelectItem key={p} value={p}>{p}</SelectItem>)}
@@ -209,17 +209,17 @@ export default function RegistroPage() {
           ) : (
             <p className="text-sm text-gray-500 self-center">
               ¿Ya tienes cuenta?{" "}
-              <Link href="/login" className="font-semibold hover:underline" style={{ color: "#8B1A2C" }}>Inicia sesión</Link>
+              <Link href="/login" className="font-semibold hover:underline" style={{ color: "var(--brand)" }}>Inicia sesión</Link>
             </p>
           )}
 
           {paso < PASOS.length - 1 ? (
-            <Button className="text-white" style={{ backgroundColor: "#8B1A2C" }}
+            <Button className="text-white" style={{ backgroundColor: "var(--brand)" }}
               onClick={() => { if (validarPaso()) setPaso(p => p + 1) }}>
               Siguiente <ChevronRight className="w-4 h-4 ml-1" />
             </Button>
           ) : (
-            <Button className="text-white" style={{ backgroundColor: "#8B1A2C" }} onClick={handleSubmit} disabled={loading}>
+            <Button className="text-white" style={{ backgroundColor: "var(--brand)" }} onClick={handleSubmit} disabled={loading}>
               {loading ? <><Loader2 size={16} className="animate-spin mr-2" /> Creando...</> : "Crear cuenta"}
             </Button>
           )}
