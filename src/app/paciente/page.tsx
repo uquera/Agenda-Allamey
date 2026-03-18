@@ -28,17 +28,18 @@ export default async function PacienteDashboard() {
             take: 3,
           }
         : false,
-      materiales: MODULES.materiales
-        ? {
-            where: { visto: false },
-            include: { material: true },
-            take: 3,
-          }
-        : false,
     },
   })
 
   if (!paciente) redirect("/login")
+
+  const materialesData = MODULES.materiales
+    ? await prisma.materialAsignado.findMany({
+        where: { pacienteId: paciente.id, visto: false },
+        include: { material: true },
+        take: 3,
+      })
+    : []
 
   const estadoColor: Record<string, string> = {
     PENDIENTE: "bg-amber-100 text-amber-700",
@@ -163,14 +164,14 @@ export default async function PacienteDashboard() {
               </Link>
             </div>
 
-            {paciente.materiales!.length === 0 ? (
+            {materialesData.length === 0 ? (
               <div className="text-center py-6">
                 <BookOpen size={32} className="mx-auto text-gray-300 mb-2" />
                 <p className="text-sm text-gray-400">No hay materiales nuevos</p>
               </div>
             ) : (
               <div className="space-y-3">
-                {paciente.materiales!.map((ma) => (
+                {materialesData.map((ma) => (
                   <Link
                     key={ma.id}
                     href="/paciente/materiales"
