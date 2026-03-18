@@ -69,12 +69,15 @@ export default async function PacienteDashboard() {
 
       {/* Accesos rápidos */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-        {[
-          MODULES.agendar    && { href: "/paciente/agendar",    icon: CalendarDays, label: "Solicitar cita", color: "var(--brand)", bg: "var(--brand-light)" },
-          MODULES.agendar    && { href: "/paciente/citas",       icon: Clock,        label: "Mis citas",      color: "#2563eb",       bg: "#eff6ff" },
-          MODULES.sesiones   && { href: "/paciente/sesiones",    icon: FileText,     label: "Sesiones",       color: "#7c3aed",       bg: "#f5f3ff" },
-          MODULES.materiales && { href: "/paciente/materiales",  icon: BookOpen,     label: "Materiales",     color: "#059669",       bg: "#ecfdf5" },
-        ].filter((item): item is NonNullable<typeof item> => Boolean(item)).map((item) => (
+        {(
+          [
+            MODULES.agendar    ? { href: "/paciente/agendar",    icon: CalendarDays, label: "Solicitar cita", color: "var(--brand)", bg: "var(--brand-light)" } : null,
+            MODULES.agendar    ? { href: "/paciente/citas",       icon: Clock,        label: "Mis citas",      color: "#2563eb",       bg: "#eff6ff" } : null,
+            MODULES.sesiones   ? { href: "/paciente/sesiones",    icon: FileText,     label: "Sesiones",       color: "#7c3aed",       bg: "#f5f3ff" } : null,
+            MODULES.materiales ? { href: "/paciente/materiales",  icon: BookOpen,     label: "Materiales",     color: "#059669",       bg: "#ecfdf5" } : null,
+          ] as Array<{ href: string; icon: React.ElementType; label: string; color: string; bg: string } | null>
+        ).filter((item): item is { href: string; icon: React.ElementType; label: string; color: string; bg: string } => item !== null)
+          .map((item) => (
           <Link
             key={item.href}
             href={item.href}
