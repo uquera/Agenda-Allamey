@@ -74,7 +74,7 @@ export default async function PacienteDashboard() {
           MODULES.agendar    && { href: "/paciente/citas",       icon: Clock,        label: "Mis citas",      color: "#2563eb",       bg: "#eff6ff" },
           MODULES.sesiones   && { href: "/paciente/sesiones",    icon: FileText,     label: "Sesiones",       color: "#7c3aed",       bg: "#f5f3ff" },
           MODULES.materiales && { href: "/paciente/materiales",  icon: BookOpen,     label: "Materiales",     color: "#059669",       bg: "#ecfdf5" },
-        ].filter(Boolean).map((item) => (
+        ].filter((item): item is NonNullable<typeof item> => Boolean(item)).map((item) => (
           <Link
             key={item.href}
             href={item.href}
