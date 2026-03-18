@@ -25,9 +25,10 @@ interface CitaPendiente {
 
 interface Props {
   pendientes: CitaPendiente[]
+  onCitaActualizada?: (id: string, nuevoEstado: string) => void
 }
 
-export default function CitasPendientesPanel({ pendientes }: Props) {
+export default function CitasPendientesPanel({ pendientes, onCitaActualizada }: Props) {
   const router = useRouter()
   const [selected, setSelected] = useState<CitaPendiente | null>(null)
   const [accion, setAccion] = useState<"aprobar" | "rechazar" | "reagendar" | null>(null)
@@ -89,6 +90,12 @@ export default function CitasPendientesPanel({ pendientes }: Props) {
         reagendar: "Cita reagendada y paciente notificado",
       }
       toast.success(mensajes[accion])
+
+      // Actualizar el color del evento en el calendario instantáneamente
+      if (onCitaActualizada) {
+        onCitaActualizada(selected.id, estadoMap[accion])
+      }
+
       cerrar()
       router.refresh()
     } catch {

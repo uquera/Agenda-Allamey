@@ -45,6 +45,7 @@ interface Bloqueo {
 interface Props {
   eventos: Evento[]
   bloqueosIniciales: Bloqueo[]
+  onCitaActualizadaRef?: React.MutableRefObject<((id: string, nuevoEstado: string) => void) | null>
 }
 
 const estadoLabel: Record<string, string> = {
@@ -63,6 +64,15 @@ const estadoBg: Record<string, string> = {
   REAGENDADA: "#3b82f6",
   COMPLETADA: "#6b7280",
   CANCELADA:  "#ef4444",
+}
+
+function colorearEvento(ev: Evento) {
+  return {
+    ...ev,
+    backgroundColor: estadoBg[ev.extendedProps.estado] || "var(--brand)",
+    borderColor: estadoBg[ev.extendedProps.estado] || "var(--brand)",
+    textColor: "#ffffff",
+  }
 }
 
 function bloqueoToEvento(b: Bloqueo) {
@@ -91,9 +101,10 @@ function bloqueoToEvento(b: Bloqueo) {
   }
 }
 
-export default function AgendaCalendar({ eventos, bloqueosIniciales }: Props) {
+export default function AgendaCalendar({ eventos, bloqueosIniciales, onCitaActualizadaRef }: Props) {
   const calendarRef = useRef(null)
   const [bloqueos, setBloqueos] = useState<Bloqueo[]>(bloqueosIniciales)
+  const [eventosColoreados, setEventosColoreados] = useState(() => eventos.map(colorearEvento))
   const [bloqueoOpen, setBloqueoOpen] = useState(false)
   const [bloqueo, setBloqueo] = useState({ fecha: "", horaInicio: "", horaFin: "", motivo: "", todoElDia: false })
   const [guardandoBloqueo, setGuardandoBloqueo] = useState(false)
@@ -103,12 +114,23 @@ export default function AgendaCalendar({ eventos, bloqueosIniciales }: Props) {
   const [bloqueoAEliminar, setBloqueoAEliminar] = useState<{ id: string; motivo: string | null } | null>(null)
   const [eliminando, setEliminando] = useState(false)
 
-  const eventosColoreados = eventos.map((ev) => ({
-    ...ev,
-    backgroundColor: estadoBg[ev.extendedProps.estado] || "var(--brand)",
-    borderColor: estadoBg[ev.extendedProps.estado] || "var(--brand)",
-    textColor: "#ffffff",
-  }))
+  // Exponer callback para actualizar el estado de un evento desde fuera
+  if (onCitaActualizadaRef) {
+    onCitaActualizadaRef.current = (id: string, nuevoEstado: string) => {
+      setEventosColoreados((prev) =>
+        prev.map((ev) =>
+          ev.id === id
+            ? {
+                ...ev,
+                backgroundColor: estadoBg[nuevoEstado] || "var(--brand)",
+                borderColor: estadoBg[nuevoEstado] || "var(--brand)",
+                extendedProps: { ...ev.extendedProps, estado: nuevoEstado },
+              }
+            : ev
+        )
+      )
+    }
+  }
 
   const eventosBloqueos = bloqueos.map(bloqueoToEvento)
   const todosLosEventos = [...eventosColoreados, ...eventosBloqueos]

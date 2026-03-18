@@ -1,6 +1,5 @@
 import { prisma } from "@/lib/prisma"
-import AgendaCalendar from "@/components/admin/AgendaCalendar"
-import CitasPendientesPanel from "@/components/admin/CitasPendientesPanel"
+import AgendaWrapper from "@/components/admin/AgendaWrapper"
 
 export const dynamic = "force-dynamic"
 
@@ -41,25 +40,20 @@ export default async function AgendaPage() {
         </p>
       </div>
 
-      {pendientes.length > 0 && (
-        <CitasPendientesPanel
-          pendientes={pendientes.map((c) => ({
-            id: c.id,
-            fecha: c.fecha.toISOString(),
-            modalidad: c.modalidad,
-            motivoConsulta: c.motivoConsulta,
-            notasPaciente: c.notasPaciente,
-            paciente: {
-              nombre: c.paciente.user.name || "Paciente",
-              email: c.paciente.user.email,
-            },
-          }))}
-        />
-      )}
-
-      <AgendaCalendar
+      <AgendaWrapper
+        pendientes={pendientes.map((c) => ({
+          id: c.id,
+          fecha: c.fecha.toISOString(),
+          modalidad: c.modalidad,
+          motivoConsulta: c.motivoConsulta,
+          notasPaciente: c.notasPaciente,
+          paciente: {
+            nombre: c.paciente.user.name || "Paciente",
+            email: c.paciente.user.email,
+          },
+        }))}
         eventos={eventos}
-        bloqueosIniciales={bloqueos.map((b) => ({
+        bloqueos={bloqueos.map((b) => ({
           id: b.id,
           fecha: b.fecha.toISOString(),
           horaInicio: b.horaInicio,
