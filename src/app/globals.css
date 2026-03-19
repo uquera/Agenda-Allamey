@@ -8,6 +8,7 @@
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --font-sans: var(--font-sans);
+  --font-body: var(--font-body);
   --font-mono: var(--font-geist-mono);
   --color-sidebar-ring: var(--sidebar-ring);
   --color-sidebar-border: var(--sidebar-border);
@@ -109,6 +110,22 @@
     @apply font-sans;
   }
 
+  /* ── Tipografía secundaria: Open Sans para cuerpo de texto ── */
+  p, li, blockquote, label, input, textarea, select, td, th {
+    font-family: var(--font-body), var(--font-sans), sans-serif;
+    font-weight: 400;
+    line-height: 1.75;
+    font-size: 1rem;
+  }
+
+  /* Párrafos largos y descripciones — Light 300 */
+  .prose p, .text-body-light {
+    font-family: var(--font-body), var(--font-sans), sans-serif;
+    font-weight: 300;
+    line-height: 1.8;
+    font-size: 1rem;
+  }
+
   /* ── Jerarquía tipográfica Poppins ── */
   h1 {
     font-weight: 700;
@@ -165,6 +182,32 @@
     font-weight: 600;
     font-size: 0.9375rem;
     letter-spacing: 0.01em;
+  }
+
+  /* ── Open Sans — tipografía secundaria ── */
+
+  /* Párrafo estándar: Regular 400 */
+  .text-body {
+    font-family: var(--font-body), var(--font-sans), sans-serif;
+    font-weight: 400;
+    font-size: 1rem;
+    line-height: 1.75;
+  }
+
+  /* Párrafo largo / brochure: Light 300 */
+  .text-body-light {
+    font-family: var(--font-body), var(--font-sans), sans-serif;
+    font-weight: 300;
+    font-size: 1rem;
+    line-height: 1.8;
+  }
+
+  /* Descripción compacta: Regular 400, tamaño reducido */
+  .text-desc {
+    font-family: var(--font-body), var(--font-sans), sans-serif;
+    font-weight: 400;
+    font-size: 0.9375rem;
+    line-height: 1.7;
   }
 }
 

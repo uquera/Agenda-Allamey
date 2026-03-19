@@ -1,5 +1,5 @@
 import type { Metadata } from "next"
-import { Poppins } from "next/font/google"
+import { Poppins, Open_Sans } from "next/font/google"
 import "./globals.css"
 import { Toaster } from "@/components/ui/sonner"
 import { BRAND } from "@/lib/brand"
@@ -8,6 +8,12 @@ const poppins = Poppins({
   subsets: ["latin"],
   variable: "--font-sans",
   weight: ["300", "400", "500", "600", "700", "800"],
+})
+
+const openSans = Open_Sans({
+  subsets: ["latin"],
+  variable: "--font-body",
+  weight: ["300", "400"],
 })
 
 export const metadata: Metadata = {
@@ -67,7 +73,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="es" suppressHydrationWarning>
-      <body className={`${poppins.variable} antialiased`} suppressHydrationWarning>
+      <body className={`${poppins.variable} ${openSans.variable} antialiased`} suppressHydrationWarning>
         <style dangerouslySetInnerHTML={{ __html:
           `:root { --brand: ${BRAND.color}; --brand-dark: ${BRAND.colorDark}; --brand-light: ${BRAND.colorLight}; }`
         }} />

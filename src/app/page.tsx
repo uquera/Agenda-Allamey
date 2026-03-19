@@ -141,7 +141,7 @@ export default async function HomePage() {
               Tu bienestar emocional{" "}
               <span style={{ color: "#8B1A2C" }}>es una prioridad</span>
             </h1>
-            <p className="text-subtitle text-gray-500 mb-8">
+            <p className="text-body-light text-gray-500 mb-8 max-w-lg">
               Acompañamiento psicológico y sexológico personalizado, con enfoque humano
               y libre de juicios. Consultas online y presenciales en Venezuela.
             </p>
@@ -182,7 +182,7 @@ export default async function HomePage() {
               <h2 id="servicios-titulo" className="text-gray-900 mb-2">
                 Servicios especializados
               </h2>
-              <p className="text-subtitle text-gray-500">
+              <p className="text-desc text-gray-500">
                 Atención integral en salud mental y sexualidad para personas y parejas en Venezuela
               </p>
             </div>
@@ -223,12 +223,12 @@ export default async function HomePage() {
               <h2 id="porque-titulo" className="text-gray-900 mb-4">
                 Un enfoque que te pone en el centro
               </h2>
-              <div className="space-y-4 text-sm text-gray-500 leading-relaxed">
-                <p>
+              <div className="space-y-4 text-gray-500">
+                <p className="text-body-light">
                   Cada persona es única. Por eso el proceso terapéutico se construye
                   a tu medida, sin recetas genéricas ni juicios.
                 </p>
-                <p>
+                <p className="text-body-light">
                   Como psicóloga clínica y sexóloga en Venezuela, mi objetivo es que
                   entiendas tu historia, reconozcas tus recursos y construyas el bienestar
                   que mereces — a tu propio ritmo.
@@ -257,7 +257,7 @@ export default async function HomePage() {
             <h2 className="text-impact text-white mb-3">
               Dar el primer paso es el acto más valiente
             </h2>
-            <p className="text-subtitle text-white/80 mb-8">
+            <p className="text-body-light text-white/80 mb-8">
               Agenda tu primera consulta hoy. Atención psicológica y sexológica en Venezuela,
               online y presencial.
             </p>
