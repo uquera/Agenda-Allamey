@@ -7,6 +7,7 @@ import { BRAND } from "@/lib/brand"
 import { Button } from "@/components/ui/button"
 import { Textarea } from "@/components/ui/textarea"
 import { Label } from "@/components/ui/label"
+import Image from "next/image"
 import {
   CalendarDays, Monitor, MapPin, CheckCircle, Loader2,
   ChevronLeft, ChevronRight, Clock, Ban, Circle,
@@ -185,9 +186,14 @@ export default function AgendarPage() {
 
   return (
     <div className="max-w-2xl space-y-5">
-      <div>
-        <h1 className="text-xl font-bold text-gray-800">Solicitar cita</h1>
-        <p className="text-sm text-gray-500 mt-1">Selecciona un día disponible, el horario y la modalidad</p>
+      <div className="rounded-2xl overflow-hidden flex items-end justify-between gap-4 px-6 pt-5 pb-0" style={{ backgroundColor: "#fce4ec" }}>
+        <div className="pb-5">
+          <h1 className="text-xl font-bold text-gray-800">Solicitar cita</h1>
+          <p className="text-sm text-gray-500 mt-1">Selecciona un día disponible, el horario y la modalidad</p>
+        </div>
+        <div className="shrink-0 w-28 self-end relative" style={{ height: "130px" }}>
+          <Image src="/agendar-banner.jpg" alt="Agendar cita" fill className="object-cover object-top" />
+        </div>
       </div>
 
       {/* Indicador pasos */}
