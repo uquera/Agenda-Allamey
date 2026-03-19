@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server"
 import bcrypt from "bcryptjs"
 import { prisma } from "@/lib/prisma"
+import { enviarBienvenidaPaciente } from "@/lib/email"
 
 async function generarCodigoPaciente(): Promise<string> {
   const year = new Date().getFullYear()
@@ -57,6 +58,9 @@ export async function POST(req: Request) {
         },
       },
     })
+
+    // Enviar correo de bienvenida con credenciales (no bloquea la respuesta)
+    enviarBienvenidaPaciente(email, name, password).catch(() => {})
 
     return NextResponse.json({ id: user.id }, { status: 201 })
   } catch {

@@ -332,6 +332,49 @@ export async function enviarConfirmacionPago(
   })
 }
 
+export async function enviarBienvenidaPaciente(
+  email: string,
+  nombre: string,
+  password: string
+) {
+  const html = emailWrapper(`
+    <h2 style="margin:0 0 8px;color:${grayColor};font-size:22px;">¡Bienvenida/o a tu portal! 🌸</h2>
+    <p style="margin:0 0 24px;color:#888;font-size:14px;">Tu cuenta ha sido creada exitosamente</p>
+
+    <p style="color:${grayColor};font-size:15px;line-height:1.6;">Hola <strong>${nombre}</strong>,</p>
+    <p style="color:${grayColor};font-size:15px;line-height:1.6;">
+      Me alegra que hayas dado este paso. Tu cuenta en el portal de ${BRAND.name} ya está activa
+      y lista para que puedas agendar citas, revisar materiales y llevar el seguimiento de tu proceso.
+    </p>
+
+    <div style="background:#fff8f8;border:1px solid #f0d0d4;padding:24px;border-radius:10px;margin:28px 0;">
+      <p style="margin:0 0 4px;color:#888;font-size:12px;text-transform:uppercase;letter-spacing:1px;">Tus datos de acceso</p>
+      <p style="margin:12px 0 0;color:${grayColor};font-size:15px;"><strong>Correo:</strong> ${email}</p>
+      <p style="margin:8px 0 0;color:${grayColor};font-size:15px;"><strong>Contraseña:</strong> <span style="font-family:monospace;background:#f5f5f5;padding:2px 8px;border-radius:4px;">${password}</span></p>
+      <p style="margin:12px 0 0;color:#aaa;font-size:12px;">Guarda estos datos en un lugar seguro. Puedes cambiar tu contraseña en cualquier momento desde el portal.</p>
+    </div>
+
+    <div style="text-align:center;margin:32px 0;">
+      <a href="${process.env.NEXT_PUBLIC_APP_URL}/login"
+         style="background:${brandColor};color:#ffffff;padding:14px 32px;border-radius:8px;text-decoration:none;font-size:15px;font-weight:600;">
+        Ingresar al portal
+      </a>
+    </div>
+
+    <p style="color:#888;font-size:13px;margin-top:8px;text-align:center;">
+      Si tienes dudas, escríbenos por WhatsApp al
+      <a href="https://wa.me/${BRAND.whatsapp}" style="color:${brandColor};">+${BRAND.whatsapp}</a>.
+    </p>
+  `)
+
+  await transporter.sendMail({
+    from: process.env.EMAIL_FROM,
+    to: email,
+    subject: `Bienvenida/o a tu portal — ${BRAND.name}`,
+    html,
+  })
+}
+
 export async function enviarRecuperacionClave(
   email: string,
   nombre: string,
