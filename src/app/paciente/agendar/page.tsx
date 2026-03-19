@@ -163,8 +163,8 @@ export default function AgendarPage() {
         <div className="w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6" style={{ backgroundColor: "var(--brand-light)" }}>
           <CheckCircle size={40} style={{ color: "var(--brand)" }} />
         </div>
-        <h1 className="text-2xl font-bold text-gray-800 mb-2">¡Solicitud enviada!</h1>
-        <p className="text-gray-500 mb-2">
+        <h1 className="text-emotional-bold text-gray-800 mb-2">¡Solicitud enviada!</h1>
+        <p className="text-body text-gray-500 mb-2">
           Tu solicitud para el{" "}
           <strong>
             {fechaSeleccionada && format(fechaSeleccionada, "EEEE d 'de' MMMM", { locale: es })}
@@ -188,8 +188,8 @@ export default function AgendarPage() {
     <div className="max-w-2xl space-y-5">
       <div className="rounded-2xl overflow-hidden flex items-end justify-between gap-4 px-6 pt-5 pb-0" style={{ backgroundColor: "#fce4ec" }}>
         <div className="pb-5">
-          <h1 className="text-xl font-bold text-gray-800">Solicitar cita</h1>
-          <p className="text-sm text-gray-500 mt-1">Selecciona un día disponible, el horario y la modalidad</p>
+          <h1 className="text-emotional-bold text-gray-800" style={{ fontSize: "1.35rem" }}>Solicitar cita</h1>
+          <p className="text-desc text-gray-500 mt-1">Selecciona un día disponible, el horario y la modalidad</p>
         </div>
         <div className="shrink-0 w-36 self-end relative" style={{ height: "160px" }}>
           <Image src="/agendar-banner.jpg" alt="Agendar cita" fill className="object-cover object-bottom" />

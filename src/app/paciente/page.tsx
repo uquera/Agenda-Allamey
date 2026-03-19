@@ -68,13 +68,13 @@ export default async function PacienteDashboard() {
         style={{ backgroundColor: "#fce4ec", minHeight: "140px" }}
       >
         <div className="flex-1 pb-6">
-          <p className="text-xs font-semibold uppercase tracking-wide mb-1" style={{ color: "var(--brand)" }}>
+          <p className="text-label mb-1" style={{ color: "var(--brand)" }}>
             Bienvenida a tu portal
           </p>
-          <h1 className="text-xl font-bold text-gray-800 leading-snug">
+          <h1 className="text-emotional-bold text-gray-800">
             Un espacio seguro<br />para ti
           </h1>
-          <p className="text-xs text-gray-500 mt-1.5">
+          <p className="text-quote text-gray-500 mt-1.5" style={{ fontSize: "0.85rem" }}>
             {BRAND.doctorTitle} te acompaña en este proceso
           </p>
         </div>
@@ -128,7 +128,7 @@ export default async function PacienteDashboard() {
         {MODULES.agendar && <Card className="border-0 shadow-sm">
           <CardContent className="p-5">
             <div className="flex items-center justify-between mb-4">
-              <h2 className="text-sm font-semibold text-gray-800">Mis citas</h2>
+              <h2 className="text-section-title text-gray-800" style={{ fontSize: "0.9rem" }}>Mis citas</h2>
               <Link
                 href="/paciente/citas"
                 className="text-xs font-medium hover:underline"
@@ -186,7 +186,7 @@ export default async function PacienteDashboard() {
         {MODULES.materiales && <Card className="border-0 shadow-sm">
           <CardContent className="p-5">
             <div className="flex items-center justify-between mb-4">
-              <h2 className="text-sm font-semibold text-gray-800">Materiales nuevos</h2>
+              <h2 className="text-section-title text-gray-800" style={{ fontSize: "0.9rem" }}>Materiales nuevos</h2>
               <Link
                 href="/paciente/materiales"
                 className="text-xs font-medium hover:underline"
