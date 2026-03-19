@@ -7,7 +7,9 @@ import { CalendarDays, BookOpen, FileText, Clock } from "lucide-react"
 import { format } from "date-fns"
 import { es } from "date-fns/locale"
 import Link from "next/link"
+import Image from "next/image"
 import { MODULES } from "@/lib/modules"
+import { BRAND } from "@/lib/brand"
 
 export const dynamic = "force-dynamic"
 
@@ -60,11 +62,30 @@ export default async function PacienteDashboard() {
 
   return (
     <div className="space-y-6 max-w-4xl">
-      <div>
-        <h1 className="text-xl font-bold text-gray-800">Mi portal</h1>
-        <p className="text-sm text-gray-500 mt-1">
-          Gestiona tus citas y accede a tus recursos
-        </p>
+      {/* Banner de bienvenida */}
+      <div
+        className="relative rounded-2xl overflow-hidden flex items-end gap-4 px-6 pt-6 pb-0"
+        style={{ backgroundColor: "#fce4ec", minHeight: "140px" }}
+      >
+        <div className="flex-1 pb-6">
+          <p className="text-xs font-semibold uppercase tracking-wide mb-1" style={{ color: "var(--brand)" }}>
+            Bienvenida a tu portal
+          </p>
+          <h1 className="text-xl font-bold text-gray-800 leading-snug">
+            Un espacio seguro<br />para ti
+          </h1>
+          <p className="text-xs text-gray-500 mt-1.5">
+            {BRAND.doctorTitle} te acompaña en este proceso
+          </p>
+        </div>
+        <div className="shrink-0 w-32 self-end relative" style={{ height: "140px" }}>
+          <Image
+            src="/inicio-banner.jpg"
+            alt="Bienvenida"
+            fill
+            className="object-cover object-top"
+          />
+        </div>
       </div>
 
       {/* Accesos rápidos */}
