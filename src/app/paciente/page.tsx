@@ -21,11 +21,10 @@ export default async function PacienteDashboard() {
       citas: MODULES.agendar
         ? {
             where: {
-              fecha: { gte: new Date() },
-              estado: { in: ["PENDIENTE", "APROBADA"] },
+              estado: { in: ["PENDIENTE", "APROBADA", "CANCELADA"] },
             },
-            orderBy: { fecha: "asc" },
-            take: 3,
+            orderBy: { fecha: "desc" },
+            take: 5,
           }
         : false,
     },
@@ -101,7 +100,7 @@ export default async function PacienteDashboard() {
         {MODULES.agendar && <Card className="border-0 shadow-sm">
           <CardContent className="p-5">
             <div className="flex items-center justify-between mb-4">
-              <h2 className="text-sm font-semibold text-gray-800">Próximas citas</h2>
+              <h2 className="text-sm font-semibold text-gray-800">Mis citas</h2>
               <Link
                 href="/paciente/citas"
                 className="text-xs font-medium hover:underline"
@@ -125,26 +124,31 @@ export default async function PacienteDashboard() {
               </div>
             ) : (
               <div className="space-y-3">
-                {paciente.citas.map((cita) => (
-                  <div key={cita.id} className="flex items-center gap-3 p-3 rounded-lg bg-gray-50">
-                    <div
-                      className="w-1.5 h-10 rounded-full shrink-0"
-                      style={{ backgroundColor: cita.estado === "PENDIENTE" ? "#f59e0b" : "var(--brand)" }}
-                    />
-                    <div className="flex-1">
-                      <p className="text-sm font-medium text-gray-800 capitalize">
-                        {format(new Date(cita.fecha), "EEEE d 'de' MMMM", { locale: es })}
-                      </p>
-                      <p className="text-xs text-gray-500">
-                        {format(new Date(cita.fecha), "HH:mm")} ·{" "}
-                        {cita.modalidad === "ONLINE" ? "Online" : "Presencial"}
-                      </p>
+                {paciente.citas.map((cita) => {
+                  const accentColor =
+                    cita.estado === "CANCELADA" ? "#9ca3af" :
+                    cita.estado === "PENDIENTE" ? "#f59e0b" : "var(--brand)"
+                  return (
+                    <div key={cita.id} className={`flex items-center gap-3 p-3 rounded-lg ${cita.estado === "CANCELADA" ? "bg-gray-50 opacity-70" : "bg-gray-50"}`}>
+                      <div
+                        className="w-1.5 h-10 rounded-full shrink-0"
+                        style={{ backgroundColor: accentColor }}
+                      />
+                      <div className="flex-1">
+                        <p className="text-sm font-medium text-gray-800 capitalize">
+                          {format(new Date(cita.fecha), "EEEE d 'de' MMMM", { locale: es })}
+                        </p>
+                        <p className="text-xs text-gray-500">
+                          {format(new Date(cita.fecha), "HH:mm")} ·{" "}
+                          {cita.modalidad === "ONLINE" ? "Online" : "Presencial"}
+                        </p>
+                      </div>
+                      <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${estadoColor[cita.estado]}`}>
+                        {estadoLabel[cita.estado]}
+                      </span>
                     </div>
-                    <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${estadoColor[cita.estado]}`}>
-                      {estadoLabel[cita.estado]}
-                    </span>
-                  </div>
-                ))}
+                  )
+                })}
               </div>
             )}
           </CardContent>

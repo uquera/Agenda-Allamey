@@ -2,6 +2,8 @@ export type CampoConfig = {
   label: string
   activo: boolean
   custom?: true
+  options?: string[]
+  dependsOn?: { field: string; value: string }
 }
 
 export type SeccionDef = {
@@ -39,11 +41,24 @@ export const DEFAULT_CONFIG: AnamnesisConfigData = {
     redApoyo:                 { label: "Red de apoyo familiar / social", activo: true },
     calidadSueno:             { label: "Calidad del sueño", activo: true },
     actividadFisica:          { label: "Actividad física", activo: true },
-    consumoSustancias:        { label: "Consumo de sustancias", activo: true },
-    relacionPareja:           { label: "Relación de pareja actual (si aplica)", activo: true },
+    consumoSustancias:        { label: "¿Has tenido o tienes actualmente relación con el consumo de sustancias (alcohol, tabaco, medicamentos no prescritos u otras sustancias)?", activo: true },
+    relacionPareja:           { label: "Relación de pareja actual", activo: true },
     vidaSexual:               { label: "Vida sexual", activo: true },
     expectativasTerapia:      { label: "¿Qué esperas lograr con la terapia?", activo: true },
     intentosAnteriores:       { label: "¿Has recibido terapia psicológica antes?", activo: true },
+    // Campos personalizados adicionales
+    aspTrabSexual: {
+      label: "¿Te gustaría trabajar algún aspecto relacionado con tu vida sexual?",
+      activo: true,
+      custom: true,
+      options: ["Sí", "No", "No estoy segura/o"],
+    },
+    tiempoTerapiaAnterior: {
+      label: "¿Hace cuánto tiempo fue tu última experiencia terapéutica?",
+      activo: true,
+      custom: true,
+      dependsOn: { field: "intentosAnteriores", value: "Sí" },
+    },
   },
   secciones: [
     {
@@ -69,12 +84,12 @@ export const DEFAULT_CONFIG: AnamnesisConfigData = {
     {
       titulo: "Vida afectiva y sexual",
       subtitulo: "Esta información es estrictamente confidencial y ayuda a ofrecer una atención integral",
-      campos: ["relacionPareja", "vidaSexual"],
+      campos: ["relacionPareja", "vidaSexual", "aspTrabSexual"],
     },
     {
       titulo: "Expectativas terapéuticas",
       subtitulo: "Qué esperas lograr con este proceso",
-      campos: ["expectativasTerapia", "intentosAnteriores"],
+      campos: ["expectativasTerapia", "intentosAnteriores", "tiempoTerapiaAnterior"],
     },
   ],
 }
@@ -94,6 +109,19 @@ export function mergeConfig(stored: AnamnesisConfigData | null): AnamnesisConfig
     if (!result.campos[key]) {
       result.campos[key] = DEFAULT_CONFIG.campos[key]
       // Añadir a la sección correspondiente del default
+      const secDefault = DEFAULT_CONFIG.secciones.find(s => s.campos.includes(key))
+      if (secDefault) {
+        const sec = result.secciones.find(s => s.titulo === secDefault.titulo)
+        if (sec && !sec.campos.includes(key)) sec.campos.push(key)
+      }
+    }
+  }
+
+  // Garantizar campos personalizados adicionales
+  const customKeys = ["aspTrabSexual", "tiempoTerapiaAnterior"]
+  for (const key of customKeys) {
+    if (!result.campos[key]) {
+      result.campos[key] = DEFAULT_CONFIG.campos[key]
       const secDefault = DEFAULT_CONFIG.secciones.find(s => s.campos.includes(key))
       if (secDefault) {
         const sec = result.secciones.find(s => s.titulo === secDefault.titulo)

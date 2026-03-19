@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma"
 import { headers } from "next/headers"
 import PacienteSidebar from "@/components/paciente/PacienteSidebar"
 import PacienteHeader from "@/components/paciente/PacienteHeader"
+import MobileNav from "@/components/paciente/MobileNav"
 
 export default async function PacienteLayout({
   children,
@@ -33,10 +34,11 @@ export default async function PacienteLayout({
       <PacienteSidebar />
       <div className="flex-1 flex flex-col overflow-hidden">
         <PacienteHeader user={session.user} />
-        <main className="flex-1 overflow-y-auto p-6">
+        <main className="flex-1 overflow-y-auto p-4 md:p-6 pb-20 md:pb-6">
           {children}
         </main>
       </div>
+      <MobileNav />
     </div>
   )
 }

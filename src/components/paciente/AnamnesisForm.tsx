@@ -35,17 +35,20 @@ const emptyFixed: FixedFields = {
 }
 
 const SELECT_OPTIONS: Partial<Record<keyof FixedFields, string[]>> = {
-  estadoCivil:     ["Soltero/a", "En relación", "Casado/a", "Unión libre", "Separado/a", "Divorciado/a", "Viudo/a"],
-  situacionLaboral:["Empleado/a", "Independiente / Freelance", "Desempleado/a", "Estudiante", "Ama/o de casa", "Jubilado/a"],
-  nivelEducativo:  ["Primaria", "Secundaria", "Técnico / TSU", "Universitario", "Posgrado / Maestría", "Doctorado"],
-  calidadSueno:    ["Buena (duermo bien)", "Regular (interrupciones ocasionales)", "Mala (insomnio o sueño excesivo)"],
-  actividadFisica: ["Nunca", "Ocasional (1 vez/semana)", "Regular (2-3 veces/semana)", "Frecuente (más de 3 veces/semana)"],
+  estadoCivil:        ["Soltero/a", "En relación", "Casado/a", "Unión libre", "Separado/a", "Divorciado/a", "Viudo/a"],
+  situacionLaboral:   ["Empleado/a", "Independiente / Freelance", "Desempleado/a", "Estudiante", "Ama/o de casa", "Jubilado/a"],
+  nivelEducativo:     ["Primaria", "Secundaria", "Técnico / TSU", "Universitario", "Posgrado / Maestría", "Doctorado"],
+  calidadSueno:       ["Buena (duermo bien)", "Regular (interrupciones ocasionales)", "Mala (insomnio o sueño excesivo)"],
+  actividadFisica:    ["Nunca", "Ocasional (1 vez/semana)", "Regular (2-3 veces/semana)", "Frecuente (más de 3 veces/semana)"],
+  consumoSustancias:  ["No", "Sí, actualmente", "Lo he tenido en el pasado", "Prefiero no responder"],
+  relacionPareja:     ["No tengo pareja", "Estable", "En conflicto", "Prefiero no responder"],
+  vidaSexual:         ["Satisfactoria", "Con algunas dificultades", "Insatisfactoria", "Prefiero no responder"],
+  expectativasTerapia:["Mejorar mi bienestar emocional", "Resolver una situación específica", "Conocerme mejor / desarrollo personal", "Manejar el estrés o la ansiedad", "Otro"],
+  intentosAnteriores: ["Sí", "No", "Prefiero no responder"],
 }
 
 const TEXTAREA_KEYS: (keyof FixedFields)[] = [
-  "motivoPrincipal", "antecedentesMedicos", "antecedentesPsicologicos",
-  "redApoyo", "consumoSustancias", "relacionPareja", "vidaSexual",
-  "expectativasTerapia", "intentosAnteriores",
+  "motivoPrincipal", "antecedentesMedicos", "antecedentesPsicologicos", "redApoyo",
 ]
 
 const inputClass = "w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:border-transparent bg-white resize-none"
@@ -82,19 +85,24 @@ export default function AnamnesisForm({
   const [form, setForm] = useState<FixedFields>({ ...emptyFixed, ...(initial ?? {}) })
   const [camposExtra, setCamposExtra] = useState<Record<string, string>>(initialCamposExtra ?? {})
   const [guardando, setGuardando] = useState(false)
-  const [guardado, setGuardado] = useState(!!initial)
+  const [enviado, setEnviado] = useState(false)
 
   const setFixed = (field: keyof FixedFields) =>
     (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
       setForm(prev => ({ ...prev, [field]: e.target.value }))
-      setGuardado(false)
     }
 
   const setCustom = (key: string) =>
-    (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    (e: React.ChangeEvent<HTMLTextAreaElement | HTMLSelectElement>) => {
       setCamposExtra(prev => ({ ...prev, [key]: e.target.value }))
-      setGuardado(false)
     }
+
+  const shouldShow = (campo: (typeof config.campos)[string] | undefined): boolean => {
+    if (!campo?.dependsOn) return true
+    const { field, value } = campo.dependsOn
+    if (field in form) return form[field as keyof FixedFields] === value
+    return camposExtra[field] === value
+  }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
@@ -105,10 +113,31 @@ export default function AnamnesisForm({
       body: JSON.stringify({ ...form, camposExtra }),
     })
     if (res.ok) {
-      setGuardado(true)
+      setEnviado(true)
+      setForm({ ...emptyFixed })
+      setCamposExtra({})
       router.refresh()
     }
     setGuardando(false)
+  }
+
+  if (enviado) {
+    return (
+      <div className="bg-white rounded-xl border border-gray-100 p-8 shadow-sm text-center space-y-3">
+        <div
+          className="w-14 h-14 rounded-full flex items-center justify-center mx-auto"
+          style={{ backgroundColor: "var(--brand-light)" }}
+        >
+          <span className="text-2xl" style={{ color: "var(--brand)" }}>✓</span>
+        </div>
+        <p className="text-base font-semibold text-gray-800">
+          Gracias por compartir esta información.
+        </p>
+        <p className="text-sm text-gray-500 max-w-md mx-auto leading-relaxed">
+          Nos permitirá acompañarte de forma más consciente y alineada a tus necesidades.
+        </p>
+      </div>
+    )
   }
 
   let sectionNumber = 0
@@ -116,10 +145,13 @@ export default function AnamnesisForm({
   return (
     <form onSubmit={handleSubmit} className="space-y-8">
       {config.secciones.map((seccion, secIdx) => {
-        const camposActivos = seccion.campos.filter(k => config.campos[k]?.activo)
+        const camposActivos = seccion.campos.filter(k => {
+          const campo = config.campos[k]
+          return campo?.activo && shouldShow(campo)
+        })
         if (camposActivos.length === 0) return null
         sectionNumber++
-        const tieneSelects = camposActivos.some(k => SELECT_OPTIONS[k as keyof FixedFields])
+        const tieneSelects = camposActivos.some(k => SELECT_OPTIONS[k as keyof FixedFields] || config.campos[k]?.options)
 
         return (
           <div key={secIdx} className="bg-white rounded-xl border border-gray-100 p-6 shadow-sm">
@@ -135,6 +167,22 @@ export default function AnamnesisForm({
                 const esCustom = campo?.custom === true
 
                 if (esCustom) {
+                  const customOptions = campo?.options
+                  if (customOptions) {
+                    return (
+                      <div key={k}>
+                        <label className={labelClass}>{label}</label>
+                        <select
+                          value={camposExtra[k] ?? ""}
+                          onChange={setCustom(k)}
+                          className={selectClass}
+                        >
+                          <option value="">Seleccionar...</option>
+                          {customOptions.map(o => <option key={o} value={o}>{o}</option>)}
+                        </select>
+                      </div>
+                    )
+                  }
                   return (
                     <div key={k} className={tieneSelects ? "sm:col-span-2" : undefined}>
                       <label className={labelClass}>{label}</label>
@@ -202,19 +250,14 @@ export default function AnamnesisForm({
         <p className="text-xs text-gray-400 max-w-sm">
           Tu información es estrictamente confidencial y solo {BRAND.doctorTitle} tiene acceso a ella.
         </p>
-        <div className="flex items-center gap-3">
-          {guardado && (
-            <span className="text-xs font-medium text-green-600">✓ Guardado correctamente</span>
-          )}
-          <button
-            type="submit"
-            disabled={guardando}
-            className="px-6 py-2.5 rounded-lg text-white text-sm font-semibold transition-opacity disabled:opacity-60"
-            style={{ backgroundColor: "var(--brand)" }}
-          >
-            {guardando ? "Guardando..." : initial ? "Actualizar historial" : "Enviar historial"}
-          </button>
-        </div>
+        <button
+          type="submit"
+          disabled={guardando}
+          className="px-6 py-2.5 rounded-lg text-white text-sm font-semibold transition-opacity disabled:opacity-60"
+          style={{ backgroundColor: "var(--brand)" }}
+        >
+          {guardando ? "Guardando..." : initial ? "Actualizar historial" : "Enviar historial"}
+        </button>
       </div>
     </form>
   )

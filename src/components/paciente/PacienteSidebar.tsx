@@ -33,7 +33,7 @@ export default function PacienteSidebar() {
   )
 
   return (
-    <aside className="w-64 bg-white border-r border-gray-100 flex flex-col h-screen shadow-sm shrink-0">
+    <aside className="hidden md:flex w-64 bg-white border-r border-gray-100 flex-col h-screen shadow-sm shrink-0">
       {/* Logo */}
       <div className="p-6 border-b border-gray-100">
         <div className="flex items-center gap-3">

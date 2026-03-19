@@ -12,8 +12,8 @@
 export const MODULES = {
   /** Booking + appointments list (/paciente/agendar, /paciente/citas) */
   agendar:        process.env.NEXT_PUBLIC_MODULE_AGENDAR        !== "false",
-  /** Session summaries shared by the doctor (/paciente/sesiones) */
-  sesiones:       process.env.NEXT_PUBLIC_MODULE_SESIONES       !== "false",
+  /** Session summaries shared by the doctor (/paciente/sesiones) — disabled in Beta */
+  sesiones:       process.env.NEXT_PUBLIC_MODULE_SESIONES       === "true",
   /** Resources / materials assigned to the patient (/paciente/materiales) */
   materiales:     process.env.NEXT_PUBLIC_MODULE_MATERIALES     !== "false",
   /** Clinical history / anamnesis form (/paciente/anamnesis) */
