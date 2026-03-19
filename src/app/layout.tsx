@@ -1,13 +1,13 @@
 import type { Metadata } from "next"
-import { Montserrat } from "next/font/google"
+import { Poppins } from "next/font/google"
 import "./globals.css"
 import { Toaster } from "@/components/ui/sonner"
 import { BRAND } from "@/lib/brand"
 
-const montserrat = Montserrat({
+const poppins = Poppins({
   subsets: ["latin"],
   variable: "--font-sans",
-  weight: ["300", "400", "500", "600", "700"],
+  weight: ["300", "400", "500", "600", "700", "800"],
 })
 
 export const metadata: Metadata = {
@@ -67,7 +67,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="es" suppressHydrationWarning>
-      <body className={`${montserrat.variable} antialiased`} suppressHydrationWarning>
+      <body className={`${poppins.variable} antialiased`} suppressHydrationWarning>
         <style dangerouslySetInnerHTML={{ __html:
           `:root { --brand: ${BRAND.color}; --brand-dark: ${BRAND.colorDark}; --brand-light: ${BRAND.colorLight}; }`
         }} />
