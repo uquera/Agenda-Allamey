@@ -78,12 +78,12 @@ export default async function PacienteDashboard() {
             {BRAND.doctorTitle} te acompaña en este proceso
           </p>
         </div>
-        <div className="shrink-0 w-32 self-end relative" style={{ height: "140px" }}>
+        <div className="shrink-0 w-36 self-end relative" style={{ height: "180px" }}>
           <Image
             src="/inicio-banner.jpg"
             alt="Bienvenida"
             fill
-            className="object-cover object-top"
+            className="object-cover object-bottom"
           />
         </div>
       </div>
