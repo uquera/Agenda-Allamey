@@ -23,6 +23,9 @@ export async function POST(req: Request) {
     if (!name || !email || !password) {
       return NextResponse.json({ error: "Datos incompletos" }, { status: 400 })
     }
+    if (password.length < 6) {
+      return NextResponse.json({ error: "La contraseña debe tener al menos 6 caracteres" }, { status: 400 })
+    }
 
     const existe = await prisma.user.findUnique({ where: { email } })
     if (existe) {

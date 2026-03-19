@@ -44,6 +44,15 @@ export default async function PacienteDetallePage({
     ? paciente.user.name.split(" ").map((n) => n[0]).join("").toUpperCase().slice(0, 2)
     : "??"
 
+  const edad = (() => {
+    if (!paciente.fechaNacimiento) return null
+    const hoy = new Date()
+    const nac = new Date(paciente.fechaNacimiento)
+    let e = hoy.getFullYear() - nac.getFullYear()
+    if (hoy.getMonth() < nac.getMonth() || (hoy.getMonth() === nac.getMonth() && hoy.getDate() < nac.getDate())) e--
+    return e
+  })()
+
   const estadoColor: Record<string, string> = {
     PENDIENTE: "bg-amber-100 text-amber-700",
     APROBADA: "bg-green-100 text-green-700",
@@ -90,6 +99,12 @@ export default async function PacienteDetallePage({
                 <span className="flex items-center gap-1 text-xs text-gray-500">
                   <Phone size={11} />
                   {paciente.telefono}
+                </span>
+              )}
+              {edad !== null && (
+                <span className="flex items-center gap-1 text-xs text-gray-500">
+                  <User size={11} />
+                  {edad} años · {format(new Date(paciente.fechaNacimiento!), "d MMM yyyy", { locale: es })}
                 </span>
               )}
               {paciente.consentimiento?.firmado ? (

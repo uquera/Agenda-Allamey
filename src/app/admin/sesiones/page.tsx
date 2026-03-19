@@ -119,15 +119,35 @@ export default async function SesionesAdminPage() {
                         </span>
                       </p>
                     </div>
-                    <Badge
-                      className={`shrink-0 ${
-                        s.publicado
-                          ? "bg-green-100 text-green-700"
-                          : "bg-gray-100 text-gray-500"
-                      } hover:bg-opacity-100`}
-                    >
-                      {s.publicado ? "Publicado" : "Borrador"}
-                    </Badge>
+                    <div className="flex items-center gap-2 shrink-0 flex-wrap justify-end">
+                      {/* Tipo de sesión */}
+                      <Badge className={`text-xs hover:bg-opacity-100 ${
+                        s.tipoSesion === "PAREJA"  ? "bg-purple-100 text-purple-700" :
+                        s.tipoSesion === "GRUPAL"  ? "bg-blue-100 text-blue-700" :
+                                                     "bg-gray-100 text-gray-600"
+                      }`}>
+                        {s.tipoSesion === "PAREJA" ? "Pareja" : s.tipoSesion === "GRUPAL" ? "Grupal" : "Individual"}
+                      </Badge>
+                      {/* Estado de seguimiento */}
+                      {s.estadoSeguimiento && (
+                        <Badge className={`text-xs hover:bg-opacity-100 ${
+                          s.estadoSeguimiento === "CUMPLIDA"    ? "bg-green-100 text-green-700"  :
+                          s.estadoSeguimiento === "AGENDADA"    ? "bg-blue-100 text-blue-700"    :
+                          s.estadoSeguimiento === "REPROGRAMAR" ? "bg-amber-100 text-amber-700"  :
+                          s.estadoSeguimiento === "CANCELADA"   ? "bg-red-100 text-red-600"      : "bg-gray-100 text-gray-500"
+                        }`}>
+                          {s.estadoSeguimiento === "CUMPLIDA" ? "Cumplida" :
+                           s.estadoSeguimiento === "AGENDADA" ? "Agendada" :
+                           s.estadoSeguimiento === "REPROGRAMAR" ? "Reprogramar" : "Cancelada"}
+                        </Badge>
+                      )}
+                      {/* Publicado / Borrador */}
+                      <Badge className={`text-xs hover:bg-opacity-100 ${
+                        s.publicado ? "bg-green-100 text-green-700" : "bg-gray-100 text-gray-500"
+                      }`}>
+                        {s.publicado ? "Publicado" : "Borrador"}
+                      </Badge>
+                    </div>
                   </div>
                 </CardContent>
               </Card>
