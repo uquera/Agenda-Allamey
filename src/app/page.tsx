@@ -132,23 +132,23 @@ export default async function HomePage() {
         <section className="max-w-5xl mx-auto px-6 pt-16 pb-20 grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
           <div>
             <span
-              className="inline-block text-xs font-bold uppercase tracking-widest px-3 py-1 rounded-full mb-4"
+              className="text-label inline-block px-3 py-1 rounded-full mb-4"
               style={{ backgroundColor: "#fff0f2", color: "#8B1A2C" }}
             >
               Psicóloga Clínica · Sexóloga · Venezuela
             </span>
-            <h1 className="text-4xl md:text-5xl font-bold text-gray-900 leading-tight mb-4">
+            <h1 className="text-impact text-gray-900 mb-4">
               Tu bienestar emocional{" "}
               <span style={{ color: "#8B1A2C" }}>es una prioridad</span>
             </h1>
-            <p className="text-lg text-gray-500 leading-relaxed mb-8">
+            <p className="text-subtitle text-gray-500 mb-8">
               Acompañamiento psicológico y sexológico personalizado, con enfoque humano
               y libre de juicios. Consultas online y presenciales en Venezuela.
             </p>
             <div className="flex flex-wrap gap-3">
               <Link
                 href="/registro"
-                className="flex items-center gap-2 px-6 py-3 rounded-xl text-white font-semibold text-sm hover:opacity-90 transition-opacity"
+                className="btn-cta flex items-center gap-2 px-6 py-3 rounded-xl text-white hover:opacity-90 transition-opacity"
                 style={{ backgroundColor: "#8B1A2C" }}
               >
                 <CalendarDays size={16} />
@@ -156,7 +156,7 @@ export default async function HomePage() {
               </Link>
               <Link
                 href="/login"
-                className="flex items-center gap-2 px-6 py-3 rounded-xl text-gray-700 font-semibold text-sm border border-gray-200 hover:bg-gray-50 transition-colors"
+                className="btn-cta flex items-center gap-2 px-6 py-3 rounded-xl text-gray-700 border border-gray-200 hover:bg-gray-50 transition-colors"
               >
                 Ya tengo cuenta
               </Link>
@@ -179,10 +179,10 @@ export default async function HomePage() {
         <section className="py-16" style={{ backgroundColor: "#fff0f2" }} aria-labelledby="servicios-titulo">
           <div className="max-w-5xl mx-auto px-6">
             <div className="text-center mb-10">
-              <h2 id="servicios-titulo" className="text-2xl font-bold text-gray-900 mb-2">
+              <h2 id="servicios-titulo" className="text-gray-900 mb-2">
                 Servicios especializados
               </h2>
-              <p className="text-gray-500 text-sm">
+              <p className="text-subtitle text-gray-500">
                 Atención integral en salud mental y sexualidad para personas y parejas en Venezuela
               </p>
             </div>
@@ -220,7 +220,7 @@ export default async function HomePage() {
               </div>
             </div>
             <div>
-              <h2 id="porque-titulo" className="text-2xl font-bold text-gray-900 mb-4">
+              <h2 id="porque-titulo" className="text-gray-900 mb-4">
                 Un enfoque que te pone en el centro
               </h2>
               <div className="space-y-4 text-sm text-gray-500 leading-relaxed">
@@ -254,16 +254,16 @@ export default async function HomePage() {
         {/* CTA final */}
         <section className="py-16" style={{ backgroundColor: "#8B1A2C" }}>
           <div className="max-w-2xl mx-auto px-6 text-center">
-            <h2 className="text-2xl font-bold text-white mb-3">
+            <h2 className="text-impact text-white mb-3">
               Dar el primer paso es el acto más valiente
             </h2>
-            <p className="text-white/80 text-sm mb-8">
+            <p className="text-subtitle text-white/80 mb-8">
               Agenda tu primera consulta hoy. Atención psicológica y sexológica en Venezuela,
               online y presencial.
             </p>
             <Link
               href="/registro"
-              className="inline-flex items-center gap-2 px-8 py-3 rounded-xl bg-white font-bold text-sm hover:bg-gray-50 transition-colors"
+              className="btn-cta inline-flex items-center gap-2 px-8 py-3 rounded-xl bg-white hover:bg-gray-50 transition-colors"
               style={{ color: "#8B1A2C" }}
             >
               <CalendarDays size={16} />

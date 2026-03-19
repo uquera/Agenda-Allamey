@@ -103,9 +103,68 @@
   }
   body {
     @apply bg-background text-foreground;
+    font-feature-settings: "kern" 1, "liga" 1;
   }
   html {
     @apply font-sans;
+  }
+
+  /* ── Jerarquía tipográfica Poppins ── */
+  h1 {
+    font-weight: 700;
+    font-size: clamp(2rem, 5vw, 3.25rem);
+    line-height: 1.15;
+    letter-spacing: -0.02em;
+  }
+  h2 {
+    font-weight: 700;
+    font-size: clamp(1.5rem, 3.5vw, 2.25rem);
+    line-height: 1.2;
+    letter-spacing: -0.015em;
+  }
+  h3 {
+    font-weight: 600;
+    font-size: clamp(1.125rem, 2.5vw, 1.5rem);
+    line-height: 1.3;
+    letter-spacing: -0.01em;
+  }
+  h4 {
+    font-weight: 600;
+    font-size: 1.125rem;
+    line-height: 1.4;
+  }
+}
+
+@layer utilities {
+  /* Frase de impacto — hero y secciones CTA */
+  .text-impact {
+    font-weight: 700;
+    font-size: clamp(1.75rem, 4vw, 3rem);
+    line-height: 1.15;
+    letter-spacing: -0.02em;
+  }
+
+  /* Subtítulo de sección */
+  .text-subtitle {
+    font-weight: 600;
+    font-size: clamp(1rem, 2vw, 1.25rem);
+    line-height: 1.4;
+    letter-spacing: -0.01em;
+  }
+
+  /* Etiqueta superior tipo badge */
+  .text-label {
+    font-weight: 700;
+    font-size: 0.7rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+  }
+
+  /* Botón CTA principal */
+  .btn-cta {
+    font-weight: 600;
+    font-size: 0.9375rem;
+    letter-spacing: 0.01em;
   }
 }
 
