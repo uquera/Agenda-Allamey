@@ -129,22 +129,25 @@ export default async function MaterialesPacientePage() {
     <div className="max-w-2xl space-y-6">
       {/* Banner */}
       <div
-        className="relative rounded-2xl overflow-hidden flex items-center gap-4 px-6 py-5"
+        className="rounded-2xl overflow-hidden flex items-end justify-between gap-4 px-6 pt-5 pb-0"
         style={{ backgroundColor: "var(--brand-light)" }}
       >
-        <div className="flex-1">
+        <div className="flex-1 pb-5">
           <h1 className="text-xl font-bold text-gray-800">Mis materiales</h1>
           <p className="text-sm text-gray-500 mt-1 leading-relaxed">
             Recursos asignados por {BRAND.doctorTitle} para acompañar tu proceso
           </p>
         </div>
-        <div className="shrink-0 w-24 h-28 relative">
+        <div className="shrink-0 w-36 self-end relative" style={{ height: "160px" }}>
           <Image
             src="/materiales-banner.jpg"
             alt="Materiales"
             fill
-            className="object-cover object-top rounded-xl"
+            className="object-cover object-bottom"
           />
+          <div className="absolute inset-0 pointer-events-none" style={{
+            background: "linear-gradient(to right, #fff0f2 0%, transparent 40%), linear-gradient(to bottom, #fff0f2 0%, transparent 25%)",
+          }} />
         </div>
       </div>
 
