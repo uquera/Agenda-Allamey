@@ -4,6 +4,7 @@ import { redirect } from "next/navigation"
 import { Card, CardContent } from "@/components/ui/card"
 import { CalendarDays } from "lucide-react"
 import Link from "next/link"
+import Image from "next/image"
 import CitaCard from "@/components/paciente/CitaCard"
 
 export const dynamic = "force-dynamic"
@@ -52,11 +53,19 @@ export default async function CitasPacientePage() {
 
   return (
     <div className="max-w-2xl space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
+      <div className="rounded-2xl overflow-hidden flex items-end justify-between gap-4 px-6 pt-5 pb-0" style={{ backgroundColor: "#fce4ec" }}>
+        <div className="pb-5">
           <h1 className="text-xl font-bold text-gray-800">Mis citas</h1>
           <p className="text-sm text-gray-500 mt-1">Historial y citas próximas</p>
         </div>
+        <div className="shrink-0 w-36 self-end relative" style={{ height: "160px" }}>
+          <Image src="/citas-banner.jpg" alt="Mis citas" fill className="object-cover object-bottom" />
+          <div className="absolute inset-0 pointer-events-none" style={{
+            background: "linear-gradient(to right, #fce4ec 0%, transparent 40%), linear-gradient(to bottom, #fce4ec 0%, transparent 25%)",
+          }} />
+        </div>
+      </div>
+      <div className="flex items-center justify-end">
         <Link
           href="/paciente/agendar"
           className="text-sm font-semibold px-4 py-2 rounded-lg text-white transition-colors"
