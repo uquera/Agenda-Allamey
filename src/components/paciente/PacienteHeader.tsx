@@ -1,5 +1,6 @@
 "use client"
 
+import { useState, useEffect } from "react"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { format } from "date-fns"
 import { es } from "date-fns/locale"
@@ -9,16 +10,20 @@ interface PacienteHeaderProps {
 }
 
 export default function PacienteHeader({ user }: PacienteHeaderProps) {
-  const today = format(new Date(), "EEEE d 'de' MMMM", { locale: es })
+  const [today, setToday] = useState("")
+  useEffect(() => {
+    setToday(format(new Date(), "EEEE d 'de' MMMM", { locale: es }))
+  }, [])
+
   const initials = user.name
-    ? user.name.split(" ").map((n) => n[0]).join("").toUpperCase().slice(0, 2)
+    ? user.name.split(" ").map((n) => n[0] ?? "").join("").toUpperCase().slice(0, 2) || "P"
     : "P"
   const firstName = user.name?.split(" ")[0] || "Paciente"
 
   return (
     <header className="bg-white border-b border-gray-100 px-6 py-4 flex items-center justify-between shrink-0">
       <div>
-        <p className="text-xs text-gray-400 capitalize">{today}</p>
+        <p className="text-xs text-gray-400 capitalize" suppressHydrationWarning>{today}</p>
         <h1 className="text-base font-semibold text-gray-800">
           Hola, {firstName}
         </h1>
