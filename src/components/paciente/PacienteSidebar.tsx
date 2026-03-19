@@ -64,9 +64,10 @@ export default function PacienteSidebar({ consentimientoFirmado = true }: { cons
 
           if (bloqueado) {
             return (
-              <div
+              <Link
                 key={item.href}
-                className="flex items-center justify-between px-3 py-2.5 rounded-lg text-sm font-medium text-gray-300 cursor-not-allowed opacity-50 select-none"
+                href="/paciente/consentimiento"
+                className="flex items-center justify-between px-3 py-2.5 rounded-lg text-sm font-medium text-gray-400 opacity-50 hover:opacity-70 transition-opacity"
                 title="Firma el consentimiento informado para acceder"
               >
                 <span className="flex items-center gap-3">
@@ -74,7 +75,7 @@ export default function PacienteSidebar({ consentimientoFirmado = true }: { cons
                   {item.label}
                 </span>
                 <Lock size={13} className="shrink-0" />
-              </div>
+              </Link>
             )
           }
 

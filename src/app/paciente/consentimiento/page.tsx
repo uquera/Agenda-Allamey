@@ -87,7 +87,7 @@ export default function ConsentimientoPage() {
       })
       if (!res.ok) throw new Error()
       toast.success("Consentimiento registrado. ¡Bienvenida al portal!")
-      router.push("/paciente")
+      window.location.href = "/paciente"
     } catch {
       toast.error("Error al guardar. Intenta de nuevo.")
     } finally {
