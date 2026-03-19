@@ -85,6 +85,13 @@ export default async function PacienteDashboard() {
             fill
             className="object-cover object-bottom"
           />
+          {/* Difuminado: izquierda y arriba hacia el color del banner */}
+          <div
+            className="absolute inset-0 pointer-events-none"
+            style={{
+              background: "linear-gradient(to right, #fce4ec 0%, transparent 45%), linear-gradient(to bottom, #fce4ec 0%, transparent 30%)",
+            }}
+          />
         </div>
       </div>
 
