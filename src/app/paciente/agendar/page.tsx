@@ -191,8 +191,11 @@ export default function AgendarPage() {
           <h1 className="text-xl font-bold text-gray-800">Solicitar cita</h1>
           <p className="text-sm text-gray-500 mt-1">Selecciona un día disponible, el horario y la modalidad</p>
         </div>
-        <div className="shrink-0 w-28 self-end relative" style={{ height: "130px" }}>
-          <Image src="/agendar-banner.jpg" alt="Agendar cita" fill className="object-cover object-top" />
+        <div className="shrink-0 w-36 self-end relative" style={{ height: "160px" }}>
+          <Image src="/agendar-banner.jpg" alt="Agendar cita" fill className="object-cover object-bottom" />
+          <div className="absolute inset-0 pointer-events-none" style={{
+            background: "linear-gradient(to right, #fce4ec 0%, transparent 40%), linear-gradient(to bottom, #fce4ec 0%, transparent 25%)",
+          }} />
         </div>
       </div>
 
