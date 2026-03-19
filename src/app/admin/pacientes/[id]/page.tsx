@@ -235,7 +235,16 @@ export default async function PacienteDetallePage({
         <Card className="border-0 shadow-sm">
           <CardContent className="p-5">
             <div className="flex items-center justify-between mb-5">
-              <h2 className="text-sm font-semibold text-gray-800 flex items-center gap-2">
+              <h2
+                className="flex items-center gap-2"
+                style={{
+                  fontFamily: "var(--font-body), var(--font-sans), sans-serif",
+                  fontWeight: 400,
+                  fontSize: "0.9rem",
+                  color: "#1f2937",
+                  letterSpacing: "0.005em",
+                }}
+              >
                 <ClipboardList size={15} style={{ color: "var(--brand)" }} />
                 Historia clínica
               </h2>
@@ -270,12 +279,51 @@ export default async function PacienteDetallePage({
                     if (campos.length === 0) return null
                     return (
                       <div key={sec.titulo}>
-                        <h3 className="text-xs font-bold text-gray-500 uppercase tracking-wide mb-2">{sec.titulo}</h3>
+                        {/* Título de sección — Open Sans Regular 400 */}
+                        <h3
+                          style={{
+                            fontFamily: "var(--font-body), var(--font-sans), sans-serif",
+                            fontWeight: 400,
+                            fontSize: "0.72rem",
+                            color: "#6b7280",
+                            textTransform: "uppercase",
+                            letterSpacing: "0.08em",
+                            marginBottom: "0.5rem",
+                            borderBottom: "1px solid #f3f4f6",
+                            paddingBottom: "0.35rem",
+                          }}
+                        >
+                          {sec.titulo}
+                        </h3>
                         <div className="space-y-2">
                           {campos.map(({ label, valor }) => (
                             <div key={label} className="grid grid-cols-3 gap-2">
-                              <span className="text-xs text-gray-400 col-span-1 pt-0.5">{label}</span>
-                              <p className="text-sm text-gray-700 col-span-2 leading-relaxed">{valor}</p>
+                              {/* Etiqueta — Open Sans Light 300 */}
+                              <span
+                                style={{
+                                  fontFamily: "var(--font-body), var(--font-sans), sans-serif",
+                                  fontWeight: 300,
+                                  fontSize: "0.78rem",
+                                  color: "#9ca3af",
+                                  paddingTop: "0.125rem",
+                                }}
+                                className="col-span-1"
+                              >
+                                {label}
+                              </span>
+                              {/* Valor — Open Sans Regular 400 */}
+                              <p
+                                style={{
+                                  fontFamily: "var(--font-body), var(--font-sans), sans-serif",
+                                  fontWeight: 400,
+                                  fontSize: "0.875rem",
+                                  color: "#374151",
+                                  lineHeight: 1.6,
+                                }}
+                                className="col-span-2"
+                              >
+                                {valor}
+                              </p>
                             </div>
                           ))}
                         </div>
