@@ -19,26 +19,26 @@ export default async function PacienteLayout({
   const pathname = headersList.get("x-pathname") || headersList.get("next-url") || ""
   const esPaginaConsentimiento = pathname.includes("/consentimiento")
 
-  if (!esPaginaConsentimiento) {
-    const paciente = await prisma.paciente.findUnique({
-      where: { userId: session.user.id },
-      include: { consentimiento: { select: { firmado: true } } },
-    })
-    if (paciente && !paciente.consentimiento?.firmado) {
-      redirect("/paciente/consentimiento")
-    }
+  const paciente = await prisma.paciente.findUnique({
+    where: { userId: session.user.id },
+    select: { consentimiento: { select: { firmado: true } } },
+  })
+  const consentimientoFirmado = paciente?.consentimiento?.firmado ?? false
+
+  if (!esPaginaConsentimiento && !consentimientoFirmado) {
+    redirect("/paciente/consentimiento")
   }
 
   return (
     <div className="flex h-screen bg-gray-50 overflow-hidden">
-      <PacienteSidebar />
+      <PacienteSidebar consentimientoFirmado={consentimientoFirmado} />
       <div className="flex-1 flex flex-col overflow-hidden">
         <PacienteHeader user={session.user} />
         <main className="flex-1 overflow-y-auto p-4 md:p-6 pb-20 md:pb-6">
           {children}
         </main>
       </div>
-      <MobileNav />
+      <MobileNav consentimientoFirmado={consentimientoFirmado} />
     </div>
   )
 }

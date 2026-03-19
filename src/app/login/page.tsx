@@ -30,8 +30,7 @@ export default function LoginPage() {
       if (res?.error) {
         toast.error("Correo o contraseña incorrectos")
       } else {
-        router.push("/")
-        router.refresh()
+        window.location.href = "/paciente"
       }
     } finally {
       setLoading(false)

@@ -3,7 +3,7 @@
 import Link from "next/link"
 import Image from "next/image"
 import { usePathname } from "next/navigation"
-import { CalendarDays, Clock, FileText, BookOpen, LogOut, Home, ShieldCheck, ClipboardList } from "lucide-react"
+import { CalendarDays, Clock, FileText, BookOpen, LogOut, Home, ShieldCheck, ClipboardList, Lock } from "lucide-react"
 import { BRAND } from "@/lib/brand"
 import { MODULES, type ModuleKey } from "@/lib/modules"
 import { signOut } from "next-auth/react"
@@ -25,7 +25,7 @@ const navItems: {
   { href: "/paciente/consentimiento", label: "Consentimiento",   icon: ShieldCheck,   module: "consentimiento" },
 ]
 
-export default function PacienteSidebar() {
+export default function PacienteSidebar({ consentimientoFirmado = true }: { consentimientoFirmado?: boolean }) {
   const pathname = usePathname()
 
   const visibleItems = navItems.filter(
@@ -59,6 +59,25 @@ export default function PacienteSidebar() {
           const isActive = item.exact
             ? pathname === item.href
             : pathname.startsWith(item.href)
+          const isConsentimiento = item.href === "/paciente/consentimiento"
+          const bloqueado = !consentimientoFirmado && !isConsentimiento
+
+          if (bloqueado) {
+            return (
+              <div
+                key={item.href}
+                className="flex items-center justify-between px-3 py-2.5 rounded-lg text-sm font-medium text-gray-300 cursor-not-allowed opacity-50 select-none"
+                title="Firma el consentimiento informado para acceder"
+              >
+                <span className="flex items-center gap-3">
+                  <item.icon size={18} />
+                  {item.label}
+                </span>
+                <Lock size={13} className="shrink-0" />
+              </div>
+            )
+          }
+
           return (
             <Link
               key={item.href}
