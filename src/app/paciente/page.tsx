@@ -71,10 +71,30 @@ export default async function PacienteDashboard() {
           <p className="text-label mb-1" style={{ color: "var(--brand)" }}>
             Bienvenida a tu portal
           </p>
-          <h1 className="text-emotional-bold text-gray-800">
-            Un espacio seguro<br />para ti
+          <h1
+            style={{
+              fontFamily: "var(--font-sans), sans-serif",
+              fontWeight: 700,
+              fontSize: "clamp(1.15rem, 2.5vw, 1.4rem)",
+              color: "#1f2937",
+              lineHeight: 1.2,
+              letterSpacing: "-0.015em",
+            }}
+          >
+            Hola,{" "}
+            <span style={{ color: "var(--brand)" }}>{paciente.nombre?.split(" ")[0]}</span>
+            {" "}👋
           </h1>
-          <p className="text-quote text-gray-500 mt-1.5" style={{ fontSize: "0.85rem" }}>
+          <p
+            style={{
+              fontFamily: "var(--font-sans), sans-serif",
+              fontWeight: 600,
+              fontSize: "0.8rem",
+              color: "#6b7280",
+              marginTop: "0.35rem",
+              letterSpacing: "0.005em",
+            }}
+          >
             {BRAND.doctorTitle} te acompaña en este proceso
           </p>
         </div>

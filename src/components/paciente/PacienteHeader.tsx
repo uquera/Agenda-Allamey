@@ -23,9 +23,31 @@ export default function PacienteHeader({ user }: PacienteHeaderProps) {
   return (
     <header className="bg-white border-b border-gray-100 px-6 py-4 flex items-center justify-between shrink-0">
       <div>
-        <p className="text-xs text-gray-400 capitalize" suppressHydrationWarning>{today}</p>
-        <h1 className="text-base font-semibold text-gray-800">
-          Hola, {firstName}
+        <p
+          suppressHydrationWarning
+          style={{
+            fontFamily: "var(--font-sans), sans-serif",
+            fontWeight: 400,
+            fontSize: "0.72rem",
+            color: "#9ca3af",
+            textTransform: "capitalize",
+            letterSpacing: "0.01em",
+          }}
+        >
+          {today}
+        </p>
+        <h1
+          style={{
+            fontFamily: "var(--font-sans), sans-serif",
+            fontWeight: 700,
+            fontSize: "1.05rem",
+            color: "#1f2937",
+            lineHeight: 1.2,
+            letterSpacing: "-0.01em",
+          }}
+        >
+          Hola,{" "}
+          <span style={{ color: "var(--brand)" }}>{firstName}</span>
         </h1>
       </div>
       <Avatar className="w-8 h-8">
