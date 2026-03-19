@@ -209,13 +209,15 @@ export default async function HomePage() {
         {/* Por qué Allamey */}
         <section className="max-w-5xl mx-auto px-6 py-16" aria-labelledby="porque-titulo">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
-            <div className="relative w-full h-64 rounded-2xl overflow-hidden shadow-lg">
-              <Image
-                src="/materiales-banner.jpg"
-                alt="Consulta de psicología con Allamey Sanz en Venezuela"
-                fill
-                className="object-cover object-top"
-              />
+            <div className="flex justify-center">
+              <div className="relative w-64 h-80 rounded-2xl overflow-hidden shadow-lg">
+                <Image
+                  src="/materiales-banner.jpg"
+                  alt="Consulta de psicología con Allamey Sanz en Venezuela"
+                  fill
+                  className="object-cover object-center"
+                />
+              </div>
             </div>
             <div>
               <h2 id="porque-titulo" className="text-2xl font-bold text-gray-900 mb-4">
