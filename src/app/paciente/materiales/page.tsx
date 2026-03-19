@@ -7,6 +7,7 @@ import { BRAND } from "@/lib/brand"
 import { BookOpen, FileText, Video, Link as LinkIcon, Music, Dumbbell, Download, ExternalLink } from "lucide-react"
 import { format } from "date-fns"
 import { es } from "date-fns/locale"
+import Image from "next/image"
 import MarcarVistoButton from "@/components/paciente/MarcarVistoButton"
 
 export const dynamic = "force-dynamic"
@@ -126,17 +127,31 @@ export default async function MaterialesPacientePage() {
 
   return (
     <div className="max-w-2xl space-y-6">
-      <div>
-        <h1 className="text-xl font-bold text-gray-800">Mis materiales</h1>
-        <p className="text-sm text-gray-500 mt-1">
-          Recursos asignados por {BRAND.doctorTitle} para tu proceso
-        </p>
+      {/* Banner */}
+      <div
+        className="relative rounded-2xl overflow-hidden flex items-center gap-4 px-6 py-5"
+        style={{ backgroundColor: "var(--brand-light)" }}
+      >
+        <div className="flex-1">
+          <h1 className="text-xl font-bold text-gray-800">Mis materiales</h1>
+          <p className="text-sm text-gray-500 mt-1 leading-relaxed">
+            Recursos asignados por {BRAND.doctorTitle} para acompañar tu proceso
+          </p>
+        </div>
+        <div className="shrink-0 w-24 h-28 relative">
+          <Image
+            src="/materiales-banner.jpg"
+            alt="Materiales"
+            fill
+            className="object-cover object-top rounded-xl"
+          />
+        </div>
       </div>
 
       {materiales.length === 0 ? (
-        <div className="text-center py-16">
-          <BookOpen size={48} className="mx-auto text-gray-200 mb-4" />
-          <p className="text-gray-400">No hay materiales asignados aún</p>
+        <div className="text-center py-12">
+          <p className="text-gray-400 text-sm">No hay materiales asignados aún</p>
+          <p className="text-gray-300 text-xs mt-1">{BRAND.doctorTitle} te enviará recursos para acompañar tu proceso</p>
         </div>
       ) : (
         <>
