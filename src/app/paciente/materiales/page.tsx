@@ -138,12 +138,12 @@ export default async function MaterialesPacientePage() {
             Recursos asignados por {BRAND.doctorTitle} para acompañar tu proceso
           </p>
         </div>
-        <div className="shrink-0 w-36 self-end relative" style={{ height: "160px" }}>
+        <div className="shrink-0 w-32 self-end relative" style={{ height: "210px" }}>
           <Image
             src="/materiales-banner.jpg"
             alt="Materiales"
             fill
-            className="object-cover object-bottom"
+            className="object-cover object-center"
           />
           <div className="absolute inset-0 pointer-events-none" style={{
             background: "linear-gradient(to right, #fff0f2 0%, transparent 40%), linear-gradient(to bottom, #fff0f2 0%, transparent 25%)",
