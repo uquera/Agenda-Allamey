@@ -8,7 +8,7 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "No autorizado" }, { status: 401 })
   }
 
-  const { pacienteId, citaId, fechaSesion, titulo } = await req.json()
+  const { pacienteId, citaId, fechaSesion, titulo, tipoSesion } = await req.json()
 
   if (!pacienteId || !fechaSesion) {
     return NextResponse.json({ error: "Paciente y fecha son requeridos" }, { status: 400 })
@@ -20,6 +20,7 @@ export async function POST(req: Request) {
       citaId: citaId || null,
       fechaSesion: new Date(fechaSesion),
       titulo: titulo || "Resumen de sesión",
+      tipoSesion: tipoSesion || "INDIVIDUAL",
       contenido: "",
       publicado: false,
     },

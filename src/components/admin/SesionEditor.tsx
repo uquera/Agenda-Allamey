@@ -209,7 +209,7 @@ export default function SesionEditor({ sesion }: Props) {
         setSaving(false)
       }
     },
-    [editor, titulo, publicado, sesion.id, router]
+    [editor, titulo, publicado, sesion.id, router, tipoSesion, recomendacion, cantidadSesiones, estadoSeguimiento]
   )
 
   const generarPDF = useCallback(async () => {

@@ -37,6 +37,7 @@ export default function NuevaSesionPage() {
     citaId: citaIdParam ?? "",
     fechaSesion: new Date().toISOString().slice(0, 16),
     titulo: "Resumen de sesión",
+    tipoSesion: "INDIVIDUAL",
   })
 
   useEffect(() => {
@@ -193,6 +194,22 @@ export default function NuevaSesionPage() {
               onChange={(e) => setForm((f) => ({ ...f, fechaSesion: e.target.value }))}
               className="h-10 bg-gray-50"
             />
+          </div>
+
+          {/* Tipo de sesión */}
+          <div>
+            <Label className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5 block">
+              Tipo de sesión
+            </Label>
+            <select
+              value={form.tipoSesion}
+              onChange={(e) => setForm((f) => ({ ...f, tipoSesion: e.target.value }))}
+              className="w-full h-10 rounded-lg border border-gray-200 bg-gray-50 px-3 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-[var(--brand)]/20"
+            >
+              <option value="INDIVIDUAL">Individual</option>
+              <option value="PAREJA">Pareja</option>
+              <option value="GRUPAL">Grupal</option>
+            </select>
           </div>
 
           {/* Título */}
