@@ -198,7 +198,7 @@ export default function AgendaCalendar({ eventos, bloqueosIniciales, onCitaActua
 
   return (
     <>
-      <div className="flex flex-wrap gap-3 mb-3 text-xs">
+      <div className="flex flex-wrap gap-3 mb-3">
         {[
           { color: "#f59e0b", label: "Pendiente" },
           { color: "#16a34a", label: "Confirmada" },
@@ -208,11 +208,29 @@ export default function AgendaCalendar({ eventos, bloqueosIniciales, onCitaActua
           { color: "#9ca3af", label: "Bloqueado" },
         ].map(({ color, label }) => (
           <div key={label} className="flex items-center gap-1.5">
-            <span className="w-3 h-3 rounded-full inline-block" style={{ backgroundColor: color }} />
-            <span className="text-gray-600">{label}</span>
+            <span className="w-2.5 h-2.5 rounded-full inline-block shrink-0" style={{ backgroundColor: color }} />
+            <span
+              style={{
+                fontFamily: "var(--font-sans), sans-serif",
+                fontWeight: 600,
+                fontSize: "0.72rem",
+                letterSpacing: "0.03em",
+                color: "#4A4A4A",
+              }}
+            >
+              {label}
+            </span>
           </div>
         ))}
-        <div className="flex items-center gap-1.5 ml-auto text-gray-400">
+        <div
+          className="flex items-center gap-1.5 ml-auto"
+          style={{
+            fontFamily: "var(--font-sans), sans-serif",
+            fontWeight: 300,
+            fontSize: "0.72rem",
+            color: "#9ca3af",
+          }}
+        >
           <Lock size={11} />
           <span>Arrastra para bloquear · Clic en bloqueo gris para eliminar</span>
         </div>
