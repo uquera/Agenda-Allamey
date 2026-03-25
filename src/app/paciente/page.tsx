@@ -20,6 +20,7 @@ export default async function PacienteDashboard() {
   const paciente = await prisma.paciente.findUnique({
     where: { userId: session.user.id },
     include: {
+      user: { select: { name: true } },
       citas: MODULES.agendar
         ? {
             where: {
@@ -82,7 +83,7 @@ export default async function PacienteDashboard() {
             }}
           >
             Hola,{" "}
-            <span style={{ color: "var(--brand)" }}>{paciente.nombre?.split(" ")[0]}</span>
+            <span style={{ color: "var(--brand)" }}>{paciente.user?.name?.split(" ")[0]}</span>
             {" "}👋
           </h1>
           <p
