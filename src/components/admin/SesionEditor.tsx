@@ -215,6 +215,8 @@ export default function SesionEditor({ sesion }: Props) {
   const generarPDF = useCallback(async () => {
     if (!editor) return
     setGenerandoPDF(true)
+    // Abrir la ventana ANTES del await para evitar que el browser la bloquee como popup
+    const previewWindow = window.open("", "_blank")
     try {
       const res = await fetch(`/api/sesiones/${sesion.id}/pdf`, {
         method: "POST",
@@ -223,10 +225,14 @@ export default function SesionEditor({ sesion }: Props) {
       })
       if (!res.ok) throw new Error()
       const data = await res.json()
+      if (previewWindow) {
+        previewWindow.document.write(data.html)
+        previewWindow.document.close()
+      }
       toast.success("PDF generado correctamente")
-      window.open(data.pdfUrl, "_blank")
       router.refresh()
     } catch {
+      previewWindow?.close()
       toast.error("Error al generar el PDF")
     } finally {
       setGenerandoPDF(false)

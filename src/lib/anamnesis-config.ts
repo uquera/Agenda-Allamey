@@ -2,6 +2,7 @@ export type CampoConfig = {
   label: string
   activo: boolean
   custom?: true
+  adminOnly?: true
   options?: string[]
   dependsOn?: { field: string; value: string }
 }
@@ -25,6 +26,7 @@ export const FIXED_KEYS = [
   "calidadSueno", "actividadFisica", "consumoSustancias",
   "relacionPareja", "vidaSexual",
   "expectativasTerapia", "intentosAnteriores",
+  "expresionDiagnostica", "patologia",
 ] as const
 
 export const DEFAULT_CONFIG: AnamnesisConfigData = {
@@ -46,6 +48,9 @@ export const DEFAULT_CONFIG: AnamnesisConfigData = {
     vidaSexual:               { label: "Vida sexual", activo: true },
     expectativasTerapia:      { label: "¿Qué esperas lograr con la terapia?", activo: true },
     intentosAnteriores:       { label: "¿Has recibido terapia psicológica antes?", activo: true },
+    // Diagnóstico clínico (completado por la doctora — no visible para el paciente)
+    expresionDiagnostica: { label: "Expresión diagnóstica", activo: true, adminOnly: true },
+    patologia:            { label: "Patología principal", activo: true, adminOnly: true },
     // Campos personalizados adicionales
     aspTrabSexual: {
       label: "¿Te gustaría trabajar algún aspecto relacionado con tu vida sexual?",
@@ -90,6 +95,11 @@ export const DEFAULT_CONFIG: AnamnesisConfigData = {
       titulo: "Expectativas terapéuticas",
       subtitulo: "Qué esperas lograr con este proceso",
       campos: ["expectativasTerapia", "intentosAnteriores", "tiempoTerapiaAnterior"],
+    },
+    {
+      titulo: "Diagnóstico clínico",
+      subtitulo: "Completado por la profesional de salud",
+      campos: ["expresionDiagnostica", "patologia"],
     },
   ],
 }

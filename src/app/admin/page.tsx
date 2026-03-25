@@ -31,6 +31,7 @@ export default async function AdminDashboard() {
     pagosPendientes,
     pagos6Meses,
     sesionesCompletadasMes,
+    citasAprobadas,
   ] = await Promise.all([
     prisma.paciente.count({ where: { activo: true } }),
     prisma.cita.count({ where: { estado: "PENDIENTE" } }),
@@ -67,6 +68,9 @@ export default async function AdminDashboard() {
     }),
     prisma.cita.count({
       where: { estado: "COMPLETADA", fecha: { gte: inicioMes, lt: inicioMesSig } },
+    }),
+    prisma.cita.count({
+      where: { estado: "APROBADA", fecha: { gte: hoy } },
     }),
   ])
 
@@ -180,9 +184,9 @@ export default async function AdminDashboard() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-xs text-gray-500 font-medium uppercase tracking-wide">
-                  Por aprobar
+                  Citas confirmadas
                 </p>
-                <p className="text-3xl font-bold text-gray-800 mt-1">{citasPendientes}</p>
+                <p className="text-3xl font-bold text-gray-800 mt-1">{citasAprobadas}</p>
               </div>
               <div className="w-11 h-11 rounded-xl bg-green-50 flex items-center justify-center">
                 <CheckCircle size={20} className="text-green-600" />

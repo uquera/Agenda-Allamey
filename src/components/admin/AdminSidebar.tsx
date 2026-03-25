@@ -13,6 +13,7 @@ import {
   CreditCard,
   Settings,
   LogOut,
+  BarChart2,
 } from "lucide-react"
 import { signOut } from "next-auth/react"
 import { cn } from "@/lib/utils"
@@ -24,6 +25,7 @@ const navItems = [
   { href: "/admin/sesiones", label: "Sesiones", icon: FileText },
   { href: "/admin/materiales", label: "Materiales", icon: BookOpen },
   { href: "/admin/pagos", label: "Pagos", icon: CreditCard },
+  { href: "/admin/morbilidad", label: "Morbilidad", icon: BarChart2 },
   { href: "/admin/configuracion", label: "Configuración", icon: Settings },
 ]
 
@@ -31,7 +33,7 @@ export default function AdminSidebar() {
   const pathname = usePathname()
 
   return (
-    <aside className="w-64 bg-white border-r border-gray-100 flex flex-col h-screen shadow-sm shrink-0">
+    <aside className="hidden md:flex md:flex-col w-64 bg-white border-r border-gray-100 h-screen shadow-sm shrink-0">
       {/* Logo */}
       <div className="p-6 border-b border-gray-100">
         <div className="flex items-center gap-3">

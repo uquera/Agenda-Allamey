@@ -95,6 +95,7 @@ model Paciente {
   direccion        String?
   pais             String?
   quienRemite      String?
+  cedula           String?
   primeraConsulta  Boolean   @default(true)
   motivoConsulta   String?
   notas            String?
@@ -107,6 +108,7 @@ model Paciente {
   sesiones        SesionNota[]
   materiales      MaterialAsignado[]
   pagos           Pago[]
+  planesCuotas    PlanCuotas[]
   archivos        ArchivoPaciente[]
   consentimiento  ConsentimientoInformado?
   anamnesis       Anamnesis?
@@ -347,6 +349,10 @@ model Anamnesis {
   expectativasTerapia      String?
   intentosAnteriores       String?
 
+  // Diagnóstico clínico (completado por la doctora)
+  expresionDiagnostica     String?
+  patologia                String?
+
   camposExtra              Json?
 
   completado               Boolean  @default(false)
@@ -370,22 +376,40 @@ model ConfigAnamnesis {
 
 // ─── PAGOS ─────────────────────────────────────────────────────────────────────
 
-model Pago {
-  id         String     @id @default(cuid())
-  citaId     String?    @unique
-  pacienteId String
-  monto      Float
-  moneda     Moneda     @default(USD)
-  metodoPago MetodoPago
-  estado     EstadoPago @default(PENDIENTE)
-  referencia String?
-  notas      String?
-  fechaPago  DateTime?
-  createdAt  DateTime   @default(now())
-  updatedAt  DateTime   @updatedAt
+model PlanCuotas {
+  id           String   @id @default(cuid())
+  pacienteId   String
+  montoTotal   Float
+  moneda       Moneda   @default(USD)
+  numeroCuotas Int
+  descripcion  String?
+  createdAt    DateTime @default(now())
 
-  cita     Cita?    @relation(fields: [citaId], references: [id])
   paciente Paciente @relation(fields: [pacienteId], references: [id])
+  cuotas   Pago[]
+
+  @@map("planes_cuotas")
+}
+
+model Pago {
+  id           String     @id @default(cuid())
+  citaId       String?    @unique
+  pacienteId   String
+  planCuotasId String?
+  numeroCuota  Int?
+  monto        Float
+  moneda       Moneda     @default(USD)
+  metodoPago   MetodoPago
+  estado       EstadoPago @default(PENDIENTE)
+  referencia   String?
+  notas        String?
+  fechaPago    DateTime?
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+
+  cita       Cita?       @relation(fields: [citaId], references: [id])
+  paciente   Paciente    @relation(fields: [pacienteId], references: [id])
+  planCuotas PlanCuotas? @relation(fields: [planCuotasId], references: [id])
 
   @@map("pagos")
 }

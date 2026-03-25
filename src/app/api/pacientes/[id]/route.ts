@@ -17,6 +17,7 @@ export async function PATCH(
   const paciente = await prisma.paciente.update({
     where: { id },
     data: {
+      cedula: body.cedula || null,
       motivoConsulta: body.motivoConsulta || null,
       notas: body.notas || null,
       ocupacion: body.ocupacion || null,

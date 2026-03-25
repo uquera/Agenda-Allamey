@@ -44,43 +44,21 @@ export default async function AnamnesisPage() {
         </p>
       </div>
 
-      {a?.completado && (
+      {a?.completado ? (
         <div
-          className="flex items-center gap-2 px-4 py-3 rounded-xl text-sm font-medium"
+          className="flex items-center gap-3 px-5 py-4 rounded-xl text-sm font-medium"
           style={{ backgroundColor: "#f0fdf4", color: "#16a34a" }}
         >
-          <span>✓</span>
-          Historial enviado — {BRAND.doctorTitle} ya tiene acceso a tu información
+          <span className="text-lg">✓</span>
+          <span>Historial enviado — {BRAND.doctorTitle} ya tiene acceso a tu información.</span>
         </div>
+      ) : (
+        <AnamnesisForm
+          config={config}
+          initialCamposExtra={null}
+          initial={null}
+        />
       )}
-
-      <AnamnesisForm
-        config={config}
-        initialCamposExtra={a?.camposExtra ? (a.camposExtra as Record<string, string>) : null}
-        initial={
-          a
-            ? {
-                motivoPrincipal: a.motivoPrincipal ?? "",
-                tiempoEvolucion: a.tiempoEvolucion ?? "",
-                antecedentesMedicos: a.antecedentesMedicos ?? "",
-                antecedentesPsicologicos: a.antecedentesPsicologicos ?? "",
-                medicacionActual: a.medicacionActual ?? "",
-                estadoCivil: a.estadoCivil ?? "",
-                hijosCantidad: a.hijosCantidad ?? "",
-                situacionLaboral: a.situacionLaboral ?? "",
-                nivelEducativo: a.nivelEducativo ?? "",
-                redApoyo: a.redApoyo ?? "",
-                calidadSueno: a.calidadSueno ?? "",
-                actividadFisica: a.actividadFisica ?? "",
-                consumoSustancias: a.consumoSustancias ?? "",
-                relacionPareja: a.relacionPareja ?? "",
-                vidaSexual: a.vidaSexual ?? "",
-                expectativasTerapia: a.expectativasTerapia ?? "",
-                intentosAnteriores: a.intentosAnteriores ?? "",
-              }
-            : null
-        }
-      />
     </div>
   )
 }

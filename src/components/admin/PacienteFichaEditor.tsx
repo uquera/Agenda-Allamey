@@ -17,6 +17,7 @@ interface Props {
   ocupacion?: string | null
   genero?: string | null
   telefono?: string | null
+  cedula?: string | null
 }
 
 export default function PacienteFichaEditor({
@@ -26,6 +27,7 @@ export default function PacienteFichaEditor({
   ocupacion: ocupacionInit,
   genero: generoInit,
   telefono: telefonoInit,
+  cedula: cedulaInit,
 }: Props) {
   const router = useRouter()
   const [saving, setSaving] = useState(false)
@@ -35,6 +37,7 @@ export default function PacienteFichaEditor({
     ocupacion: ocupacionInit || "",
     genero: generoInit || "",
     telefono: telefonoInit || "",
+    cedula: cedulaInit || "",
   })
 
   async function guardar() {
@@ -62,6 +65,16 @@ export default function PacienteFichaEditor({
           <User size={15} style={{ color: "var(--brand)" }} />
           Ficha del paciente
         </h2>
+
+        <div className="space-y-1.5">
+          <Label className="text-xs text-gray-600">Cédula / Número de identidad</Label>
+          <Input
+            value={form.cedula}
+            onChange={(e) => setForm({ ...form, cedula: e.target.value })}
+            placeholder="V-12345678 / Pasaporte"
+            className="h-8 text-sm"
+          />
+        </div>
 
         <div className="space-y-1.5">
           <Label className="text-xs text-gray-600">Teléfono</Label>

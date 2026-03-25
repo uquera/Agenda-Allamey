@@ -14,7 +14,7 @@ import { Label } from "@/components/ui/label"
 import { format } from "date-fns"
 import { es } from "date-fns/locale"
 import { toast } from "sonner"
-import { Lock, Trash2 } from "lucide-react"
+import { Lock, Trash2, CalendarPlus, Plus } from "lucide-react"
 
 interface Evento {
   id: string
@@ -101,6 +101,8 @@ function bloqueoToEvento(b: Bloqueo) {
   }
 }
 
+const DURACIONES = [30, 45, 60, 90, 120]
+
 export default function AgendaCalendar({ eventos, bloqueosIniciales, onCitaActualizadaRef }: Props) {
   const calendarRef = useRef(null)
   const [bloqueos, setBloqueos] = useState<Bloqueo[]>(bloqueosIniciales)
@@ -109,12 +111,34 @@ export default function AgendaCalendar({ eventos, bloqueosIniciales, onCitaActua
   const [bloqueo, setBloqueo] = useState({ fecha: "", horaInicio: "", horaFin: "", motivo: "", todoElDia: false })
   const [guardandoBloqueo, setGuardandoBloqueo] = useState(false)
 
-  // Dialog para eliminar bloqueo
+  // Dialog eliminar bloqueo
   const [deleteOpen, setDeleteOpen] = useState(false)
   const [bloqueoAEliminar, setBloqueoAEliminar] = useState<{ id: string; motivo: string | null } | null>(null)
   const [eliminando, setEliminando] = useState(false)
 
-  // Exponer callback para actualizar el estado de un evento desde fuera
+  // Choice dialog (tras arrastrar en el calendario)
+  const [choiceOpen, setChoiceOpen] = useState(false)
+  const [seleccionRango, setSeleccionRango] = useState<{
+    fecha: string; hora: string; horaFin: string; duracion: number; allDay: boolean
+  } | null>(null)
+
+  // Nueva cita dialog
+  const [nuevaCitaOpen, setNuevaCitaOpen] = useState(false)
+  const [pacientes, setPacientes] = useState<{ id: string; nombre: string }[]>([])
+  const [busqueda, setBusqueda] = useState("")
+  const [guardandoCita, setGuardandoCita] = useState(false)
+  const [nuevaCita, setNuevaCita] = useState({
+    pacienteId: "",
+    fecha: "",
+    hora: "",
+    duracion: 60,
+    modalidad: "PRESENCIAL" as "PRESENCIAL" | "ONLINE",
+    linkSesion: "",
+    motivoConsulta: "",
+    notasAdmin: "",
+  })
+
+  // Exponer callback para actualizar estado de evento desde fuera
   if (onCitaActualizadaRef) {
     onCitaActualizadaRef.current = (id: string, nuevoEstado: string) => {
       setEventosColoreados((prev) =>
@@ -153,9 +177,33 @@ export default function AgendaCalendar({ eventos, bloqueosIniciales, onCitaActua
 
   function handleDateSelect(info: { startStr: string; endStr: string; allDay: boolean }) {
     const fecha = info.startStr.split("T")[0]
-    const horaInicio = info.startStr.includes("T") ? info.startStr.split("T")[1].slice(0, 5) : ""
+    const hora = info.startStr.includes("T") ? info.startStr.split("T")[1].slice(0, 5) : ""
     const horaFin = info.endStr.includes("T") ? info.endStr.split("T")[1].slice(0, 5) : ""
-    setBloqueo({ fecha, horaInicio, horaFin, motivo: "", todoElDia: info.allDay })
+
+    let durMin = 60
+    if (hora && horaFin) {
+      const [sh, sm] = hora.split(":").map(Number)
+      const [eh, em] = horaFin.split(":").map(Number)
+      const diff = (eh * 60 + em) - (sh * 60 + sm)
+      if (diff > 0 && diff <= 240) durMin = diff
+    }
+
+    setSeleccionRango({ fecha, hora, horaFin, duracion: durMin, allDay: info.allDay })
+    setChoiceOpen(true)
+  }
+
+  // ── Bloqueo ───────────────────────────────────────────────────────────────
+
+  function abrirBloqueoDesdeSeleccion() {
+    if (!seleccionRango) return
+    setChoiceOpen(false)
+    setBloqueo({
+      fecha: seleccionRango.fecha,
+      horaInicio: seleccionRango.hora,
+      horaFin: seleccionRango.horaFin,
+      motivo: "",
+      todoElDia: seleccionRango.allDay,
+    })
     setBloqueoOpen(true)
   }
 
@@ -196,9 +244,116 @@ export default function AgendaCalendar({ eventos, bloqueosIniciales, onCitaActua
     }
   }
 
+  // ── Nueva cita ────────────────────────────────────────────────────────────
+
+  async function cargarPacientes() {
+    if (pacientes.length > 0) return
+    try {
+      const res = await fetch("/api/pacientes-lista")
+      if (!res.ok) throw new Error()
+      const data = await res.json()
+      setPacientes(data)
+    } catch {
+      toast.error("Error al cargar la lista de pacientes")
+    }
+  }
+
+  function abrirNuevaCitaDesdeSeleccion() {
+    setChoiceOpen(false)
+    setNuevaCita({
+      pacienteId: "",
+      fecha: seleccionRango?.fecha ?? "",
+      hora: seleccionRango?.hora ?? "",
+      duracion: seleccionRango?.duracion ?? 60,
+      modalidad: "PRESENCIAL",
+      linkSesion: "",
+      motivoConsulta: "",
+      notasAdmin: "",
+    })
+    setBusqueda("")
+    cargarPacientes()
+    setNuevaCitaOpen(true)
+  }
+
+  function abrirNuevaCitaVacia() {
+    setNuevaCita({
+      pacienteId: "",
+      fecha: "",
+      hora: "",
+      duracion: 60,
+      modalidad: "PRESENCIAL",
+      linkSesion: "",
+      motivoConsulta: "",
+      notasAdmin: "",
+    })
+    setBusqueda("")
+    cargarPacientes()
+    setNuevaCitaOpen(true)
+  }
+
+  async function guardarNuevaCita() {
+    if (!nuevaCita.pacienteId) { toast.error("Selecciona un paciente"); return }
+    if (!nuevaCita.fecha)      { toast.error("Ingresa la fecha"); return }
+    if (!nuevaCita.hora)       { toast.error("Ingresa la hora"); return }
+
+    setGuardandoCita(true)
+    try {
+      const res = await fetch("/api/citas", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          pacienteId: nuevaCita.pacienteId,
+          fecha: `${nuevaCita.fecha}T${nuevaCita.hora}:00`,
+          modalidad: nuevaCita.modalidad,
+          duracion: nuevaCita.duracion,
+          motivoConsulta: nuevaCita.motivoConsulta || null,
+          notasAdmin: nuevaCita.notasAdmin || null,
+          linkSesion: nuevaCita.modalidad === "ONLINE" && nuevaCita.linkSesion ? nuevaCita.linkSesion : null,
+        }),
+      })
+      if (!res.ok) throw new Error()
+      const cita = await res.json()
+
+      const paciente = pacientes.find((p) => p.id === nuevaCita.pacienteId)
+      const inicio = new Date(`${nuevaCita.fecha}T${nuevaCita.hora}:00`)
+      const fin = new Date(inicio.getTime() + nuevaCita.duracion * 60000)
+
+      setEventosColoreados((prev) => [
+        ...prev,
+        colorearEvento({
+          id: cita.id,
+          title: paciente?.nombre || "Paciente",
+          start: inicio.toISOString(),
+          end: fin.toISOString(),
+          extendedProps: {
+            estado: "APROBADA",
+            modalidad: cita.modalidad,
+            email: "",
+            pacienteId: cita.pacienteId,
+            motivoConsulta: cita.motivoConsulta,
+            notasAdmin: cita.notasAdmin,
+            linkSesion: cita.linkSesion,
+          },
+        }),
+      ])
+
+      toast.success(`Cita creada para ${paciente?.nombre || "el paciente"}`)
+      setNuevaCitaOpen(false)
+    } catch {
+      toast.error("Error al crear la cita")
+    } finally {
+      setGuardandoCita(false)
+    }
+  }
+
+  const pacientesFiltrados = pacientes.filter((p) =>
+    p.nombre.toLowerCase().includes(busqueda.toLowerCase())
+  )
+
   return (
     <>
-      <div className="flex flex-wrap gap-3 mb-3">
+      {/* Leyenda + botón nueva cita */}
+      <div className="flex flex-wrap items-center gap-3 mb-3 text-xs">
         {[
           { color: "#f59e0b", label: "Pendiente" },
           { color: "#16a34a", label: "Confirmada" },
@@ -222,18 +377,21 @@ export default function AgendaCalendar({ eventos, bloqueosIniciales, onCitaActua
             </span>
           </div>
         ))}
-        <div
-          className="flex items-center gap-1.5 ml-auto"
-          style={{
-            fontFamily: "var(--font-sans), sans-serif",
-            fontWeight: 300,
-            fontSize: "0.72rem",
-            color: "#9ca3af",
-          }}
-        >
+
+        <div className="flex items-center gap-1.5 text-gray-400">
           <Lock size={11} />
-          <span>Arrastra para bloquear · Clic en bloqueo gris para eliminar</span>
+          <span>Arrastra para crear cita o bloquear</span>
         </div>
+
+        <Button
+          size="sm"
+          className="ml-auto h-7 text-xs text-white gap-1.5"
+          style={{ backgroundColor: "var(--brand)" }}
+          onClick={abrirNuevaCitaVacia}
+        >
+          <Plus size={13} />
+          Nueva Cita
+        </Button>
       </div>
 
       <Card className="border-0 shadow-sm">
@@ -267,7 +425,180 @@ export default function AgendaCalendar({ eventos, bloqueosIniciales, onCitaActua
         </CardContent>
       </Card>
 
-      {/* Dialog: Crear bloqueo */}
+      {/* ── Dialog: Elección tras arrastrar ─────────────────────────────── */}
+      <Dialog open={choiceOpen} onOpenChange={setChoiceOpen}>
+        <DialogContent className="max-w-xs">
+          <DialogHeader>
+            <DialogTitle className="text-base">
+              {seleccionRango?.fecha
+                ? format(new Date(seleccionRango.fecha + "T12:00:00"), "EEEE d 'de' MMMM", { locale: es })
+                : "Selección"}
+              {seleccionRango?.hora && (
+                <span className="text-gray-400 font-normal text-sm ml-2">
+                  {seleccionRango.hora}{seleccionRango.horaFin ? ` – ${seleccionRango.horaFin}` : ""}
+                </span>
+              )}
+            </DialogTitle>
+          </DialogHeader>
+          <div className="flex flex-col gap-2 pt-1">
+            <Button
+              className="w-full text-white gap-2"
+              style={{ backgroundColor: "var(--brand)" }}
+              onClick={abrirNuevaCitaDesdeSeleccion}
+            >
+              <CalendarPlus size={15} />
+              Crear cita para un paciente
+            </Button>
+            <Button
+              variant="outline"
+              className="w-full gap-2"
+              onClick={abrirBloqueoDesdeSeleccion}
+            >
+              <Lock size={15} />
+              Bloquear este horario
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* ── Dialog: Nueva cita ───────────────────────────────────────────── */}
+      <Dialog open={nuevaCitaOpen} onOpenChange={setNuevaCitaOpen}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <CalendarPlus size={16} style={{ color: "var(--brand)" }} />
+              Nueva cita
+            </DialogTitle>
+          </DialogHeader>
+
+          <div className="space-y-3">
+            {/* Paciente */}
+            <div>
+              <Label className="text-xs text-gray-600">Paciente *</Label>
+              <Input
+                placeholder="Buscar por nombre..."
+                value={busqueda}
+                onChange={(e) => setBusqueda(e.target.value)}
+                className="mt-1 h-8 text-sm"
+              />
+              <select
+                value={nuevaCita.pacienteId}
+                onChange={(e) => setNuevaCita((p) => ({ ...p, pacienteId: e.target.value }))}
+                size={5}
+                className="mt-1 w-full text-sm border border-gray-200 rounded-md px-2 py-1 focus:outline-none bg-white"
+              >
+                <option value="" disabled>— selecciona un paciente —</option>
+                {pacientesFiltrados.map((p) => (
+                  <option key={p.id} value={p.id}>{p.nombre}</option>
+                ))}
+              </select>
+              {pacientes.length === 0 && (
+                <p className="text-xs text-gray-400 mt-1">Cargando pacientes...</p>
+              )}
+            </div>
+
+            {/* Fecha + Hora */}
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <Label className="text-xs text-gray-600">Fecha *</Label>
+                <Input
+                  type="date"
+                  value={nuevaCita.fecha}
+                  onChange={(e) => setNuevaCita((p) => ({ ...p, fecha: e.target.value }))}
+                  className="mt-1 h-8 text-sm"
+                />
+              </div>
+              <div>
+                <Label className="text-xs text-gray-600">Hora *</Label>
+                <Input
+                  type="time"
+                  value={nuevaCita.hora}
+                  onChange={(e) => setNuevaCita((p) => ({ ...p, hora: e.target.value }))}
+                  className="mt-1 h-8 text-sm"
+                />
+              </div>
+            </div>
+
+            {/* Duración + Modalidad */}
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <Label className="text-xs text-gray-600">Duración</Label>
+                <select
+                  value={nuevaCita.duracion}
+                  onChange={(e) => setNuevaCita((p) => ({ ...p, duracion: Number(e.target.value) }))}
+                  className="mt-1 w-full h-8 text-sm border border-gray-200 rounded-md px-2 focus:outline-none bg-white"
+                >
+                  {DURACIONES.map((d) => (
+                    <option key={d} value={d}>{d} min</option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <Label className="text-xs text-gray-600">Modalidad</Label>
+                <select
+                  value={nuevaCita.modalidad}
+                  onChange={(e) => setNuevaCita((p) => ({ ...p, modalidad: e.target.value as "PRESENCIAL" | "ONLINE" }))}
+                  className="mt-1 w-full h-8 text-sm border border-gray-200 rounded-md px-2 focus:outline-none bg-white"
+                >
+                  <option value="PRESENCIAL">Presencial</option>
+                  <option value="ONLINE">Online</option>
+                </select>
+              </div>
+            </div>
+
+            {/* Link sesión (solo si Online) */}
+            {nuevaCita.modalidad === "ONLINE" && (
+              <div>
+                <Label className="text-xs text-gray-600">Link de sesión <span className="text-gray-400">(opcional)</span></Label>
+                <Input
+                  value={nuevaCita.linkSesion}
+                  onChange={(e) => setNuevaCita((p) => ({ ...p, linkSesion: e.target.value }))}
+                  placeholder="https://meet.google.com/..."
+                  className="mt-1 h-8 text-sm"
+                />
+              </div>
+            )}
+
+            {/* Motivo */}
+            <div>
+              <Label className="text-xs text-gray-600">Motivo de consulta <span className="text-gray-400">(opcional)</span></Label>
+              <Input
+                value={nuevaCita.motivoConsulta}
+                onChange={(e) => setNuevaCita((p) => ({ ...p, motivoConsulta: e.target.value }))}
+                placeholder="Ej: Seguimiento, primera consulta..."
+                className="mt-1 h-8 text-sm"
+              />
+            </div>
+
+            {/* Notas admin */}
+            <div>
+              <Label className="text-xs text-gray-600">Notas internas <span className="text-gray-400">(opcional)</span></Label>
+              <Input
+                value={nuevaCita.notasAdmin}
+                onChange={(e) => setNuevaCita((p) => ({ ...p, notasAdmin: e.target.value }))}
+                placeholder="Solo visible para ti..."
+                className="mt-1 h-8 text-sm"
+              />
+            </div>
+
+            <div className="flex gap-3 pt-1">
+              <Button variant="outline" className="flex-1" onClick={() => setNuevaCitaOpen(false)}>
+                Cancelar
+              </Button>
+              <Button
+                className="flex-1 text-white"
+                style={{ backgroundColor: "var(--brand)" }}
+                onClick={guardarNuevaCita}
+                disabled={guardandoCita}
+              >
+                {guardandoCita ? "Guardando..." : "Crear cita"}
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* ── Dialog: Crear bloqueo ────────────────────────────────────────── */}
       <Dialog open={bloqueoOpen} onOpenChange={setBloqueoOpen}>
         <DialogContent className="max-w-sm">
           <DialogHeader>
@@ -306,7 +637,7 @@ export default function AgendaCalendar({ eventos, bloqueosIniciales, onCitaActua
         </DialogContent>
       </Dialog>
 
-      {/* Dialog: Eliminar bloqueo */}
+      {/* ── Dialog: Eliminar bloqueo ─────────────────────────────────────── */}
       <Dialog open={deleteOpen} onOpenChange={setDeleteOpen}>
         <DialogContent className="max-w-sm">
           <DialogHeader>

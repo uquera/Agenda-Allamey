@@ -147,7 +147,7 @@ export default function AnamnesisForm({
       {config.secciones.map((seccion, secIdx) => {
         const camposActivos = seccion.campos.filter(k => {
           const campo = config.campos[k]
-          return campo?.activo && shouldShow(campo)
+          return campo?.activo && !campo?.adminOnly && shouldShow(campo)
         })
         if (camposActivos.length === 0) return null
         sectionNumber++

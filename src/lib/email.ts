@@ -452,3 +452,45 @@ export async function enviarResumenSesion(
     html,
   })
 }
+
+export async function enviarNuevaSolicitudAlAdmin(
+  adminEmail: string,
+  nombrePaciente: string,
+  fecha: Date,
+  modalidad: string,
+  motivoConsulta?: string | null
+) {
+  const fechaStr = format(fecha, "EEEE d 'de' MMMM 'de' yyyy 'a las' HH:mm", { locale: es })
+  const modalidadStr = modalidad === "ONLINE" ? "Online (videollamada)" : "Presencial en consulta"
+
+  const html = emailWrapper(`
+    <h2 style="margin:0 0 8px;color:${grayColor};font-size:22px;">Nueva solicitud de cita</h2>
+    <p style="margin:0 0 24px;color:#888;font-size:14px;">Un paciente ha pedido una hora</p>
+
+    <p style="color:${grayColor};font-size:15px;line-height:1.6;">
+      <strong>${nombrePaciente}</strong> ha solicitado una cita para el:
+    </p>
+    <p style="color:${brandColor};font-size:18px;font-weight:700;margin:4px 0 24px;">${fechaStr}</p>
+
+    <div style="background:#fff8f8;border-left:4px solid ${brandColor};padding:16px 20px;border-radius:0 8px 8px 0;margin:0 0 24px;">
+      <p style="margin:0;color:${grayColor};font-size:14px;"><strong>Paciente:</strong> ${nombrePaciente}</p>
+      <p style="margin:8px 0 0;color:${grayColor};font-size:14px;"><strong>Modalidad:</strong> ${modalidadStr}</p>
+      ${motivoConsulta ? `<p style="margin:8px 0 0;color:${grayColor};font-size:14px;"><strong>Motivo:</strong> ${motivoConsulta}</p>` : ""}
+      <p style="margin:8px 0 0;color:#888;font-size:13px;"><strong>Estado:</strong> Pendiente de aprobación</p>
+    </div>
+
+    <div style="text-align:center;margin:32px 0;">
+      <a href="${process.env.NEXT_PUBLIC_APP_URL}/admin/agenda"
+         style="background:${brandColor};color:#ffffff;padding:14px 32px;border-radius:8px;text-decoration:none;font-size:15px;font-weight:600;">
+        Revisar en la agenda
+      </a>
+    </div>
+  `)
+
+  await transporter.sendMail({
+    from: process.env.EMAIL_FROM,
+    to: adminEmail,
+    subject: `Nueva solicitud de cita — ${nombrePaciente}`,
+    html,
+  })
+}

@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server"
 import { auth } from "@/auth"
 import { prisma } from "@/lib/prisma"
-import { FIXED_KEYS } from "@/lib/anamnesis-config"
+import { FIXED_KEYS, DEFAULT_CONFIG } from "@/lib/anamnesis-config"
 
 export async function POST(req: Request) {
   const session = await auth()
@@ -18,8 +18,15 @@ export async function POST(req: Request) {
   const fixedData: Record<string, string> = {}
   const camposExtra: Record<string, string> = {}
 
+  const adminOnlyKeys = new Set(
+    Object.entries(DEFAULT_CONFIG.campos)
+      .filter(([, cfg]) => cfg.adminOnly)
+      .map(([k]) => k)
+  )
+
   for (const [key, value] of Object.entries(body)) {
     if (key === "camposExtra") continue
+    if (adminOnlyKeys.has(key)) continue
     if ((FIXED_KEYS as readonly string[]).includes(key)) {
       fixedData[key] = value as string
     }

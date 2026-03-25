@@ -15,9 +15,22 @@ export async function PATCH(
   const { id } = await params
   const body = await req.json()
 
+  const existe = await prisma.pago.findUnique({ where: { id } })
+  if (!existe) return NextResponse.json({ error: "Pago no encontrado" }, { status: 404 })
+
+  // Whitelist de campos actualizables para evitar mass assignment
+  const { estado, referencia, notas, fechaPago, monto, metodoPago } = body
+  const updateData: Record<string, unknown> = {}
+  if (estado !== undefined) updateData.estado = estado
+  if (referencia !== undefined) updateData.referencia = referencia
+  if (notas !== undefined) updateData.notas = notas
+  if (fechaPago !== undefined) updateData.fechaPago = new Date(fechaPago)
+  if (monto !== undefined) updateData.monto = parseFloat(monto)
+  if (metodoPago !== undefined) updateData.metodoPago = metodoPago
+
   const pago = await prisma.pago.update({
     where: { id },
-    data: body,
+    data: updateData,
     include: {
       paciente: {
         include: { user: true },

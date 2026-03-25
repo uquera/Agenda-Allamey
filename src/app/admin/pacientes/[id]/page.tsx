@@ -160,6 +160,7 @@ export default async function PacienteDetallePage({
             ocupacion={paciente.ocupacion}
             genero={paciente.genero}
             telefono={paciente.telefono}
+            cedula={paciente.cedula}
           />
         </div>
 
@@ -266,6 +267,8 @@ export default async function PacienteDetallePage({
                 consumoSustancias: a.consumoSustancias, relacionPareja: a.relacionPareja,
                 vidaSexual: a.vidaSexual, expectativasTerapia: a.expectativasTerapia,
                 intentosAnteriores: a.intentosAnteriores,
+                expresionDiagnostica: a.expresionDiagnostica,
+                patologia: a.patologia,
               }
               return (
                 <div className="space-y-5">

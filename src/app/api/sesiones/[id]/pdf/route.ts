@@ -92,5 +92,5 @@ export async function POST(
     data: { pdfUrl, titulo, contenido },
   })
 
-  return NextResponse.json({ pdfUrl })
+  return NextResponse.json({ pdfUrl, html: htmlDoc })
 }

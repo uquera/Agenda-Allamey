@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server"
 import { auth } from "@/auth"
 import { prisma } from "@/lib/prisma"
-import { enviarConfirmacionSolicitud } from "@/lib/email"
+import { enviarConfirmacionSolicitud, enviarNuevaSolicitudAlAdmin } from "@/lib/email"
 
 // GET — listar citas (admin: todas, paciente: las suyas)
 export async function GET(req: Request) {
@@ -35,16 +35,38 @@ export async function GET(req: Request) {
   return NextResponse.json(citas)
 }
 
-// POST — crear solicitud de cita
+// POST — crear cita (admin: para cualquier paciente, aprobada directamente; paciente: solicitud propia)
 export async function POST(req: Request) {
   const session = await auth()
   if (!session) return NextResponse.json({ error: "No autorizado" }, { status: 401 })
 
   const body = await req.json()
-  const { fecha, modalidad, motivoConsulta, notasPaciente, duracion } = body
+  const { fecha, modalidad, motivoConsulta, notasPaciente, notasAdmin, linkSesion, duracion } = body
 
   if (!fecha) return NextResponse.json({ error: "La fecha es requerida" }, { status: 400 })
 
+  // ── Admin crea cita a nombre de un paciente ───────────────────────────────
+  if (session.user.role === "ADMIN") {
+    const { pacienteId } = body
+    if (!pacienteId) return NextResponse.json({ error: "pacienteId es requerido" }, { status: 400 })
+
+    const cita = await prisma.cita.create({
+      data: {
+        pacienteId,
+        fecha: new Date(fecha),
+        modalidad: modalidad || "PRESENCIAL",
+        estado: "APROBADA",
+        motivoConsulta: motivoConsulta || null,
+        notasAdmin: notasAdmin || null,
+        linkSesion: linkSesion || null,
+        duracion: duracion || 60,
+      },
+    })
+
+    return NextResponse.json(cita, { status: 201 })
+  }
+
+  // ── Paciente crea su propia solicitud ─────────────────────────────────────
   const paciente = await prisma.paciente.findUnique({
     where: { userId: session.user.id },
     include: { user: true },
@@ -63,7 +85,6 @@ export async function POST(req: Request) {
     },
   })
 
-  // Enviar email de confirmación de solicitud
   try {
     await enviarConfirmacionSolicitud(
       paciente.user.email,
@@ -71,7 +92,18 @@ export async function POST(req: Request) {
       new Date(fecha)
     )
   } catch (err) {
-    console.error("Error enviando email:", err)
+    console.error("Error enviando email al paciente:", err)
+  }
+
+  const adminEmail = process.env.ADMIN_EMAIL
+  if (adminEmail) {
+    enviarNuevaSolicitudAlAdmin(
+      adminEmail,
+      paciente.user.name || "Paciente",
+      new Date(fecha),
+      modalidad || "PRESENCIAL",
+      motivoConsulta
+    ).catch((err) => console.error("Error enviando notificación al admin:", err))
   }
 
   return NextResponse.json(cita, { status: 201 })
