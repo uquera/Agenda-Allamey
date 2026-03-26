@@ -3,7 +3,7 @@ module.exports = {
     {
       name: "agenda-allamey",
       script: "node_modules/.bin/next",
-      args: "start -p 3000",
+      args: "start -p 3001",
       cwd: "/var/www/agenda-allamey",
       instances: 1,
       autorestart: true,
@@ -11,7 +11,8 @@ module.exports = {
       max_memory_restart: "512M",
       env_production: {
         NODE_ENV: "production",
-        PORT: 3000,
+        PORT: 3001,
+        DATABASE_URL: "file:./dev.db",
       },
     },
   ],
