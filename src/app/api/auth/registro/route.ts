@@ -59,8 +59,8 @@ export async function POST(req: Request) {
       },
     })
 
-    // Enviar correo de bienvenida con credenciales (no bloquea la respuesta)
-    enviarBienvenidaPaciente(email, name, password).catch(() => {})
+    // Enviar correo de bienvenida (no bloquea la respuesta)
+    enviarBienvenidaPaciente(email, name).catch(() => {})
 
     return NextResponse.json({ id: user.id }, { status: 201 })
   } catch {

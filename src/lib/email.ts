@@ -334,11 +334,10 @@ export async function enviarConfirmacionPago(
 
 export async function enviarBienvenidaPaciente(
   email: string,
-  nombre: string,
-  password: string
+  nombre: string
 ) {
   const html = emailWrapper(`
-    <h2 style="margin:0 0 8px;color:${grayColor};font-size:22px;">¡Bienvenida/o a tu portal! 🌸</h2>
+    <h2 style="margin:0 0 8px;color:${grayColor};font-size:22px;">¡Bienvenida/o a tu portal!</h2>
     <p style="margin:0 0 24px;color:#888;font-size:14px;">Tu cuenta ha sido creada exitosamente</p>
 
     <p style="color:${grayColor};font-size:15px;line-height:1.6;">Hola <strong>${nombre}</strong>,</p>
@@ -350,8 +349,7 @@ export async function enviarBienvenidaPaciente(
     <div style="background:#fff8f8;border:1px solid #f0d0d4;padding:24px;border-radius:10px;margin:28px 0;">
       <p style="margin:0 0 4px;color:#888;font-size:12px;text-transform:uppercase;letter-spacing:1px;">Tus datos de acceso</p>
       <p style="margin:12px 0 0;color:${grayColor};font-size:15px;"><strong>Correo:</strong> ${email}</p>
-      <p style="margin:8px 0 0;color:${grayColor};font-size:15px;"><strong>Contraseña:</strong> <span style="font-family:monospace;background:#f5f5f5;padding:2px 8px;border-radius:4px;">${password}</span></p>
-      <p style="margin:12px 0 0;color:#aaa;font-size:12px;">Guarda estos datos en un lugar seguro. Puedes cambiar tu contraseña en cualquier momento desde el portal.</p>
+      <p style="margin:12px 0 0;color:#aaa;font-size:13px;">Ingresa con el correo y la contraseña que elegiste al registrarte. Puedes cambiarla en cualquier momento desde el portal.</p>
     </div>
 
     <div style="text-align:center;margin:32px 0;">
