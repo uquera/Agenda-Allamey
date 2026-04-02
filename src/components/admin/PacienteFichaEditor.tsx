@@ -67,11 +67,11 @@ export default function PacienteFichaEditor({
         </h2>
 
         <div className="space-y-1.5">
-          <Label className="text-xs text-gray-600">Cédula / Número de identidad</Label>
+          <Label className="text-xs text-gray-600">Número de RUT</Label>
           <Input
             value={form.cedula}
             onChange={(e) => setForm({ ...form, cedula: e.target.value })}
-            placeholder="V-12345678 / Pasaporte"
+            placeholder="12345678-k"
             className="h-8 text-sm"
           />
         </div>

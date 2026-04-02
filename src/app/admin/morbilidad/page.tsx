@@ -426,7 +426,7 @@ export default async function MorbilidadPage({
           <CardContent className="p-5">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-xs text-gray-500 font-medium uppercase tracking-wide">Sin cédula registrada</p>
+                <p className="text-xs text-gray-500 font-medium uppercase tracking-wide">Sin RUT registrado</p>
                 <p className="text-3xl font-bold text-gray-800 mt-1">{sinCedula}</p>
                 <p className="text-xs text-gray-400 mt-0.5">pacientes en el período</p>
               </div>
