@@ -12,7 +12,7 @@ export default async function AdminLayout({
   if (!session || session.user.role !== "ADMIN") redirect("/login")
 
   return (
-    <div className="flex h-screen bg-gray-50 overflow-hidden">
+    <div className="flex h-dvh bg-gray-50 overflow-hidden">
       <AdminSidebar />
       <div className="flex-1 flex flex-col overflow-hidden">
         <AdminHeader user={session.user} />

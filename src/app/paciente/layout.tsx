@@ -30,11 +30,11 @@ export default async function PacienteLayout({
   }
 
   return (
-    <div className="flex h-screen bg-gray-50 overflow-hidden">
+    <div className="flex h-dvh bg-gray-50 overflow-hidden">
       <PacienteSidebar consentimientoFirmado={consentimientoFirmado} />
       <div className="flex-1 flex flex-col overflow-hidden">
         <PacienteHeader user={session.user} />
-        <main className="flex-1 overflow-y-auto p-4 md:p-6 pb-20 md:pb-6">
+        <main className="flex-1 overflow-y-auto p-4 md:p-6 pb-safe-nav md:pb-6">
           {children}
         </main>
       </div>
