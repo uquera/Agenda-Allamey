@@ -329,6 +329,9 @@
 }
 
 /* Estados de eventos */
-.fc .fc-event-pending  { background-color: #f59e0b !important; }
-.fc .fc-event-aprobada { background-color: var(--brand) !important; }
-.fc .fc-event-completada { background-color: #6b7280 !important; }
+.fc .fc-event-pendiente  { background-color: #f59e0b !important; border-color: #f59e0b !important; }
+.fc .fc-event-aprobada   { background-color: #16a34a !important; border-color: #16a34a !important; }
+.fc .fc-event-reagendada { background-color: #3b82f6 !important; border-color: #3b82f6 !important; }
+.fc .fc-event-completada { background-color: #6b7280 !important; border-color: #6b7280 !important; }
+.fc .fc-event-rechazada  { background-color: #ef4444 !important; border-color: #ef4444 !important; }
+.fc .fc-event-cancelada  { background-color: #ef4444 !important; border-color: #ef4444 !important; }
