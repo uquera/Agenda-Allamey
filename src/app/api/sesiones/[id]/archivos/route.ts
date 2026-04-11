@@ -46,7 +46,7 @@ export async function POST(
   const buffer = Buffer.from(await file.arrayBuffer())
   await writeFile(path.join(uploadDir, filename), buffer)
 
-  const url = `/uploads/sesiones/${id}/${filename}`
+  const url = `/api/files/sesiones/${id}/${filename}`
   const mime = file.type
 
   let tipo = "otro"

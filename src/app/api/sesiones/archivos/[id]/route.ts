@@ -18,7 +18,10 @@ export async function DELETE(
   if (!archivo) return NextResponse.json({ error: "No encontrado" }, { status: 404 })
 
   try {
-    await unlink(path.join(process.cwd(), "public", archivo.url))
+    const physicalPath = archivo.url.startsWith("/api/files/")
+      ? path.join(process.cwd(), "public", "uploads", archivo.url.replace("/api/files/", ""))
+      : path.join(process.cwd(), "public", archivo.url)
+    await unlink(physicalPath)
   } catch { /* file may not exist */ }
 
   await prisma.sesionArchivo.delete({ where: { id } })

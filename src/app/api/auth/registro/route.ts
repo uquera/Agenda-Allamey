@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server"
 import bcrypt from "bcryptjs"
 import { prisma } from "@/lib/prisma"
-import { enviarBienvenidaPaciente } from "@/lib/email"
+import { enviarBienvenidaPaciente, enviarNuevoRegistroAlAdmin } from "@/lib/email"
 
 async function generarCodigoPaciente(): Promise<string> {
   const year = new Date().getFullYear()
@@ -61,6 +61,12 @@ export async function POST(req: Request) {
 
     // Enviar correo de bienvenida (no bloquea la respuesta)
     enviarBienvenidaPaciente(email, name).catch(() => {})
+
+    // Notificar al admin / correo adicional del nuevo registro
+    const notifyEmails = [process.env.ADMIN_EMAIL, process.env.NOTIFY_EMAIL].filter(Boolean) as string[]
+    if (notifyEmails.length) {
+      enviarNuevoRegistroAlAdmin(notifyEmails, name, email).catch(() => {})
+    }
 
     return NextResponse.json({ id: user.id }, { status: 201 })
   } catch {

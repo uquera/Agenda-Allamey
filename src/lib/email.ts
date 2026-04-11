@@ -452,12 +452,13 @@ export async function enviarResumenSesion(
 }
 
 export async function enviarNuevaSolicitudAlAdmin(
-  adminEmail: string,
+  adminEmails: string | string[],
   nombrePaciente: string,
   fecha: Date,
   modalidad: string,
   motivoConsulta?: string | null
 ) {
+  const recipients = Array.isArray(adminEmails) ? adminEmails.join(", ") : adminEmails
   const fechaStr = format(fecha, "EEEE d 'de' MMMM 'de' yyyy 'a las' HH:mm", { locale: es })
   const modalidadStr = modalidad === "ONLINE" ? "Online (videollamada)" : "Presencial en consulta"
 
@@ -487,8 +488,38 @@ export async function enviarNuevaSolicitudAlAdmin(
 
   await transporter.sendMail({
     from: process.env.EMAIL_FROM,
-    to: adminEmail,
+    to: recipients,
     subject: `Nueva solicitud de cita — ${nombrePaciente}`,
+    html,
+  })
+}
+
+export async function enviarNuevoRegistroAlAdmin(
+  adminEmails: string[],
+  nombrePaciente: string,
+  emailPaciente: string
+) {
+  const html = emailWrapper(`
+    <h2 style="margin:0 0 8px;color:${grayColor};font-size:22px;">Nuevo paciente registrado</h2>
+    <p style="margin:0 0 24px;color:#888;font-size:14px;">Un nuevo paciente se ha registrado en el portal</p>
+
+    <div style="background:#fff8f8;border-left:4px solid ${brandColor};padding:16px 20px;border-radius:0 8px 8px 0;margin:0 0 24px;">
+      <p style="margin:0;color:${grayColor};font-size:14px;"><strong>Nombre:</strong> ${nombrePaciente}</p>
+      <p style="margin:8px 0 0;color:${grayColor};font-size:14px;"><strong>Correo:</strong> ${emailPaciente}</p>
+    </div>
+
+    <div style="text-align:center;margin:32px 0;">
+      <a href="${process.env.NEXT_PUBLIC_APP_URL}/admin/pacientes"
+         style="background:${brandColor};color:#ffffff;padding:14px 32px;border-radius:8px;text-decoration:none;font-size:15px;font-weight:600;">
+        Ver pacientes
+      </a>
+    </div>
+  `)
+
+  await transporter.sendMail({
+    from: process.env.EMAIL_FROM,
+    to: adminEmails.join(", "),
+    subject: `Nuevo paciente registrado — ${nombrePaciente}`,
     html,
   })
 }

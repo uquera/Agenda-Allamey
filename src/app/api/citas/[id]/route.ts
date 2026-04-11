@@ -6,6 +6,29 @@ import {
   enviarRechazoRcita,
 } from "@/lib/email"
 
+async function hayConflictoCita(fecha: Date, duracion: number, excludeId?: string): Promise<boolean> {
+  const ventanaInicio = new Date(fecha.getTime() - 8 * 60 * 60 * 1000)
+  const ventanaFin = new Date(fecha.getTime() + duracion * 60 * 1000)
+
+  const citas = await prisma.cita.findMany({
+    where: {
+      estado: { notIn: ["RECHAZADA", "CANCELADA"] },
+      ...(excludeId ? { id: { not: excludeId } } : {}),
+      fecha: { gte: ventanaInicio, lte: ventanaFin },
+    },
+    select: { id: true, fecha: true, duracion: true },
+  })
+
+  const nuevoInicio = fecha.getTime()
+  const nuevoFin = nuevoInicio + duracion * 60 * 1000
+
+  return citas.some((c) => {
+    const existInicio = c.fecha.getTime()
+    const existFin = existInicio + c.duracion * 60 * 1000
+    return nuevoInicio < existFin && existInicio < nuevoFin
+  })
+}
+
 // PATCH — aprobar / rechazar / reagendar (solo admin)
 export async function PATCH(
   req: Request,
@@ -25,6 +48,10 @@ export async function PATCH(
     include: { paciente: { include: { user: true } } },
   })
   if (!cita) return NextResponse.json({ error: "Cita no encontrada" }, { status: 404 })
+
+  if (nuevaFecha && await hayConflictoCita(new Date(nuevaFecha), cita.duracion, id)) {
+    return NextResponse.json({ error: "Ya existe una cita en ese horario" }, { status: 409 })
+  }
 
   const updateData: Record<string, unknown> = { estado, notasAdmin }
   if (linkSesion !== undefined) updateData.linkSesion = linkSesion

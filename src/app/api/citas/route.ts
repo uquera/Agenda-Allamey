@@ -35,6 +35,29 @@ export async function GET(req: Request) {
   return NextResponse.json(citas)
 }
 
+async function hayConflictoCita(fecha: Date, duracion: number, excludeId?: string): Promise<boolean> {
+  const ventanaInicio = new Date(fecha.getTime() - 8 * 60 * 60 * 1000)
+  const ventanaFin = new Date(fecha.getTime() + duracion * 60 * 1000)
+
+  const citas = await prisma.cita.findMany({
+    where: {
+      estado: { notIn: ["RECHAZADA", "CANCELADA"] },
+      ...(excludeId ? { id: { not: excludeId } } : {}),
+      fecha: { gte: ventanaInicio, lte: ventanaFin },
+    },
+    select: { id: true, fecha: true, duracion: true },
+  })
+
+  const nuevoInicio = fecha.getTime()
+  const nuevoFin = nuevoInicio + duracion * 60 * 1000
+
+  return citas.some((c) => {
+    const existInicio = c.fecha.getTime()
+    const existFin = existInicio + c.duracion * 60 * 1000
+    return nuevoInicio < existFin && existInicio < nuevoFin
+  })
+}
+
 // POST — crear cita (admin: para cualquier paciente, aprobada directamente; paciente: solicitud propia)
 export async function POST(req: Request) {
   const session = await auth()
@@ -49,6 +72,11 @@ export async function POST(req: Request) {
   if (session.user.role === "ADMIN") {
     const { pacienteId } = body
     if (!pacienteId) return NextResponse.json({ error: "pacienteId es requerido" }, { status: 400 })
+
+    const dur = duracion || 60
+    if (await hayConflictoCita(new Date(fecha), dur)) {
+      return NextResponse.json({ error: "Ya existe una cita en ese horario" }, { status: 409 })
+    }
 
     const cita = await prisma.cita.create({
       data: {
@@ -73,6 +101,10 @@ export async function POST(req: Request) {
   })
   if (!paciente) return NextResponse.json({ error: "Paciente no encontrado" }, { status: 404 })
 
+  if (await hayConflictoCita(new Date(fecha), duracion || 60)) {
+    return NextResponse.json({ error: "Ese horario ya está ocupado, por favor elige otro" }, { status: 409 })
+  }
+
   const cita = await prisma.cita.create({
     data: {
       pacienteId: paciente.id,
@@ -95,10 +127,10 @@ export async function POST(req: Request) {
     console.error("Error enviando email al paciente:", err)
   }
 
-  const adminEmail = process.env.ADMIN_EMAIL
-  if (adminEmail) {
+  const adminEmails = [process.env.ADMIN_EMAIL, process.env.NOTIFY_EMAIL].filter(Boolean) as string[]
+  if (adminEmails.length) {
     enviarNuevaSolicitudAlAdmin(
-      adminEmail,
+      adminEmails,
       paciente.user.name || "Paciente",
       new Date(fecha),
       modalidad || "PRESENCIAL",
