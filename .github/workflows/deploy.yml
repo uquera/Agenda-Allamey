@@ -19,6 +19,7 @@ jobs:
             cd /var/www/agenda-allamey
             git pull origin master
             npm install --production=false
+            npx prisma generate
             npm run build
             pm2 restart agenda-allamey --update-env
             echo "Deploy completado: $(date)"
