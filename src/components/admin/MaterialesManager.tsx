@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useRef } from "react"
 import { useRouter } from "next/navigation"
 import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -10,7 +10,7 @@ import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Badge } from "@/components/ui/badge"
-import { Plus, BookOpen, FileText, Video, Link as LinkIcon, Music, Dumbbell, Users, Loader2, Trash2, Pencil, RefreshCw } from "lucide-react"
+import { Plus, BookOpen, FileText, Video, Link as LinkIcon, Music, Dumbbell, Users, Loader2, Trash2, Pencil, RefreshCw, Paperclip, X } from "lucide-react"
 import { format } from "date-fns"
 import { es } from "date-fns/locale"
 import { toast } from "sonner"
@@ -26,6 +26,8 @@ interface Material {
   totalAsignaciones: number
   createdAt: string
 }
+
+const TIPOS_CON_ARCHIVO = ["PDF", "AUDIO", "EJERCICIO"]
 
 interface Paciente {
   id: string
@@ -63,6 +65,15 @@ export default function MaterialesManager({ materiales, pacientes }: Props) {
   const [renovandoId, setRenovandoId] = useState<string | null>(null)
   const [pacientesSeleccionados, setPacientesSeleccionados] = useState<string[]>([])
 
+  // File upload state for new material
+  const fileNuevoRef = useRef<HTMLInputElement>(null)
+  const [fileNuevo, setFileNuevo] = useState<File | null>(null)
+
+  // File upload state for edit material
+  const fileEditarRef = useRef<HTMLInputElement>(null)
+  const [fileEditar, setFileEditar] = useState<File | null>(null)
+  const [quitarArchivoEditar, setQuitarArchivoEditar] = useState(false)
+
   const [form, setForm] = useState<{
     titulo: string
     descripcion: string
@@ -94,6 +105,8 @@ export default function MaterialesManager({ materiales, pacientes }: Props) {
       tipo: m.tipo,
       contenido: m.contenido || "",
     })
+    setFileEditar(null)
+    setQuitarArchivoEditar(false)
     setModalEditar(m)
   }
 
@@ -108,6 +121,20 @@ export default function MaterialesManager({ materiales, pacientes }: Props) {
         body: JSON.stringify(formEditar),
       })
       if (!res.ok) throw new Error()
+
+      // If removing existing file
+      if (quitarArchivoEditar && modalEditar.archivoUrl) {
+        await fetch(`/api/materiales/${modalEditar.id}/archivo`, { method: "DELETE" })
+      }
+
+      // If uploading new file
+      if (fileEditar) {
+        const fd = new FormData()
+        fd.append("file", fileEditar)
+        const uploadRes = await fetch(`/api/materiales/${modalEditar.id}/archivo`, { method: "POST", body: fd })
+        if (!uploadRes.ok) toast.error("Material guardado pero el archivo no pudo subirse")
+      }
+
       toast.success("Material actualizado")
       setModalEditar(null)
       router.refresh()
@@ -128,9 +155,19 @@ export default function MaterialesManager({ materiales, pacientes }: Props) {
         body: JSON.stringify(form),
       })
       if (!res.ok) throw new Error()
+      const nuevo = await res.json()
+
+      if (fileNuevo) {
+        const fd = new FormData()
+        fd.append("file", fileNuevo)
+        const uploadRes = await fetch(`/api/materiales/${nuevo.id}/archivo`, { method: "POST", body: fd })
+        if (!uploadRes.ok) toast.error("Material creado pero el archivo no pudo subirse")
+      }
+
       toast.success("Material creado")
       setModalNuevo(false)
       setForm({ titulo: "", descripcion: "", tipo: "PDF", contenido: "" })
+      setFileNuevo(null)
       router.refresh()
     } catch {
       toast.error("Error al crear el material")
@@ -255,7 +292,13 @@ export default function MaterialesManager({ materiales, pacientes }: Props) {
                           >
                             {m.tipo}
                           </Badge>
-                          {m.descripcion && (
+                          {m.archivoUrl && (
+                            <span className="text-xs text-gray-400 flex items-center gap-1">
+                              <Paperclip size={11} />
+                              Archivo adjunto
+                            </span>
+                          )}
+                          {m.descripcion && !m.archivoUrl && (
                             <span className="text-xs text-gray-400 truncate">{m.descripcion}</span>
                           )}
                         </div>
@@ -382,8 +425,39 @@ export default function MaterialesManager({ materiales, pacientes }: Props) {
               />
             </div>
 
+            {TIPOS_CON_ARCHIVO.includes(form.tipo) && (
+              <div className="space-y-1.5">
+                <Label className="text-sm">Archivo <span className="text-gray-400">(opcional)</span></Label>
+                <input
+                  ref={fileNuevoRef}
+                  type="file"
+                  className="hidden"
+                  accept=".pdf,.mp3,.wav,.ogg,.m4a,.aac,.jpg,.jpeg,.png,.webp,.docx,.doc,.xlsx,.xls"
+                  onChange={(e) => setFileNuevo(e.target.files?.[0] ?? null)}
+                />
+                {fileNuevo ? (
+                  <div className="flex items-center gap-2 p-2 rounded-lg border border-gray-200 bg-gray-50">
+                    <Paperclip size={13} className="text-gray-500 shrink-0" />
+                    <span className="text-xs text-gray-700 truncate flex-1">{fileNuevo.name}</span>
+                    <button onClick={() => { setFileNuevo(null); if (fileNuevoRef.current) fileNuevoRef.current.value = "" }} className="text-gray-400 hover:text-red-500">
+                      <X size={13} />
+                    </button>
+                  </div>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={() => fileNuevoRef.current?.click()}
+                    className="flex items-center gap-2 text-sm text-gray-500 hover:text-gray-800 px-3 py-2 rounded-lg border border-dashed border-gray-300 hover:border-gray-400 w-full transition-colors"
+                  >
+                    <Paperclip size={14} />
+                    Adjuntar archivo
+                  </button>
+                )}
+              </div>
+            )}
+
             <div className="flex gap-2 pt-1">
-              <Button variant="outline" onClick={() => setModalNuevo(false)} className="flex-1 h-9">
+              <Button variant="outline" onClick={() => { setModalNuevo(false); setFileNuevo(null) }} className="flex-1 h-9">
                 Cancelar
               </Button>
               <Button
@@ -457,6 +531,46 @@ export default function MaterialesManager({ materiales, pacientes }: Props) {
                 className="h-9"
               />
             </div>
+
+            {TIPOS_CON_ARCHIVO.includes(formEditar.tipo) && (
+              <div className="space-y-1.5">
+                <Label className="text-sm">Archivo</Label>
+                <input
+                  ref={fileEditarRef}
+                  type="file"
+                  className="hidden"
+                  accept=".pdf,.mp3,.wav,.ogg,.m4a,.aac,.jpg,.jpeg,.png,.webp,.docx,.doc,.xlsx,.xls"
+                  onChange={(e) => { setFileEditar(e.target.files?.[0] ?? null); setQuitarArchivoEditar(false) }}
+                />
+                {fileEditar ? (
+                  <div className="flex items-center gap-2 p-2 rounded-lg border border-gray-200 bg-gray-50">
+                    <Paperclip size={13} className="text-gray-500 shrink-0" />
+                    <span className="text-xs text-gray-700 truncate flex-1">{fileEditar.name}</span>
+                    <button onClick={() => { setFileEditar(null); if (fileEditarRef.current) fileEditarRef.current.value = "" }} className="text-gray-400 hover:text-red-500">
+                      <X size={13} />
+                    </button>
+                  </div>
+                ) : modalEditar?.archivoUrl && !quitarArchivoEditar ? (
+                  <div className="flex items-center gap-2 p-2 rounded-lg border border-gray-200 bg-gray-50">
+                    <Paperclip size={13} className="text-gray-500 shrink-0" />
+                    <span className="text-xs text-gray-700 truncate flex-1">Archivo existente</span>
+                    <button onClick={() => fileEditarRef.current?.click()} className="text-xs text-blue-600 hover:underline">Reemplazar</button>
+                    <button onClick={() => setQuitarArchivoEditar(true)} className="text-gray-400 hover:text-red-500 ml-1">
+                      <X size={13} />
+                    </button>
+                  </div>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={() => fileEditarRef.current?.click()}
+                    className="flex items-center gap-2 text-sm text-gray-500 hover:text-gray-800 px-3 py-2 rounded-lg border border-dashed border-gray-300 hover:border-gray-400 w-full transition-colors"
+                  >
+                    <Paperclip size={14} />
+                    {quitarArchivoEditar ? "Adjuntar archivo nuevo" : "Adjuntar archivo"}
+                  </button>
+                )}
+              </div>
+            )}
 
             <div className="flex gap-2 pt-1">
               <Button variant="outline" onClick={() => setModalEditar(null)} className="flex-1 h-9">

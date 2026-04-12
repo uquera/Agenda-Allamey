@@ -3,7 +3,7 @@
 import Link from "next/link"
 import Image from "next/image"
 import { usePathname } from "next/navigation"
-import { CalendarDays, Clock, FileText, BookOpen, LogOut, Home, ShieldCheck, ClipboardList, Lock } from "lucide-react"
+import { CalendarDays, Clock, FileText, BookOpen, LogOut, Home, ShieldCheck, ClipboardList, Lock, FolderOpen } from "lucide-react"
 import { BRAND } from "@/lib/brand"
 import { MODULES, type ModuleKey } from "@/lib/modules"
 import { signOut } from "next-auth/react"
@@ -21,6 +21,7 @@ const navItems: {
   { href: "/paciente/citas",          label: "Mis citas",        icon: Clock,         module: "agendar" },
   { href: "/paciente/sesiones",       label: "Mis sesiones",     icon: FileText,      module: "sesiones" },
   { href: "/paciente/materiales",     label: "Mis materiales",   icon: BookOpen,      module: "materiales" },
+  { href: "/paciente/documentos",     label: "Mis documentos",   icon: FolderOpen,    module: "documentos" },
   { href: "/paciente/anamnesis",      label: "Historia clínica", icon: ClipboardList, module: "anamnesis" },
   { href: "/paciente/consentimiento", label: "Consentimiento",   icon: ShieldCheck,   module: "consentimiento" },
 ]

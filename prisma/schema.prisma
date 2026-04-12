@@ -249,6 +249,7 @@ model SesionArchivo {
   tipo      String
   url       String
   tamano    Int?
+  privado   Boolean  @default(false)
   createdAt DateTime @default(now())
 
   sesion SesionNota @relation(fields: [sesionId], references: [id], onDelete: Cascade)

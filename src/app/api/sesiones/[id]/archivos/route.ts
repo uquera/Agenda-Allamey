@@ -56,8 +56,11 @@ export async function POST(
   else if (mime.includes("word") || mime.includes("document") || ext === "docx" || ext === "doc") tipo = "word"
   else if (mime === "application/pdf" || ext === "pdf") tipo = "pdf"
 
+  const privadoRaw = formData.get("privado") as string | null
+  const privado = privadoRaw === "true"
+
   const archivo = await prisma.sesionArchivo.create({
-    data: { sesionId: id, nombre: file.name, tipo, url, tamano: file.size },
+    data: { sesionId: id, nombre: file.name, tipo, url, tamano: file.size, privado },
   })
 
   return NextResponse.json(archivo, { status: 201 })

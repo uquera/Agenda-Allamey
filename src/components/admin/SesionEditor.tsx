@@ -17,6 +17,7 @@ import {
   Bold, Italic, List, ListOrdered, Heading2, Undo, Redo,
   Save, Eye, EyeOff, FileDown, Loader2, ArrowLeft, User,
   ImageIcon, Paperclip, FileSpreadsheet, FileText, File, Trash2, ExternalLink, Music,
+  Lock, Globe,
 } from "lucide-react"
 import { format } from "date-fns"
 import { es } from "date-fns/locale"
@@ -28,6 +29,7 @@ interface Archivo {
   tipo: string
   url: string
   tamano: number | null
+  privado: boolean
   createdAt: string
 }
 
@@ -178,6 +180,18 @@ export default function SesionEditor({ sesion }: Props) {
     if (res.ok) {
       setArchivos((prev) => prev.filter((a) => a.id !== id))
       toast.success("Archivo eliminado")
+    }
+  }
+
+  const togglePrivado = async (id: string, actual: boolean) => {
+    const res = await fetch(`/api/sesiones/archivos/${id}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ privado: !actual }),
+    })
+    if (res.ok) {
+      setArchivos((prev) => prev.map((a) => a.id === id ? { ...a, privado: !actual } : a))
+      toast.success(!actual ? "Marcado como clínico (solo tú lo ves)" : "Ahora visible para el paciente")
     }
   }
 
@@ -408,6 +422,18 @@ export default function SesionEditor({ sesion }: Props) {
                     {a.tamano && <p className="text-xs text-gray-400">{formatBytes(a.tamano)}</p>}
                   </div>
                   <div className="flex items-center gap-1 shrink-0">
+                    <button
+                      onClick={() => togglePrivado(a.id, a.privado)}
+                      title={a.privado ? "Clínico — solo tú lo ves. Click para hacerlo visible al paciente" : "Visible al paciente. Click para marcarlo como clínico"}
+                      className={`flex items-center gap-1 px-2 py-1 rounded-lg text-xs font-medium transition-colors ${
+                        a.privado
+                          ? "bg-rose-50 text-rose-600 hover:bg-rose-100"
+                          : "bg-green-50 text-green-700 hover:bg-green-100"
+                      }`}
+                    >
+                      {a.privado ? <Lock size={12} /> : <Globe size={12} />}
+                      {a.privado ? "Clínico" : "Paciente"}
+                    </button>
                     <a href={a.url} target="_blank" rel="noopener noreferrer"
                       className="p-1.5 text-gray-400 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-colors" title="Abrir">
                       <ExternalLink size={14} />

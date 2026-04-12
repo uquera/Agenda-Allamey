@@ -20,7 +20,12 @@ export default async function SesionesPacientePage() {
 
   const sesiones = await prisma.sesionNota.findMany({
     where: { pacienteId: paciente.id, publicado: true },
-    include: { archivos: { orderBy: { createdAt: "asc" } } },
+    include: {
+      archivos: {
+        where: { privado: false },
+        orderBy: { createdAt: "asc" },
+      },
+    },
     orderBy: { fechaSesion: "desc" },
   })
 

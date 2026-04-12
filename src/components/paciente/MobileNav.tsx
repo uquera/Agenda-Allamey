@@ -2,7 +2,7 @@
 
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { Home, CalendarDays, Clock, BookOpen, ClipboardList } from "lucide-react"
+import { Home, CalendarDays, Clock, BookOpen, ClipboardList, FolderOpen } from "lucide-react"
 import { MODULES } from "@/lib/modules"
 import { cn } from "@/lib/utils"
 
@@ -14,6 +14,7 @@ export default function MobileNav({ consentimientoFirmado = true }: { consentimi
     MODULES.agendar    ? { href: "/paciente/agendar",    label: "Cita",       icon: CalendarDays } : null,
     MODULES.agendar    ? { href: "/paciente/citas",      label: "Mis citas",  icon: Clock } : null,
     MODULES.materiales ? { href: "/paciente/materiales", label: "Materiales", icon: BookOpen } : null,
+    MODULES.documentos ? { href: "/paciente/documentos", label: "Documentos", icon: FolderOpen } : null,
     MODULES.anamnesis  ? { href: "/paciente/anamnesis",  label: "Historia",   icon: ClipboardList } : null,
   ].filter(Boolean) as { href: string; label: string; icon: React.ElementType; exact?: boolean }[]
 

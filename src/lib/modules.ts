@@ -20,6 +20,8 @@ export const MODULES = {
   anamnesis:      process.env.NEXT_PUBLIC_MODULE_ANAMNESIS      !== "false",
   /** Informed consent (/paciente/consentimiento) */
   consentimiento: process.env.NEXT_PUBLIC_MODULE_CONSENTIMIENTO !== "false",
+  /** Patient documents folder — files shared by the doctor (/paciente/documentos) */
+  documentos:     process.env.NEXT_PUBLIC_MODULE_DOCUMENTOS     !== "false",
 } as const
 
 export type ModuleKey = keyof typeof MODULES

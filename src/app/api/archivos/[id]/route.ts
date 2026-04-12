@@ -21,7 +21,9 @@ export async function DELETE(
   // Delete physical file if not a URL type
   if (archivo.tipo !== "URL") {
     try {
-      const filePath = path.join(process.cwd(), "public", archivo.url)
+      const filePath = archivo.url.startsWith("/api/files/")
+        ? path.join(process.cwd(), "public", "uploads", archivo.url.replace("/api/files/", ""))
+        : path.join(process.cwd(), "public", archivo.url)
       await unlink(filePath)
     } catch {
       // File may already be missing, continue
