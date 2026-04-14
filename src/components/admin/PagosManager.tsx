@@ -9,7 +9,7 @@ import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
-import { CreditCard, Plus, CheckCircle, Loader2, DollarSign, Clock, ChevronDown, ChevronUp, Layers } from "lucide-react"
+import { CreditCard, Plus, CheckCircle, Loader2, DollarSign, Clock, ChevronDown, ChevronUp, Layers, Pencil, Trash2 } from "lucide-react"
 import { format } from "date-fns"
 import { es } from "date-fns/locale"
 import { toast } from "sonner"
@@ -72,6 +72,16 @@ export default function PagosManager({ pagos, planes, pacientes, resumen }: Prop
   const [loading, setLoading] = useState(false)
   const [planesExpandidos, setPlanesExpandidos] = useState<Set<string>>(new Set())
 
+  // Estados para editar
+  const [modalEditar, setModalEditar] = useState(false)
+  const [pagoEditando, setPagoEditando] = useState<Pago | null>(null)
+  const [formEditar, setFormEditar] = useState({
+    monto: "", moneda: "USD", metodoPago: "ZELLE", referencia: "", notas: "", estado: "PENDIENTE",
+  })
+
+  // Estado para confirmar eliminación
+  const [confirmarEliminar, setConfirmarEliminar] = useState<{ tipo: "pago" | "plan"; id: string } | null>(null)
+
   const [formUnico, setFormUnico] = useState({
     pacienteId: "", monto: "", moneda: "USD", metodoPago: "ZELLE", referencia: "", notas: "",
   })
@@ -82,7 +92,7 @@ export default function PagosManager({ pagos, planes, pacientes, resumen }: Prop
   const pagosSueltos = pagos.filter((p) => !p.planCuotasId)
 
   const montoCuota = formCuotas.montoTotal && formCuotas.numeroCuotas
-    ? (parseFloat(formCuotas.montoTotal) / parseInt(formCuotas.numeroCuotas)).toFixed(2)
+    ? Math.round(parseFloat(formCuotas.montoTotal) / parseInt(formCuotas.numeroCuotas))
     : null
 
   async function marcarPagado(id: string) {
@@ -96,6 +106,64 @@ export default function PagosManager({ pagos, planes, pacientes, resumen }: Prop
       router.refresh()
     } catch {
       toast.error("Error al actualizar")
+    }
+  }
+
+  function abrirEditar(pago: Pago) {
+    setPagoEditando(pago)
+    setFormEditar({
+      monto: String(Math.round(pago.monto)),
+      moneda: pago.moneda,
+      metodoPago: pago.metodoPago,
+      referencia: pago.referencia ?? "",
+      notas: pago.notas ?? "",
+      estado: pago.estado,
+    })
+    setModalEditar(true)
+  }
+
+  async function guardarEdicion() {
+    if (!pagoEditando) return
+    setLoading(true)
+    try {
+      const res = await fetch(`/api/pagos/${pagoEditando.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          ...formEditar,
+          monto: parseFloat(formEditar.monto),
+          ...(formEditar.estado === "PAGADO" && !pagoEditando.fechaPago
+            ? { fechaPago: new Date().toISOString() }
+            : {}),
+        }),
+      })
+      if (!res.ok) throw new Error()
+      toast.success("Pago actualizado")
+      setModalEditar(false)
+      router.refresh()
+    } catch {
+      toast.error("Error al actualizar el pago")
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  async function eliminar() {
+    if (!confirmarEliminar) return
+    setLoading(true)
+    try {
+      const url = confirmarEliminar.tipo === "pago"
+        ? `/api/pagos/${confirmarEliminar.id}`
+        : `/api/pagos/cuotas/${confirmarEliminar.id}`
+      const res = await fetch(url, { method: "DELETE" })
+      if (!res.ok) throw new Error()
+      toast.success(confirmarEliminar.tipo === "pago" ? "Pago eliminado" : "Plan eliminado")
+      setConfirmarEliminar(null)
+      router.refresh()
+    } catch {
+      toast.error("Error al eliminar")
+    } finally {
+      setLoading(false)
     }
   }
 
@@ -184,7 +252,7 @@ export default function PagosManager({ pagos, planes, pacientes, resumen }: Prop
               </div>
               <div>
                 <p className="text-xs text-gray-500 font-medium">Total cobrado (USD)</p>
-                <p className="text-2xl font-bold text-gray-800">${resumen.totalCobradoUSD.toFixed(2)}</p>
+                <p className="text-2xl font-bold text-gray-800">${Math.round(resumen.totalCobradoUSD)}</p>
               </div>
             </CardContent>
           </Card>
@@ -242,7 +310,7 @@ export default function PagosManager({ pagos, planes, pacientes, resumen }: Prop
                           {p.codigoPaciente && <p className="text-xs text-gray-400 font-mono">{p.codigoPaciente}</p>}
                         </td>
                         <td className="px-4 py-3 font-semibold">
-                          {p.moneda === "USD" ? "$" : "Bs."} {p.monto.toFixed(2)}
+                          {p.moneda === "USD" ? "$" : "Bs."} {Math.round(p.monto)}
                         </td>
                         <td className="px-4 py-3 text-gray-500">{metodolabel[p.metodoPago]}</td>
                         <td className="px-4 py-3 text-gray-500 text-xs">
@@ -255,18 +323,36 @@ export default function PagosManager({ pagos, planes, pacientes, resumen }: Prop
                             {p.estado === "PENDIENTE" ? "Pendiente" : p.estado === "PAGADO" ? "Pagado" : "Cancelado"}
                           </span>
                         </td>
-                        <td className="px-4 py-3 text-right">
-                          {p.estado === "PENDIENTE" && (
+                        <td className="px-4 py-3">
+                          <div className="flex items-center gap-1 justify-end">
+                            {p.estado === "PENDIENTE" && (
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                className="h-7 text-xs text-green-600 border-green-200 hover:bg-green-50"
+                                onClick={() => marcarPagado(p.id)}
+                              >
+                                <CheckCircle size={12} className="mr-1" />
+                                Marcar pagado
+                              </Button>
+                            )}
                             <Button
-                              size="sm"
-                              variant="outline"
-                              className="h-7 text-xs text-green-600 border-green-200 hover:bg-green-50"
-                              onClick={() => marcarPagado(p.id)}
+                              size="icon"
+                              variant="ghost"
+                              className="h-7 w-7 text-gray-400 hover:text-gray-600"
+                              onClick={() => abrirEditar(p)}
                             >
-                              <CheckCircle size={12} className="mr-1" />
-                              Marcar pagado
+                              <Pencil size={13} />
                             </Button>
-                          )}
+                            <Button
+                              size="icon"
+                              variant="ghost"
+                              className="h-7 w-7 text-red-400 hover:text-red-600 hover:bg-red-50"
+                              onClick={() => setConfirmarEliminar({ tipo: "pago", id: p.id })}
+                            >
+                              <Trash2 size={13} />
+                            </Button>
+                          </div>
                         </td>
                       </tr>
                     ))}
@@ -298,52 +384,62 @@ export default function PagosManager({ pagos, planes, pacientes, resumen }: Prop
                 return (
                   <Card key={plan.id} className="border-0 shadow-sm overflow-hidden">
                     <CardContent className="p-0">
-                      <button
-                        className="w-full flex items-center gap-4 px-4 py-3 hover:bg-gray-50 transition-colors text-left"
-                        onClick={() => togglePlan(plan.id)}
-                      >
-                        <div className="w-9 h-9 rounded-xl bg-purple-50 flex items-center justify-center shrink-0">
-                          <Layers size={16} className="text-purple-600" />
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center gap-2">
-                            <p className="text-sm font-semibold text-gray-800">{plan.paciente.nombre}</p>
-                            {plan.descripcion && (
-                              <span className="text-xs text-gray-400 truncate">— {plan.descripcion}</span>
-                            )}
+                      <div className="flex items-center">
+                        <button
+                          className="flex-1 flex items-center gap-4 px-4 py-3 hover:bg-gray-50 transition-colors text-left"
+                          onClick={() => togglePlan(plan.id)}
+                        >
+                          <div className="w-9 h-9 rounded-xl bg-purple-50 flex items-center justify-center shrink-0">
+                            <Layers size={16} className="text-purple-600" />
                           </div>
-                          <div className="flex items-center gap-3 mt-1.5">
-                            <div className="flex-1 h-1.5 bg-gray-100 rounded-full overflow-hidden">
-                              <div
-                                className="h-full rounded-full transition-all"
-                                style={{
-                                  width: `${pct}%`,
-                                  backgroundColor: pct === 100 ? "#16a34a" : "var(--brand)",
-                                }}
-                              />
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-2">
+                              <p className="text-sm font-semibold text-gray-800">{plan.paciente.nombre}</p>
+                              {plan.descripcion && (
+                                <span className="text-xs text-gray-400 truncate">— {plan.descripcion}</span>
+                              )}
                             </div>
-                            <span className="text-xs text-gray-500 shrink-0">
-                              {pagadas}/{plan.numeroCuotas} cuotas
-                            </span>
+                            <div className="flex items-center gap-3 mt-1.5">
+                              <div className="flex-1 h-1.5 bg-gray-100 rounded-full overflow-hidden">
+                                <div
+                                  className="h-full rounded-full transition-all"
+                                  style={{
+                                    width: `${pct}%`,
+                                    backgroundColor: pct === 100 ? "#16a34a" : "var(--brand)",
+                                  }}
+                                />
+                              </div>
+                              <span className="text-xs text-gray-500 shrink-0">
+                                {pagadas}/{plan.numeroCuotas} cuotas
+                              </span>
+                            </div>
                           </div>
-                        </div>
-                        <div className="text-right shrink-0">
-                          <p className="text-sm font-bold text-gray-800">
-                            {plan.moneda === "USD" ? "$" : "Bs."} {plan.montoTotal.toFixed(2)}
-                          </p>
-                          <p className="text-xs text-gray-400">
-                            {(plan.montoTotal / plan.numeroCuotas).toFixed(2)} c/u
-                          </p>
-                        </div>
-                        {expandido
-                          ? <ChevronUp size={16} className="text-gray-400 shrink-0" />
-                          : <ChevronDown size={16} className="text-gray-400 shrink-0" />}
-                      </button>
+                          <div className="text-right shrink-0">
+                            <p className="text-sm font-bold text-gray-800">
+                              {plan.moneda === "USD" ? "$" : "Bs."} {Math.round(plan.montoTotal)}
+                            </p>
+                            <p className="text-xs text-gray-400">
+                              {Math.round(plan.montoTotal / plan.numeroCuotas)} c/u
+                            </p>
+                          </div>
+                          {expandido
+                            ? <ChevronUp size={16} className="text-gray-400 shrink-0" />
+                            : <ChevronDown size={16} className="text-gray-400 shrink-0" />}
+                        </button>
+                        <Button
+                          size="icon"
+                          variant="ghost"
+                          className="h-8 w-8 mr-2 text-red-400 hover:text-red-600 hover:bg-red-50 shrink-0"
+                          onClick={(e) => { e.stopPropagation(); setConfirmarEliminar({ tipo: "plan", id: plan.id }) }}
+                        >
+                          <Trash2 size={14} />
+                        </Button>
+                      </div>
 
                       {!expandido && pendiente && (
                         <div className="px-4 pb-3 flex items-center justify-between">
                           <span className="text-xs text-amber-600 font-medium">
-                            Cuota {pendiente.numeroCuota} pendiente · {plan.moneda === "USD" ? "$" : "Bs."}{pendiente.monto.toFixed(2)}
+                            Cuota {pendiente.numeroCuota} pendiente · {plan.moneda === "USD" ? "$" : "Bs."}{Math.round(pendiente.monto)}
                           </span>
                           <Button
                             size="sm"
@@ -371,7 +467,7 @@ export default function PagosManager({ pagos, planes, pacientes, resumen }: Prop
                               </div>
                               <div className="flex-1">
                                 <span className="text-sm font-medium text-gray-700">
-                                  {plan.moneda === "USD" ? "$" : "Bs."} {cuota.monto.toFixed(2)}
+                                  {plan.moneda === "USD" ? "$" : "Bs."} {Math.round(cuota.monto)}
                                 </span>
                                 {cuota.referencia && (
                                   <span className="text-xs text-gray-400 ml-2">Ref: {cuota.referencia}</span>
@@ -411,6 +507,7 @@ export default function PagosManager({ pagos, planes, pacientes, resumen }: Prop
         )}
       </div>
 
+      {/* Modal: Registrar pago */}
       <Dialog open={modalNuevo} onOpenChange={(open) => { setModalNuevo(open); if (!open) setTipoPago("unico") }}>
         <DialogContent className="max-w-md">
           <DialogHeader>
@@ -447,7 +544,7 @@ export default function PagosManager({ pagos, planes, pacientes, resumen }: Prop
               <div className="grid grid-cols-2 gap-3">
                 <div className="space-y-1.5">
                   <Label className="text-sm">Monto</Label>
-                  <Input type="number" placeholder="0.00" value={formUnico.monto}
+                  <Input type="number" placeholder="0" value={formUnico.monto}
                     onChange={(e) => setFormUnico({ ...formUnico, monto: e.target.value })} className="h-9" />
                 </div>
                 <div className="space-y-1.5">
@@ -507,7 +604,7 @@ export default function PagosManager({ pagos, planes, pacientes, resumen }: Prop
               <div className="grid grid-cols-2 gap-3">
                 <div className="space-y-1.5">
                   <Label className="text-sm">Monto total</Label>
-                  <Input type="number" placeholder="0.00" value={formCuotas.montoTotal}
+                  <Input type="number" placeholder="0" value={formCuotas.montoTotal}
                     onChange={(e) => setFormCuotas({ ...formCuotas, montoTotal: e.target.value })} className="h-9" />
                 </div>
                 <div className="space-y-1.5">
@@ -536,7 +633,7 @@ export default function PagosManager({ pagos, planes, pacientes, resumen }: Prop
                 <div className="space-y-1.5">
                   <Label className="text-sm">Monto por cuota</Label>
                   <div className="h-9 px-3 flex items-center bg-gray-50 border border-gray-200 rounded-md text-sm font-semibold text-gray-700">
-                    {montoCuota ? `${formCuotas.moneda === "USD" ? "$" : "Bs."} ${montoCuota}` : "—"}
+                    {montoCuota != null ? `${formCuotas.moneda === "USD" ? "$" : "Bs."} ${montoCuota}` : "—"}
                   </div>
                 </div>
               </div>
@@ -564,6 +661,96 @@ export default function PagosManager({ pagos, planes, pacientes, resumen }: Prop
               </div>
             </div>
           )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Modal: Editar pago */}
+      <Dialog open={modalEditar} onOpenChange={(open) => { setModalEditar(open); if (!open) setPagoEditando(null) }}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Editar pago</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-1.5">
+                <Label className="text-sm">Monto</Label>
+                <Input type="number" placeholder="0" value={formEditar.monto}
+                  onChange={(e) => setFormEditar({ ...formEditar, monto: e.target.value })} className="h-9" />
+              </div>
+              <div className="space-y-1.5">
+                <Label className="text-sm">Moneda</Label>
+                <Select value={formEditar.moneda} onValueChange={(v) => v && setFormEditar({ ...formEditar, moneda: v })}>
+                  <SelectTrigger className="h-9"><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="USD">USD ($)</SelectItem>
+                    <SelectItem value="BS">Bolívares (Bs.)</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+            <div className="space-y-1.5">
+              <Label className="text-sm">Método de pago</Label>
+              <Select value={formEditar.metodoPago} onValueChange={(v) => v && setFormEditar({ ...formEditar, metodoPago: v })}>
+                <SelectTrigger className="h-9"><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  {Object.entries(metodolabel).map(([k, v]) => <SelectItem key={k} value={k}>{v}</SelectItem>)}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-1.5">
+              <Label className="text-sm">Estado</Label>
+              <Select value={formEditar.estado} onValueChange={(v) => v && setFormEditar({ ...formEditar, estado: v })}>
+                <SelectTrigger className="h-9"><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="PENDIENTE">Pendiente</SelectItem>
+                  <SelectItem value="PAGADO">Pagado</SelectItem>
+                  <SelectItem value="CANCELADO">Cancelado</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-1.5">
+              <Label className="text-sm">N° de referencia <span className="text-gray-400">(opcional)</span></Label>
+              <Input placeholder="Ej: #123456789" value={formEditar.referencia}
+                onChange={(e) => setFormEditar({ ...formEditar, referencia: e.target.value })} className="h-9" />
+            </div>
+            <div className="space-y-1.5">
+              <Label className="text-sm">Notas <span className="text-gray-400">(opcional)</span></Label>
+              <Textarea placeholder="Observaciones..." value={formEditar.notas}
+                onChange={(e) => setFormEditar({ ...formEditar, notas: e.target.value })} rows={2} className="resize-none text-sm" />
+            </div>
+            <div className="flex gap-2 pt-1">
+              <Button variant="outline" onClick={() => setModalEditar(false)} className="flex-1 h-9">Cancelar</Button>
+              <Button onClick={guardarEdicion} disabled={loading || !formEditar.monto}
+                className="flex-1 h-9 text-white" style={{ backgroundColor: "var(--brand)" }}>
+                {loading && <Loader2 size={14} className="animate-spin mr-1" />}
+                Guardar cambios
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Modal: Confirmar eliminación */}
+      <Dialog open={!!confirmarEliminar} onOpenChange={(open) => { if (!open) setConfirmarEliminar(null) }}>
+        <DialogContent className="max-w-sm">
+          <DialogHeader>
+            <DialogTitle>
+              {confirmarEliminar?.tipo === "plan" ? "Eliminar plan de cuotas" : "Eliminar pago"}
+            </DialogTitle>
+          </DialogHeader>
+          <p className="text-sm text-gray-500">
+            {confirmarEliminar?.tipo === "plan"
+              ? "Se eliminarán el plan y todas sus cuotas. Esta acción no se puede deshacer."
+              : "Este pago será eliminado permanentemente. Esta acción no se puede deshacer."}
+          </p>
+          <div className="flex gap-2 pt-2">
+            <Button variant="outline" onClick={() => setConfirmarEliminar(null)} className="flex-1 h-9">Cancelar</Button>
+            <Button onClick={eliminar} disabled={loading}
+              className="flex-1 h-9 text-white bg-red-500 hover:bg-red-600">
+              {loading && <Loader2 size={14} className="animate-spin mr-1" />}
+              Eliminar
+            </Button>
+          </div>
         </DialogContent>
       </Dialog>
     </>
