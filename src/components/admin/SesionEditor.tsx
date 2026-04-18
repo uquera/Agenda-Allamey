@@ -275,6 +275,7 @@ export default function SesionEditor({ sesion }: Props) {
   const adjuntos = archivos
 
   return (
+    <>
     <div className="max-w-3xl space-y-6">
       {/* Header */}
       <div className="flex items-center gap-3">
@@ -555,5 +556,6 @@ export default function SesionEditor({ sesion }: Props) {
         />
       </div>
     )}
+    </>
   )
 }
