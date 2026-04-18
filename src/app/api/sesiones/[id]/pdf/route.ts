@@ -27,25 +27,36 @@ function buildHtml(titulo: string, contenido: string, nombrePaciente: string, fe
   .content ul, .content ol { margin: 12px 0 12px 20px; }
   .content li { margin-bottom: 6px; }
   .footer { margin-top: 60px; padding-top: 20px; border-top: 1px solid #eee; font-size: 11px; color: #aaa; text-align: center; }
-  .save-btn {
+  .toolbar {
     position: fixed; top: 16px; right: 16px;
+    display: flex; gap: 8px; align-items: center;
+  }
+  .toolbar button {
     background: #8B1A2C; color: white; border: none;
-    padding: 10px 20px; border-radius: 8px; font-size: 14px;
+    padding: 10px 18px; border-radius: 8px; font-size: 14px;
     font-weight: 600; cursor: pointer; box-shadow: 0 2px 8px rgba(0,0,0,0.2);
     font-family: inherit;
   }
-  .save-btn:hover { background: #6e1522; }
-  @media print { .save-btn { display: none !important; } }
+  .toolbar button:hover { background: #6e1522; }
+  .toolbar .back-btn {
+    background: #f3f4f6; color: #374151; box-shadow: 0 1px 4px rgba(0,0,0,0.1);
+  }
+  .toolbar .back-btn:hover { background: #e5e7eb; }
+  @media print { .toolbar { display: none !important; } }
   @media (max-width: 600px) {
     body { padding: 30px 20px; }
     .header { flex-direction: column; gap: 12px; }
     .meta { text-align: left; }
-    .save-btn { top: 10px; right: 10px; padding: 8px 14px; font-size: 13px; }
+    .toolbar { top: 10px; right: 10px; }
+    .toolbar button { padding: 8px 12px; font-size: 13px; }
   }
 </style>
 </head>
 <body>
-  <button class="save-btn" onclick="window.print()">Guardar como PDF</button>
+  <div class="toolbar">
+    <button class="back-btn" onclick="history.back()">← Volver</button>
+    <button onclick="window.print()">Guardar como PDF</button>
+  </div>
   <div class="header">
     <div class="brand">
       <h1>ALLAMEY SANZ</h1>

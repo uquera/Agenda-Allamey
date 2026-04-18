@@ -17,7 +17,7 @@ import {
   Bold, Italic, List, ListOrdered, Heading2, Undo, Redo,
   Save, Eye, EyeOff, FileDown, Loader2, ArrowLeft, User,
   ImageIcon, Paperclip, FileSpreadsheet, FileText, File, Trash2, ExternalLink, Music,
-  Lock, Globe, X,
+  Lock, Globe,
 } from "lucide-react"
 import { format } from "date-fns"
 import { es } from "date-fns/locale"
@@ -89,11 +89,8 @@ export default function SesionEditor({ sesion }: Props) {
   const [cantidadSesiones, setCantidadSesiones] = useState(sesion.cantidadSesiones?.toString() || "")
   const [estadoSeguimiento, setEstadoSeguimiento] = useState(sesion.estadoSeguimiento || "")
   const [publicado, setPublicado] = useState(sesion.publicado)
-  // Si ya tiene PDF generado, apuntar siempre al endpoint dinámico (evita 404 por archivos borrados en deploy)
+  // Si ya tiene PDF generado, apuntar siempre al endpoint dinámico
   const [pdfUrl, setPdfUrl] = useState(sesion.pdfUrl ? `/api/sesiones/${sesion.id}/pdf` : "")
-  const [pdfHtml, setPdfHtml] = useState("")
-  const [showPdfModal, setShowPdfModal] = useState(false)
-  const [cargandoPDF, setCargandoPDF] = useState(false)
   const [saving, setSaving] = useState(false)
   const [generandoPDF, setGenerandoPDF] = useState(false)
   const [archivos, setArchivos] = useState<Archivo[]>([])
@@ -243,8 +240,7 @@ export default function SesionEditor({ sesion }: Props) {
       if (!res.ok) throw new Error()
       const data = await res.json()
       setPdfUrl(data.pdfUrl)
-      setPdfHtml(data.html)
-      setShowPdfModal(true)
+      toast.success("PDF listo. Toca 'Ver PDF' para abrirlo.")
       router.refresh()
     } catch {
       toast.error("Error al generar el PDF")
@@ -253,29 +249,11 @@ export default function SesionEditor({ sesion }: Props) {
     }
   }, [editor, titulo, sesion.id, router])
 
-  // Abre el PDF en un overlay interno — funciona en móvil sin popup blockers
-  const abrirPDF = useCallback(async () => {
-    if (pdfHtml) { setShowPdfModal(true); return }
-    setCargandoPDF(true)
-    try {
-      const res = await fetch(`/api/sesiones/${sesion.id}/pdf`)
-      if (!res.ok) throw new Error()
-      const html = await res.text()
-      setPdfHtml(html)
-      setShowPdfModal(true)
-    } catch {
-      toast.error("Error al cargar el PDF")
-    } finally {
-      setCargandoPDF(false)
-    }
-  }, [pdfHtml, sesion.id])
-
   if (!editor) return null
 
   const adjuntos = archivos
 
   return (
-    <>
     <div className="max-w-3xl space-y-6">
       {/* Header */}
       <div className="flex items-center gap-3">
@@ -499,15 +477,14 @@ export default function SesionEditor({ sesion }: Props) {
           Generar PDF
         </Button>
         {pdfUrl && (
-          <button
-            onClick={abrirPDF}
-            disabled={cargandoPDF}
-            className="inline-flex items-center gap-2 h-10 px-4 rounded-md border text-sm font-medium transition-colors hover:bg-gray-50 disabled:opacity-50"
+          <a
+            href={pdfUrl}
+            className="inline-flex items-center gap-2 h-10 px-4 rounded-md border text-sm font-medium transition-colors hover:bg-gray-50"
             style={{ color: "var(--brand)", borderColor: "var(--brand)" }}
           >
-            {cargandoPDF ? <Loader2 size={15} className="animate-spin" /> : <Eye size={15} />}
+            <Eye size={15} />
             Ver PDF
-          </button>
+          </a>
         )}
         {!publicado ? (
           <Button className="h-10 text-white" style={{ backgroundColor: "var(--brand)" }} onClick={() => guardar(true)} disabled={saving}>
@@ -522,40 +499,5 @@ export default function SesionEditor({ sesion }: Props) {
         )}
       </div>
     </div>
-
-    {/* Overlay PDF — se muestra dentro de la misma página, funciona en móvil sin popup blockers */}
-    {showPdfModal && pdfHtml && (
-      <div className="fixed inset-0 z-50 flex flex-col bg-black/60">
-        {/* Barra superior */}
-        <div className="bg-white flex items-center justify-between gap-3 px-4 py-3 border-b shadow-sm shrink-0">
-          <p className="text-sm font-semibold text-gray-800 truncate">Vista previa del PDF</p>
-          <div className="flex items-center gap-2 shrink-0">
-            <a
-              href={pdfUrl}
-              className="flex items-center gap-1.5 text-xs font-medium px-3 py-2 rounded-lg border transition-colors hover:bg-gray-50"
-              style={{ color: "var(--brand)", borderColor: "var(--brand)" }}
-            >
-              <FileDown size={14} />
-              Guardar como PDF
-            </a>
-            <button
-              onClick={() => setShowPdfModal(false)}
-              className="p-2 rounded-lg hover:bg-gray-100 text-gray-500 transition-colors"
-              aria-label="Cerrar"
-            >
-              <X size={18} />
-            </button>
-          </div>
-        </div>
-        {/* Contenido del PDF en iframe — no necesita autenticación, datos en memoria */}
-        <iframe
-          srcDoc={pdfHtml}
-          className="flex-1 bg-white"
-          style={{ border: "none" }}
-          title="Vista previa del PDF"
-        />
-      </div>
-    )}
-    </>
   )
 }
