@@ -70,7 +70,7 @@ export default async function SesionesPacientePage() {
                   </div>
                   {sesion.pdfUrl && (
                     <a
-                      href={sesion.pdfUrl}
+                      href={`/api/sesiones/${sesion.id}/pdf`}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-lg border transition-colors hover:bg-gray-50 shrink-0"

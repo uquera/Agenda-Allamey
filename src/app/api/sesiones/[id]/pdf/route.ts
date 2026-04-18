@@ -3,38 +3,14 @@ import { auth } from "@/auth"
 import { prisma } from "@/lib/prisma"
 import { format } from "date-fns"
 import { es } from "date-fns/locale"
-import fs from "fs"
-import path from "path"
 import { BRAND } from "@/lib/brand"
 
-export async function POST(
-  req: Request,
-  { params }: { params: Promise<{ id: string }> }
-) {
-  const session = await auth()
-  if (!session || session.user.role !== "ADMIN") {
-    return NextResponse.json({ error: "No autorizado" }, { status: 401 })
-  }
-
-  const { id } = await params
-  const { titulo, contenido } = await req.json()
-
-  const sesion = await prisma.sesionNota.findUnique({
-    where: { id },
-    include: {
-      paciente: { include: { user: { select: { name: true } } } },
-    },
-  })
-  if (!sesion) return NextResponse.json({ error: "No encontrado" }, { status: 404 })
-
-  // Generar HTML del PDF como página descargable
-  const fechaStr = format(new Date(sesion.fechaSesion), "d 'de' MMMM 'de' yyyy", { locale: es })
-  const nombrePaciente = sesion.paciente.user.name || "Paciente"
-
-  const htmlDoc = `<!DOCTYPE html>
+function buildHtml(titulo: string, contenido: string, nombrePaciente: string, fechaStr: string) {
+  return `<!DOCTYPE html>
 <html lang="es">
 <head>
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <title>${titulo}</title>
 <style>
   * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -51,9 +27,25 @@ export async function POST(
   .content ul, .content ol { margin: 12px 0 12px 20px; }
   .content li { margin-bottom: 6px; }
   .footer { margin-top: 60px; padding-top: 20px; border-top: 1px solid #eee; font-size: 11px; color: #aaa; text-align: center; }
+  .save-btn {
+    position: fixed; top: 16px; right: 16px;
+    background: #8B1A2C; color: white; border: none;
+    padding: 10px 20px; border-radius: 8px; font-size: 14px;
+    font-weight: 600; cursor: pointer; box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+    font-family: inherit;
+  }
+  .save-btn:hover { background: #6e1522; }
+  @media print { .save-btn { display: none !important; } }
+  @media (max-width: 600px) {
+    body { padding: 30px 20px; }
+    .header { flex-direction: column; gap: 12px; }
+    .meta { text-align: left; }
+    .save-btn { top: 10px; right: 10px; padding: 8px 14px; font-size: 13px; }
+  }
 </style>
 </head>
 <body>
+  <button class="save-btn" onclick="window.print()">Guardar como PDF</button>
   <div class="header">
     <div class="brand">
       <h1>ALLAMEY SANZ</h1>
@@ -75,22 +67,76 @@ export async function POST(
   </div>
 </body>
 </html>`
+}
 
-  // Guardar el HTML como archivo descargable en /public/sesiones/
-  const dir = path.join(process.cwd(), "public", "sesiones")
-  if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true })
+// GET: sirve el HTML del PDF directamente (admin o el propio paciente)
+export async function GET(
+  _req: Request,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  const session = await auth()
+  if (!session) {
+    return new NextResponse("No autorizado", { status: 401 })
+  }
 
-  const filename = `sesion-${id}-${Date.now()}.html`
-  const filepath = path.join(dir, filename)
-  fs.writeFileSync(filepath, htmlDoc, "utf-8")
+  const { id } = await params
 
-  const pdfUrl = `/sesiones/${filename}`
+  const sesion = await prisma.sesionNota.findUnique({
+    where: { id },
+    include: {
+      paciente: { include: { user: { select: { name: true } } } },
+    },
+  })
+  if (!sesion) return new NextResponse("No encontrado", { status: 404 })
 
-  // Actualizar la sesión con la URL del archivo
+  // Admin puede ver cualquier sesión; paciente solo las suyas publicadas
+  if (session.user.role !== "ADMIN") {
+    const paciente = await prisma.paciente.findUnique({ where: { userId: session.user.id } })
+    if (!paciente || paciente.id !== sesion.pacienteId || !sesion.publicado) {
+      return new NextResponse("No autorizado", { status: 401 })
+    }
+  }
+
+  const fechaStr = format(new Date(sesion.fechaSesion), "d 'de' MMMM 'de' yyyy", { locale: es })
+  const nombrePaciente = sesion.paciente.user.name || "Paciente"
+  const html = buildHtml(sesion.titulo, sesion.contenido, nombrePaciente, fechaStr)
+
+  return new NextResponse(html, {
+    headers: { "Content-Type": "text/html; charset=utf-8" },
+  })
+}
+
+// POST: guarda el contenido y marca la sesión como "PDF disponible"
+export async function POST(
+  req: Request,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  const session = await auth()
+  if (!session || session.user.role !== "ADMIN") {
+    return NextResponse.json({ error: "No autorizado" }, { status: 401 })
+  }
+
+  const { id } = await params
+  const { titulo, contenido } = await req.json()
+
+  const sesion = await prisma.sesionNota.findUnique({
+    where: { id },
+    include: {
+      paciente: { include: { user: { select: { name: true } } } },
+    },
+  })
+  if (!sesion) return NextResponse.json({ error: "No encontrado" }, { status: 404 })
+
+  const pdfUrl = `/api/sesiones/${id}/pdf`
+
   await prisma.sesionNota.update({
     where: { id },
     data: { pdfUrl, titulo, contenido },
   })
 
-  return NextResponse.json({ pdfUrl, html: htmlDoc })
+  const fechaStr = format(new Date(sesion.fechaSesion), "d 'de' MMMM 'de' yyyy", { locale: es })
+  const nombrePaciente = sesion.paciente.user.name || "Paciente"
+  const html = buildHtml(titulo, contenido, nombrePaciente, fechaStr)
+
+  return NextResponse.json({ pdfUrl, html })
 }
