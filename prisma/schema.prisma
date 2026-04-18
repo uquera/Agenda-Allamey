@@ -212,9 +212,10 @@ model SesionNota {
   pacienteId         String
   titulo             String              @default("Resumen de Sesion")
   tipoSesion         TipoSesion          @default(INDIVIDUAL)
-  contenido          String
-  recomendacion      String?
-  cantidadSesiones   Int?
+  contenido              String
+  recomendacion          String?
+  anotacionesPrivadas    String?
+  cantidadSesiones       Int?
   estadoSeguimiento  EstadoSeguimiento?
   publicado          Boolean             @default(false)
   pdfUrl             String?

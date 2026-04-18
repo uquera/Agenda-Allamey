@@ -13,7 +13,7 @@ export async function PATCH(
   }
 
   const { id } = await params
-  const { titulo, contenido, publicado, tipoSesion, recomendacion, cantidadSesiones, estadoSeguimiento } = await req.json()
+  const { titulo, contenido, publicado, tipoSesion, recomendacion, anotacionesPrivadas, cantidadSesiones, estadoSeguimiento } = await req.json()
 
   const sesionAntes = await prisma.sesionNota.findUnique({ where: { id } })
   if (!sesionAntes) return NextResponse.json({ error: "No encontrado" }, { status: 404 })
@@ -24,6 +24,7 @@ export async function PATCH(
       titulo, contenido, publicado,
       tipoSesion: tipoSesion || undefined,
       recomendacion: recomendacion ?? null,
+      anotacionesPrivadas: anotacionesPrivadas ?? null,
       cantidadSesiones: cantidadSesiones ? Number(cantidadSesiones) : null,
       estadoSeguimiento: estadoSeguimiento || null,
     },

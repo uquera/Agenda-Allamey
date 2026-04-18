@@ -20,7 +20,13 @@ export default async function SesionesPacientePage() {
 
   const sesiones = await prisma.sesionNota.findMany({
     where: { pacienteId: paciente.id, publicado: true },
-    include: {
+    select: {
+      id: true,
+      titulo: true,
+      contenido: true,
+      recomendacion: true,
+      fechaSesion: true,
+      pdfUrl: true,
       archivos: {
         where: { privado: false },
         orderBy: { createdAt: "asc" },
@@ -87,6 +93,15 @@ export default async function SesionesPacientePage() {
                     className="mt-4 prose prose-sm max-w-none text-gray-600 border-t border-gray-100 pt-4"
                     dangerouslySetInnerHTML={{ __html: sesion.contenido }}
                   />
+                )}
+
+                {sesion.recomendacion && (
+                  <div className="mt-4 border-t border-gray-100 pt-4">
+                    <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1.5">
+                      Recomendaciones
+                    </p>
+                    <p className="text-sm text-gray-600 whitespace-pre-wrap">{sesion.recomendacion}</p>
+                  </div>
                 )}
 
                 {sesion.archivos.length > 0 && (

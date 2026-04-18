@@ -40,6 +40,7 @@ interface Props {
     tipoSesion: string
     contenido: string
     recomendacion?: string | null
+    anotacionesPrivadas?: string | null
     cantidadSesiones?: number | null
     estadoSeguimiento?: string | null
     publicado: boolean
@@ -86,6 +87,7 @@ export default function SesionEditor({ sesion }: Props) {
   const [titulo, setTitulo] = useState(sesion.titulo)
   const [tipoSesion, setTipoSesion] = useState(sesion.tipoSesion || "INDIVIDUAL")
   const [recomendacion, setRecomendacion] = useState(sesion.recomendacion || "")
+  const [anotacionesPrivadas, setAnotacionesPrivadas] = useState(sesion.anotacionesPrivadas || "")
   const [cantidadSesiones, setCantidadSesiones] = useState(sesion.cantidadSesiones?.toString() || "")
   const [estadoSeguimiento, setEstadoSeguimiento] = useState(sesion.estadoSeguimiento || "")
   const [publicado, setPublicado] = useState(sesion.publicado)
@@ -208,7 +210,7 @@ export default function SesionEditor({ sesion }: Props) {
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             titulo, contenido: editor.getHTML(), publicado: nuevoPublicado,
-            tipoSesion, recomendacion, cantidadSesiones, estadoSeguimiento,
+            tipoSesion, recomendacion, anotacionesPrivadas, cantidadSesiones, estadoSeguimiento,
           }),
         })
         if (!res.ok) throw new Error()
@@ -445,9 +447,15 @@ export default function SesionEditor({ sesion }: Props) {
         )}
       </div>
 
-      {/* Recomendación clínica */}
+      {/* Recomendación clínica — visible al paciente */}
       <div className="border border-gray-200 rounded-xl bg-white shadow-sm p-4 space-y-3">
-        <h3 className="text-sm font-semibold text-gray-700">Recomendación al cierre de sesión</h3>
+        <div className="flex items-center gap-2">
+          <h3 className="text-sm font-semibold text-gray-700">Recomendación al cierre de sesión</h3>
+          <span className="inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full bg-green-50 text-green-700 border border-green-200">
+            <Globe size={11} />
+            Visible al paciente
+          </span>
+        </div>
         <Textarea
           value={recomendacion}
           onChange={e => setRecomendacion(e.target.value)}
@@ -464,6 +472,25 @@ export default function SesionEditor({ sesion }: Props) {
             className="w-24"
           />
         </div>
+      </div>
+
+      {/* Mis anotaciones — privadas, solo la doctora */}
+      <div className="border border-rose-100 rounded-xl bg-rose-50/40 shadow-sm p-4 space-y-3">
+        <div className="flex items-center gap-2">
+          <h3 className="text-sm font-semibold text-gray-700">Mis anotaciones</h3>
+          <span className="inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full bg-rose-50 text-rose-600 border border-rose-200">
+            <Lock size={11} />
+            Solo tú las ves
+          </span>
+        </div>
+        <p className="text-xs text-gray-400">Impresiones clínicas, hipótesis diagnósticas o notas de seguimiento privadas. El paciente no puede ver este apartado.</p>
+        <Textarea
+          value={anotacionesPrivadas}
+          onChange={e => setAnotacionesPrivadas(e.target.value)}
+          placeholder="Notas privadas sobre el caso, impresiones, observaciones clínicas..."
+          rows={4}
+          className="bg-white border-rose-200 focus-visible:ring-rose-300"
+        />
       </div>
 
       {/* Acciones */}
