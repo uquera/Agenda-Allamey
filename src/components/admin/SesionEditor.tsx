@@ -89,6 +89,7 @@ export default function SesionEditor({ sesion }: Props) {
   const [cantidadSesiones, setCantidadSesiones] = useState(sesion.cantidadSesiones?.toString() || "")
   const [estadoSeguimiento, setEstadoSeguimiento] = useState(sesion.estadoSeguimiento || "")
   const [publicado, setPublicado] = useState(sesion.publicado)
+  const [pdfUrl, setPdfUrl] = useState(sesion.pdfUrl || "")
   const [saving, setSaving] = useState(false)
   const [generandoPDF, setGenerandoPDF] = useState(false)
   const [archivos, setArchivos] = useState<Archivo[]>([])
@@ -229,8 +230,6 @@ export default function SesionEditor({ sesion }: Props) {
   const generarPDF = useCallback(async () => {
     if (!editor) return
     setGenerandoPDF(true)
-    // Abrir la ventana ANTES del await para evitar que el browser la bloquee como popup
-    const previewWindow = window.open("", "_blank")
     try {
       const res = await fetch(`/api/sesiones/${sesion.id}/pdf`, {
         method: "POST",
@@ -239,14 +238,10 @@ export default function SesionEditor({ sesion }: Props) {
       })
       if (!res.ok) throw new Error()
       const data = await res.json()
-      if (previewWindow) {
-        previewWindow.document.write(data.html)
-        previewWindow.document.close()
-      }
-      toast.success("PDF generado correctamente")
+      setPdfUrl(data.pdfUrl)
+      toast.success("PDF listo. Toca 'Ver PDF' para abrirlo.")
       router.refresh()
     } catch {
-      previewWindow?.close()
       toast.error("Error al generar el PDF")
     } finally {
       setGenerandoPDF(false)
@@ -288,7 +283,7 @@ export default function SesionEditor({ sesion }: Props) {
           <Input value={titulo} onChange={(e) => setTitulo(e.target.value)} className="text-base font-semibold h-11" placeholder="Resumen de sesión..." />
         </div>
 
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <div className="space-y-1.5">
             <Label className="text-sm font-medium text-gray-700">Tipo de sesión</Label>
             <Select value={tipoSesion} onValueChange={v => v && setTipoSesion(v)}>
@@ -337,15 +332,14 @@ export default function SesionEditor({ sesion }: Props) {
           <div className="w-px h-5 bg-gray-200 mx-1" />
 
           {/* Insertar imagen */}
-          <input ref={imgInputRef} type="file" accept="image/*" className="hidden" onChange={handleImageUpload} />
-          <button
+          <input ref={imgInputRef} id="img-upload" type="file" accept="image/*" className="hidden" onChange={handleImageUpload} />
+          <label
+            htmlFor={subiendoImagen ? undefined : "img-upload"}
             title="Insertar imagen"
-            onClick={() => imgInputRef.current?.click()}
-            disabled={subiendoImagen}
-            className="p-1.5 rounded-lg text-gray-500 hover:bg-gray-200 hover:text-gray-800 transition-colors disabled:opacity-40"
+            className={`p-1.5 rounded-lg transition-colors ${subiendoImagen ? "opacity-40 cursor-not-allowed pointer-events-none" : "cursor-pointer text-gray-500 hover:bg-gray-200 hover:text-gray-800"}`}
           >
             {subiendoImagen ? <Loader2 size={16} className="animate-spin" /> : <ImageIcon size={16} />}
-          </button>
+          </label>
 
           <div className="w-px h-5 bg-gray-200 mx-1" />
 
@@ -373,20 +367,20 @@ export default function SesionEditor({ sesion }: Props) {
           <div>
             <input
               ref={fileInputRef}
+              id="doc-upload"
               type="file"
               multiple
               accept=".xlsx,.xls,.csv,.docx,.doc,.pdf,.txt,.pptx,.ppt,.jpg,.jpeg,.png,.gif,.webp,.mp3,.wav,.ogg,.m4a,.aac,.flac"
               className="hidden"
               onChange={handleDocUpload}
             />
-            <button
-              onClick={() => fileInputRef.current?.click()}
-              disabled={subiendoArchivo}
-              className="flex items-center gap-1.5 text-xs font-medium text-gray-600 hover:text-gray-900 px-3 py-1.5 rounded-lg hover:bg-gray-100 transition-colors"
+            <label
+              htmlFor={subiendoArchivo ? undefined : "doc-upload"}
+              className={`flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-lg transition-colors ${subiendoArchivo ? "opacity-50 cursor-not-allowed pointer-events-none text-gray-400" : "cursor-pointer text-gray-600 hover:text-gray-900 hover:bg-gray-100"}`}
             >
               {subiendoArchivo ? <Loader2 size={13} className="animate-spin" /> : <Paperclip size={13} />}
               {subiendoArchivo ? "Subiendo..." : "Adjuntar archivo"}
-            </button>
+            </label>
           </div>
         </div>
 
@@ -481,6 +475,18 @@ export default function SesionEditor({ sesion }: Props) {
           {generandoPDF ? <Loader2 size={15} className="animate-spin mr-2" /> : <FileDown size={15} className="mr-2" />}
           Generar PDF
         </Button>
+        {pdfUrl && (
+          <a
+            href={pdfUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-2 h-10 px-4 rounded-md border text-sm font-medium transition-colors hover:bg-gray-50"
+            style={{ color: "var(--brand)", borderColor: "var(--brand)" }}
+          >
+            <Eye size={15} />
+            Ver PDF
+          </a>
+        )}
         {!publicado ? (
           <Button className="h-10 text-white" style={{ backgroundColor: "var(--brand)" }} onClick={() => guardar(true)} disabled={saving}>
             <Eye size={15} className="mr-2" />
