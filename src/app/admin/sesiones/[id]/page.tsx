@@ -28,6 +28,7 @@ export default async function SesionDetallePage({
         tipoSesion: sesion.tipoSesion,
         contenido: sesion.contenido,
         recomendacion: sesion.recomendacion,
+        anotacionesPrivadas: sesion.anotacionesPrivadas,
         cantidadSesiones: sesion.cantidadSesiones,
         estadoSeguimiento: sesion.estadoSeguimiento,
         publicado: sesion.publicado,
