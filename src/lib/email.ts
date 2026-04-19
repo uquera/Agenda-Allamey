@@ -3,6 +3,16 @@ import { format } from "date-fns"
 import { es } from "date-fns/locale"
 import { BRAND } from "@/lib/brand"
 
+// Convierte un Date UTC a un Date con los valores locales de Santiago,
+// para que date-fns format() muestre la hora correcta en el servidor (UTC).
+function toSantiago(date: Date): Date {
+  const str = date.toLocaleString("sv-SE", { timeZone: "America/Santiago" })
+  const [dStr, tStr] = str.split(" ")
+  const [y, m, d] = dStr.split("-").map(Number)
+  const [h, min] = tStr.split(":").map(Number)
+  return new Date(y, m - 1, d, h, min, 0)
+}
+
 const transporter = nodemailer.createTransport({
   host: process.env.EMAIL_HOST,
   port: Number(process.env.EMAIL_PORT),
@@ -94,7 +104,7 @@ export async function enviarConfirmacionSolicitud(
   nombre: string,
   fecha: Date
 ) {
-  const fechaStr = format(fecha, "EEEE d 'de' MMMM 'de' yyyy 'a las' HH:mm", { locale: es })
+  const fechaStr = format(toSantiago(fecha), "EEEE d 'de' MMMM 'de' yyyy 'a las' HH:mm", { locale: es })
 
   const html = emailWrapper(`
     <h2 style="margin:0 0 8px;color:${grayColor};font-size:22px;">Solicitud recibida</h2>
@@ -131,7 +141,7 @@ export async function enviarAprobacionCita(
   modalidad: string,
   linkSesion?: string | null
 ) {
-  const fechaStr = format(fecha, "EEEE d 'de' MMMM 'de' yyyy 'a las' HH:mm", { locale: es })
+  const fechaStr = format(toSantiago(fecha), "EEEE d 'de' MMMM 'de' yyyy 'a las' HH:mm", { locale: es })
   const esOnline = modalidad === "ONLINE"
 
   const html = emailWrapper(`
@@ -167,7 +177,7 @@ export async function enviarRechazoRcita(
   fecha: Date,
   motivo?: string | null
 ) {
-  const fechaStr = format(fecha, "EEEE d 'de' MMMM 'de' yyyy 'a las' HH:mm", { locale: es })
+  const fechaStr = format(toSantiago(fecha), "EEEE d 'de' MMMM 'de' yyyy 'a las' HH:mm", { locale: es })
 
   const html = emailWrapper(`
     <h2 style="margin:0 0 8px;color:${grayColor};font-size:22px;">Cita no disponible</h2>
@@ -209,7 +219,7 @@ export async function enviarRecordatorio24h(
   modalidad: string,
   linkSesion?: string | null
 ) {
-  const fechaStr = format(fecha, "EEEE d 'de' MMMM 'de' yyyy 'a las' HH:mm", { locale: es })
+  const fechaStr = format(toSantiago(fecha), "EEEE d 'de' MMMM 'de' yyyy 'a las' HH:mm", { locale: es })
   const esOnline = modalidad === "ONLINE"
 
   const html = emailWrapper(`
@@ -459,7 +469,7 @@ export async function enviarNuevaSolicitudAlAdmin(
   motivoConsulta?: string | null
 ) {
   const recipients = Array.isArray(adminEmails) ? adminEmails.join(", ") : adminEmails
-  const fechaStr = format(fecha, "EEEE d 'de' MMMM 'de' yyyy 'a las' HH:mm", { locale: es })
+  const fechaStr = format(toSantiago(fecha), "EEEE d 'de' MMMM 'de' yyyy 'a las' HH:mm", { locale: es })
   const modalidadStr = modalidad === "ONLINE" ? "Online (videollamada)" : "Presencial en consulta"
 
   const html = emailWrapper(`
