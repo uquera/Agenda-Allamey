@@ -58,15 +58,15 @@ export default async function SesionesPacientePage() {
             <Card key={sesion.id} className="border-0 shadow-sm hover:shadow-md transition-shadow">
               <CardContent className="p-5">
                 <div className="flex items-start justify-between gap-3">
-                  <div className="flex items-start gap-3">
+                  <div className="flex items-start gap-3 min-w-0">
                     <div
                       className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0"
                       style={{ backgroundColor: "var(--brand-light)" }}
                     >
                       <FileText size={18} style={{ color: "var(--brand)" }} />
                     </div>
-                    <div>
-                      <h3 className="text-sm font-semibold text-gray-800">{sesion.titulo}</h3>
+                    <div className="min-w-0">
+                      <h3 className="text-sm font-semibold text-gray-800 truncate">{sesion.titulo}</h3>
                       <p className="text-xs text-gray-400 mt-0.5 capitalize">
                         {format(new Date(sesion.fechaSesion), "EEEE d 'de' MMMM 'de' yyyy", {
                           locale: es,

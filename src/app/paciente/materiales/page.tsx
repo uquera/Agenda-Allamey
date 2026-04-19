@@ -88,7 +88,7 @@ export default async function MaterialesPacientePage() {
                 <p className="text-xs text-gray-500 mt-2">{ma.material.descripcion}</p>
               )}
 
-              <div className="flex items-center gap-2 mt-3">
+              <div className="flex flex-wrap items-center gap-2 mt-3">
                 {ma.material.archivoUrl && (
                   <a
                     href={ma.material.archivoUrl}
@@ -138,7 +138,7 @@ export default async function MaterialesPacientePage() {
             Recursos asignados por {BRAND.doctorTitle} para acompañar tu proceso
           </p>
         </div>
-        <div className="shrink-0 w-32 self-end relative" style={{ height: "210px" }}>
+        <div className="shrink-0 w-24 sm:w-32 self-end relative" style={{ height: "160px" }}>
           <Image
             src="/materiales-banner.jpg"
             alt="Materiales"

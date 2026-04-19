@@ -103,7 +103,7 @@ export default async function SesionesAdminPage() {
             <Link key={s.id} href={`/admin/sesiones/${s.id}`}>
               <Card className="border-0 shadow-sm hover:shadow-md transition-all cursor-pointer">
                 <CardContent className="p-4">
-                  <div className="flex items-center gap-4">
+                  <div className="flex items-start gap-3">
                     <div
                       className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0"
                       style={{ backgroundColor: "var(--brand-light)" }}
@@ -111,42 +111,39 @@ export default async function SesionesAdminPage() {
                       <FileText size={18} style={{ color: "var(--brand)" }} />
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm font-semibold text-gray-800">{s.titulo}</p>
-                      <p className="text-xs text-gray-500">
+                      <p className="text-sm font-semibold text-gray-800 truncate">{s.titulo}</p>
+                      <p className="text-xs text-gray-500 mt-0.5">
                         {s.paciente.user.name} ·{" "}
                         <span className="capitalize">
                           {format(new Date(s.fechaSesion), "d 'de' MMMM 'de' yyyy", { locale: es })}
                         </span>
                       </p>
-                    </div>
-                    <div className="flex items-center gap-2 shrink-0 flex-wrap justify-end">
-                      {/* Tipo de sesión */}
-                      <Badge className={`text-xs hover:bg-opacity-100 ${
-                        s.tipoSesion === "PAREJA"  ? "bg-purple-100 text-purple-700" :
-                        s.tipoSesion === "GRUPAL"  ? "bg-blue-100 text-blue-700" :
-                                                     "bg-gray-100 text-gray-600"
-                      }`}>
-                        {s.tipoSesion === "PAREJA" ? "Pareja" : s.tipoSesion === "GRUPAL" ? "Grupal" : "Individual"}
-                      </Badge>
-                      {/* Estado de seguimiento */}
-                      {s.estadoSeguimiento && (
+                      <div className="flex flex-wrap gap-1.5 mt-2">
                         <Badge className={`text-xs hover:bg-opacity-100 ${
-                          s.estadoSeguimiento === "CUMPLIDA"    ? "bg-green-100 text-green-700"  :
-                          s.estadoSeguimiento === "AGENDADA"    ? "bg-blue-100 text-blue-700"    :
-                          s.estadoSeguimiento === "REPROGRAMAR" ? "bg-amber-100 text-amber-700"  :
-                          s.estadoSeguimiento === "CANCELADA"   ? "bg-red-100 text-red-600"      : "bg-gray-100 text-gray-500"
+                          s.tipoSesion === "PAREJA"  ? "bg-purple-100 text-purple-700" :
+                          s.tipoSesion === "GRUPAL"  ? "bg-blue-100 text-blue-700" :
+                                                       "bg-gray-100 text-gray-600"
                         }`}>
-                          {s.estadoSeguimiento === "CUMPLIDA" ? "Cumplida" :
-                           s.estadoSeguimiento === "AGENDADA" ? "Agendada" :
-                           s.estadoSeguimiento === "REPROGRAMAR" ? "Reprogramar" : "Cancelada"}
+                          {s.tipoSesion === "PAREJA" ? "Pareja" : s.tipoSesion === "GRUPAL" ? "Grupal" : "Individual"}
                         </Badge>
-                      )}
-                      {/* Publicado / Borrador */}
-                      <Badge className={`text-xs hover:bg-opacity-100 ${
-                        s.publicado ? "bg-green-100 text-green-700" : "bg-gray-100 text-gray-500"
-                      }`}>
-                        {s.publicado ? "Publicado" : "Borrador"}
-                      </Badge>
+                        {s.estadoSeguimiento && (
+                          <Badge className={`text-xs hover:bg-opacity-100 ${
+                            s.estadoSeguimiento === "CUMPLIDA"    ? "bg-green-100 text-green-700"  :
+                            s.estadoSeguimiento === "AGENDADA"    ? "bg-blue-100 text-blue-700"    :
+                            s.estadoSeguimiento === "REPROGRAMAR" ? "bg-amber-100 text-amber-700"  :
+                            s.estadoSeguimiento === "CANCELADA"   ? "bg-red-100 text-red-600"      : "bg-gray-100 text-gray-500"
+                          }`}>
+                            {s.estadoSeguimiento === "CUMPLIDA" ? "Cumplida" :
+                             s.estadoSeguimiento === "AGENDADA" ? "Agendada" :
+                             s.estadoSeguimiento === "REPROGRAMAR" ? "Reprogramar" : "Cancelada"}
+                          </Badge>
+                        )}
+                        <Badge className={`text-xs hover:bg-opacity-100 ${
+                          s.publicado ? "bg-green-100 text-green-700" : "bg-gray-100 text-gray-500"
+                        }`}>
+                          {s.publicado ? "Publicado" : "Borrador"}
+                        </Badge>
+                      </div>
                     </div>
                   </div>
                 </CardContent>

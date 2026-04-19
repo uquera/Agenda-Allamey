@@ -239,7 +239,7 @@ export default function MaterialesManager({ materiales, pacientes }: Props) {
   return (
     <>
       <div className="space-y-6 max-w-5xl">
-        <div className="flex items-center justify-between">
+        <div className="flex flex-wrap items-center justify-between gap-y-3">
           <div>
             <h1 className="text-xl font-bold text-gray-800">Materiales didácticos</h1>
             <p className="text-sm text-gray-500 mt-1">
@@ -247,7 +247,7 @@ export default function MaterialesManager({ materiales, pacientes }: Props) {
             </p>
           </div>
           <Button
-            className="text-white h-9"
+            className="text-white h-9 shrink-0"
             style={{ backgroundColor: "var(--brand)" }}
             onClick={() => setModalNuevo(true)}
           >
@@ -276,7 +276,7 @@ export default function MaterialesManager({ materiales, pacientes }: Props) {
               return (
                 <Card key={m.id} className="border-0 shadow-sm hover:shadow-md transition-all">
                   <CardContent className="p-4">
-                    <div className="flex items-center gap-4">
+                    <div className="flex items-start gap-3">
                       <div
                         className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0"
                         style={{ backgroundColor: color.bg }}
@@ -284,79 +284,83 @@ export default function MaterialesManager({ materiales, pacientes }: Props) {
                         <Icono size={18} style={{ color: color.text }} />
                       </div>
                       <div className="flex-1 min-w-0">
-                        <p className="text-sm font-semibold text-gray-800">{m.titulo}</p>
-                        <div className="flex items-center gap-3 mt-0.5">
-                          <Badge
-                            className="text-xs px-2 py-0 hover:bg-transparent"
-                            style={{ backgroundColor: color.bg, color: color.text }}
-                          >
-                            {m.tipo}
-                          </Badge>
-                          {m.archivoUrl && (
-                            <span className="text-xs text-gray-400 flex items-center gap-1">
-                              <Paperclip size={11} />
-                              Archivo adjunto
-                            </span>
-                          )}
-                          {m.descripcion && !m.archivoUrl && (
-                            <span className="text-xs text-gray-400 truncate">{m.descripcion}</span>
-                          )}
+                        <div className="flex items-start justify-between gap-2">
+                          <div className="min-w-0">
+                            <p className="text-sm font-semibold text-gray-800 truncate">{m.titulo}</p>
+                            <div className="flex items-center gap-2 mt-0.5 flex-wrap">
+                              <Badge
+                                className="text-xs px-2 py-0 hover:bg-transparent"
+                                style={{ backgroundColor: color.bg, color: color.text }}
+                              >
+                                {m.tipo}
+                              </Badge>
+                              {m.archivoUrl && (
+                                <span className="text-xs text-gray-400 flex items-center gap-1">
+                                  <Paperclip size={11} />
+                                  Archivo
+                                </span>
+                              )}
+                              {m.descripcion && !m.archivoUrl && (
+                                <span className="text-xs text-gray-400 truncate max-w-[160px]">{m.descripcion}</span>
+                              )}
+                            </div>
+                          </div>
+                          <div className="text-right shrink-0">
+                            <p className="text-sm font-bold text-gray-700">{m.totalAsignaciones}</p>
+                            <p className="text-xs text-gray-400">asign.</p>
+                          </div>
                         </div>
-                      </div>
-                      <div className="flex items-center gap-2 shrink-0">
-                        <div className="text-center mr-1">
-                          <p className="text-sm font-bold text-gray-700">{m.totalAsignaciones}</p>
-                          <p className="text-xs text-gray-400">asign.</p>
-                        </div>
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          className="h-8 text-xs"
-                          onClick={() => abrirEditar(m)}
-                        >
-                          <Pencil size={13} className="mr-1.5" />
-                          Editar
-                        </Button>
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          className="h-8 text-xs"
-                          onClick={() => {
-                            setPacientesSeleccionados([])
-                            setModalAsignar(m)
-                          }}
-                        >
-                          <Users size={13} className="mr-1.5" />
-                          Asignar
-                        </Button>
-                        {m.totalAsignaciones > 0 && (
+                        <div className="flex items-center gap-1.5 mt-3 flex-wrap">
                           <Button
                             size="sm"
                             variant="outline"
-                            className="h-8 text-xs text-blue-600 border-blue-200 hover:bg-blue-50"
-                            disabled={renovandoId === m.id}
-                            onClick={() => renovarMaterial(m.id)}
+                            className="h-8 px-2 sm:px-3"
+                            onClick={() => abrirEditar(m)}
                           >
-                            {renovandoId === m.id
-                              ? <Loader2 size={13} className="animate-spin" />
-                              : <RefreshCw size={13} className="mr-1.5" />
-                            }
-                            Renovar
+                            <Pencil size={13} className="sm:mr-1.5" />
+                            <span className="hidden sm:inline text-xs">Editar</span>
                           </Button>
-                        )}
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          className="h-8 text-xs text-red-600 border-red-200 hover:bg-red-50"
-                          disabled={deletingId === m.id}
-                          onClick={() => eliminarMaterial(m.id)}
-                        >
-                          {deletingId === m.id
-                            ? <Loader2 size={13} className="animate-spin" />
-                            : <Trash2 size={13} className="mr-1.5" />
-                          }
-                          Borrar
-                        </Button>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            className="h-8 px-2 sm:px-3"
+                            onClick={() => {
+                              setPacientesSeleccionados([])
+                              setModalAsignar(m)
+                            }}
+                          >
+                            <Users size={13} className="sm:mr-1.5" />
+                            <span className="hidden sm:inline text-xs">Asignar</span>
+                          </Button>
+                          {m.totalAsignaciones > 0 && (
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              className="h-8 px-2 sm:px-3 text-blue-600 border-blue-200 hover:bg-blue-50"
+                              disabled={renovandoId === m.id}
+                              onClick={() => renovarMaterial(m.id)}
+                            >
+                              {renovandoId === m.id
+                                ? <Loader2 size={13} className="animate-spin" />
+                                : <RefreshCw size={13} className="sm:mr-1.5" />
+                              }
+                              <span className="hidden sm:inline text-xs">Renovar</span>
+                            </Button>
+                          )}
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            className="h-8 px-2 sm:px-3 text-red-600 border-red-200 hover:bg-red-50"
+                            disabled={deletingId === m.id}
+                            onClick={() => eliminarMaterial(m.id)}
+                          >
+                            {deletingId === m.id
+                              ? <Loader2 size={13} className="animate-spin" />
+                              : <Trash2 size={13} className="sm:mr-1.5" />
+                            }
+                            <span className="hidden sm:inline text-xs">Borrar</span>
+                          </Button>
+                        </div>
                       </div>
                     </div>
                   </CardContent>
@@ -430,6 +434,7 @@ export default function MaterialesManager({ materiales, pacientes }: Props) {
                 <Label className="text-sm">Archivo <span className="text-gray-400">(opcional)</span></Label>
                 <input
                   ref={fileNuevoRef}
+                  id="mat-file-nuevo"
                   type="file"
                   className="hidden"
                   accept=".pdf,.mp3,.wav,.ogg,.m4a,.aac,.jpg,.jpeg,.png,.webp,.docx,.doc,.xlsx,.xls"
@@ -444,14 +449,13 @@ export default function MaterialesManager({ materiales, pacientes }: Props) {
                     </button>
                   </div>
                 ) : (
-                  <button
-                    type="button"
-                    onClick={() => fileNuevoRef.current?.click()}
-                    className="flex items-center gap-2 text-sm text-gray-500 hover:text-gray-800 px-3 py-2 rounded-lg border border-dashed border-gray-300 hover:border-gray-400 w-full transition-colors"
+                  <label
+                    htmlFor="mat-file-nuevo"
+                    className="flex items-center gap-2 text-sm text-gray-500 hover:text-gray-800 px-3 py-2 rounded-lg border border-dashed border-gray-300 hover:border-gray-400 w-full transition-colors cursor-pointer"
                   >
                     <Paperclip size={14} />
                     Adjuntar archivo
-                  </button>
+                  </label>
                 )}
               </div>
             )}
@@ -537,6 +541,7 @@ export default function MaterialesManager({ materiales, pacientes }: Props) {
                 <Label className="text-sm">Archivo</Label>
                 <input
                   ref={fileEditarRef}
+                  id="mat-file-editar"
                   type="file"
                   className="hidden"
                   accept=".pdf,.mp3,.wav,.ogg,.m4a,.aac,.jpg,.jpeg,.png,.webp,.docx,.doc,.xlsx,.xls"
@@ -554,20 +559,19 @@ export default function MaterialesManager({ materiales, pacientes }: Props) {
                   <div className="flex items-center gap-2 p-2 rounded-lg border border-gray-200 bg-gray-50">
                     <Paperclip size={13} className="text-gray-500 shrink-0" />
                     <span className="text-xs text-gray-700 truncate flex-1">Archivo existente</span>
-                    <button onClick={() => fileEditarRef.current?.click()} className="text-xs text-blue-600 hover:underline">Reemplazar</button>
+                    <label htmlFor="mat-file-editar" className="text-xs text-blue-600 hover:underline cursor-pointer">Reemplazar</label>
                     <button onClick={() => setQuitarArchivoEditar(true)} className="text-gray-400 hover:text-red-500 ml-1">
                       <X size={13} />
                     </button>
                   </div>
                 ) : (
-                  <button
-                    type="button"
-                    onClick={() => fileEditarRef.current?.click()}
-                    className="flex items-center gap-2 text-sm text-gray-500 hover:text-gray-800 px-3 py-2 rounded-lg border border-dashed border-gray-300 hover:border-gray-400 w-full transition-colors"
+                  <label
+                    htmlFor="mat-file-editar"
+                    className="flex items-center gap-2 text-sm text-gray-500 hover:text-gray-800 px-3 py-2 rounded-lg border border-dashed border-gray-300 hover:border-gray-400 w-full transition-colors cursor-pointer"
                   >
                     <Paperclip size={14} />
                     {quitarArchivoEditar ? "Adjuntar archivo nuevo" : "Adjuntar archivo"}
-                  </button>
+                  </label>
                 )}
               </div>
             )}
