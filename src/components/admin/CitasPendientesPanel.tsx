@@ -72,7 +72,7 @@ export default function CitasPendientesPanel({ pendientes, onCitaActualizada }: 
     }
 
     if (accion === "reagendar" && nuevaFecha && nuevaHora) {
-      body.nuevaFecha = `${nuevaFecha}T${nuevaHora}:00`
+      body.nuevaFecha = new Date(`${nuevaFecha}T${nuevaHora}:00`).toISOString()
     }
 
     try {

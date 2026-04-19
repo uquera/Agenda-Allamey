@@ -323,7 +323,7 @@ export default function AgendaCalendar({ eventos, bloqueosIniciales, onCitaActua
         break
       case "reagendar":
         if (!accionFecha || !accionHora) { toast.error("Selecciona fecha y hora"); return }
-        body = { estado: "REAGENDADA", nuevaFecha: `${accionFecha}T${accionHora}:00` }
+        body = { estado: "REAGENDADA", nuevaFecha: new Date(`${accionFecha}T${accionHora}:00`).toISOString() }
         break
       case "cancelar":
         body = { estado: "CANCELADA" }
@@ -514,7 +514,7 @@ export default function AgendaCalendar({ eventos, bloqueosIniciales, onCitaActua
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           pacienteId: nuevaCita.pacienteId,
-          fecha: `${nuevaCita.fecha}T${nuevaCita.hora}:00`,
+          fecha: new Date(`${nuevaCita.fecha}T${nuevaCita.hora}:00`).toISOString(),
           modalidad: nuevaCita.modalidad,
           duracion: nuevaCita.duracion,
           motivoConsulta: nuevaCita.motivoConsulta || null,

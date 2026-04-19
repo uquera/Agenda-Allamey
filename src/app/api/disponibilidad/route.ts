@@ -2,6 +2,16 @@ import { NextResponse } from "next/server"
 import { auth } from "@/auth"
 import { prisma } from "@/lib/prisma"
 
+// Extrae los minutos del día (0-1439) en la zona horaria de Santiago,
+// independientemente del offset UTC del servidor.
+function getMinSantiago(date: Date): number {
+  const str = date.toLocaleString("sv-SE", { timeZone: "America/Santiago" })
+  // str = "2026-04-20 15:00:00"
+  const timeStr = str.split(" ")[1]
+  const [h, m] = timeStr.split(":").map(Number)
+  return h * 60 + m
+}
+
 // DELETE — desactivar disponibilidad de un día
 export async function DELETE(req: Request) {
   const session = await auth()
@@ -37,8 +47,9 @@ export async function GET(req: Request) {
   if (!horario) return NextResponse.json({ slots: [] })
 
   // Verificar bloqueos
+  // finDia se extiende +5h para cubrir citas tardías en Santiago (UTC-4/UTC-3)
   const inicioDia = new Date(fecha.getFullYear(), fecha.getMonth(), fecha.getDate())
-  const finDia = new Date(inicioDia.getTime() + 24 * 60 * 60 * 1000)
+  const finDia = new Date(inicioDia.getTime() + 29 * 60 * 60 * 1000)
 
   const bloqueo = await prisma.bloqueoHorario.findFirst({
     where: {
@@ -90,9 +101,9 @@ export async function GET(req: Request) {
       continue
     }
 
-    // Verificar cita ocupada
+    // Verificar cita ocupada (comparar en zona horaria Santiago)
     const ocupado = citasDelDia.some((c) => {
-      const citaMin = new Date(c.fecha).getHours() * 60 + new Date(c.fecha).getMinutes()
+      const citaMin = getMinSantiago(new Date(c.fecha))
       return Math.abs(citaMin - min) < c.duracion
     })
 

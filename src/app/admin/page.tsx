@@ -8,6 +8,16 @@ import { format } from "date-fns"
 import { es } from "date-fns/locale"
 import Link from "next/link"
 
+// Convierte una fecha UTC a un Date "local" con los componentes de hora de Santiago,
+// para que date-fns los formatee correctamente desde un servidor UTC.
+function toSantiago(date: Date): Date {
+  const str = date.toLocaleString("sv-SE", { timeZone: "America/Santiago" })
+  const [dStr, tStr] = str.split(" ")
+  const [y, m, d] = dStr.split("-").map(Number)
+  const [h, min] = tStr.split(":").map(Number)
+  return new Date(y, m - 1, d, h, min, 0)
+}
+
 export default async function AdminDashboard() {
   const session = await auth()
   if (!session || session.user.role !== "ADMIN") redirect("/login")
@@ -235,7 +245,7 @@ export default async function AdminDashboard() {
                           {cita.paciente.user.name}
                         </p>
                         <p className="text-xs text-gray-500 capitalize">
-                          {format(new Date(cita.fecha), "EEEE d MMM · HH:mm", { locale: es })} ·{" "}
+                          {format(toSantiago(cita.fecha), "EEEE d MMM · HH:mm", { locale: es })} ·{" "}
                           {cita.modalidad === "ONLINE" ? "Online" : "Presencial"}
                         </p>
                       </div>

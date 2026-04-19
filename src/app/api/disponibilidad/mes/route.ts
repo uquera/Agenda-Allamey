@@ -1,6 +1,16 @@
 import { NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
 
+// Devuelve { year, month (1-12), day, minutes } en zona horaria Santiago
+function getSantiago(date: Date) {
+  const str = date.toLocaleString("sv-SE", { timeZone: "America/Santiago" })
+  // str = "2026-04-20 15:00:00"
+  const [dateStr, timeStr] = str.split(" ")
+  const [y, m, d] = dateStr.split("-").map(Number)
+  const [h, min] = timeStr.split(":").map(Number)
+  return { year: y, month: m, day: d, minutes: h * 60 + min }
+}
+
 // GET /api/disponibilidad/mes?year=2026&month=3
 // Devuelve el estado de disponibilidad de cada día del mes
 export async function GET(req: Request) {
@@ -31,9 +41,11 @@ export async function GET(req: Request) {
   })
 
   // 3. Citas aprobadas/pendientes del mes
+  // Extendemos +5h al final para cubrir el fin del día Santiago (UTC-4/UTC-3)
+  // El filtro por día exacto se hace en memoria usando getSantiago().
   const citas = await prisma.cita.findMany({
     where: {
-      fecha: { gte: inicio, lte: new Date(year, month - 1, fin.getDate(), 23, 59, 59) },
+      fecha: { gte: inicio, lte: new Date(year, month - 1, fin.getDate() + 1, 5, 0, 0) },
       estado: { in: ["PENDIENTE", "APROBADA"] },
     },
     select: { fecha: true, duracion: true },
@@ -75,10 +87,10 @@ export async function GET(req: Request) {
       return bd.getFullYear() === year && bd.getMonth() === month - 1 && bd.getDate() === dia && !b.todoElDia
     })
 
-    // Citas del día
+    // Citas del día (comparar fecha en zona horaria Santiago, no UTC)
     const citasDia = citas.filter((c) => {
-      const cd = new Date(c.fecha)
-      return cd.getFullYear() === year && cd.getMonth() === month - 1 && cd.getDate() === dia
+      const s = getSantiago(c.fecha)
+      return s.year === year && s.month === month && s.day === dia
     })
 
     let slotsLibres = 0
@@ -94,10 +106,9 @@ export async function GET(req: Request) {
       })
       if (bloqueado) continue
 
-      // Verificar cita ocupada
+      // Verificar cita ocupada (en zona horaria Santiago)
       const ocupado = citasDia.some((c) => {
-        const cd = new Date(c.fecha)
-        const citaMin = cd.getHours() * 60 + cd.getMinutes()
+        const citaMin = getSantiago(c.fecha).minutes
         return Math.abs(citaMin - min) < c.duracion
       })
       if (!ocupado) slotsLibres++
