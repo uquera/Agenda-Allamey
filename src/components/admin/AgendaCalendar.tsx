@@ -137,6 +137,16 @@ export default function AgendaCalendar({ eventos, bloqueosIniciales, onCitaActua
   const calendarRef = useRef(null)
   const [bloqueos, setBloqueos] = useState<Bloqueo[]>(bloqueosIniciales)
   const [eventosColoreados, setEventosColoreados] = useState(() => eventos.map(colorearEvento))
+
+  // Sincronizar eventos y bloqueos cuando router.refresh() trae datos frescos del servidor
+  useEffect(() => {
+    setEventosColoreados(eventos.map(colorearEvento))
+  }, [eventos])
+
+  useEffect(() => {
+    setBloqueos(bloqueosIniciales)
+  }, [bloqueosIniciales])
+
   const [bloqueoOpen, setBloqueoOpen] = useState(false)
   const [bloqueo, setBloqueo] = useState({ fecha: "", horaInicio: "", horaFin: "", motivo: "", todoElDia: false })
   const [guardandoBloqueo, setGuardandoBloqueo] = useState(false)
