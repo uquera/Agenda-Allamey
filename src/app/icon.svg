@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="32" height="32">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#6B1A23"/>
+      <stop offset="100%" stop-color="#9B2335"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Fondo cuadrado redondeado en carmesí -->
+  <rect width="32" height="32" rx="7" fill="url(#bg)"/>
+
+  <!-- Figura humana (círculo = cabeza) sobre la A -->
+  <circle cx="16" cy="7.5" r="2.8" fill="white" opacity="0.95"/>
+
+  <!-- A geométrica con la persona integrada -->
+  <!-- Pierna izquierda de la A -->
+  <polygon points="4,27 10.5,10 16,14 9,27" fill="white" opacity="0.95"/>
+  <!-- Pierna derecha de la A -->
+  <polygon points="28,27 21.5,10 16,14 23,27" fill="white" opacity="0.95"/>
+  <!-- Barra horizontal de la A -->
+  <rect x="10" y="18.5" width="12" height="2.8" rx="1" fill="#9B2335"/>
+
+  <!-- Acento rojo tipo llama (simplificado del "S" del logo) -->
+  <path d="M21 8 C24 10 25 14 23 16 C22 17.5 21 17 21.5 15.5 C22 14 23 11 21 8 Z"
+        fill="#C9485B" opacity="0.7"/>
+</svg>
