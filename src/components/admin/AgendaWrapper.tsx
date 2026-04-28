@@ -1,8 +1,15 @@
 "use client"
 
 import { useRef } from "react"
-import AgendaCalendar from "@/components/admin/AgendaCalendar"
+import dynamic from "next/dynamic"
 import CitasPendientesPanel from "@/components/admin/CitasPendientesPanel"
+
+// FullCalendar 6.x con React 19 hace doble montaje si se renderiza en SSR.
+// ssr: false garantiza que solo se monte una vez en el cliente.
+const AgendaCalendar = dynamic(
+  () => import("@/components/admin/AgendaCalendar"),
+  { ssr: false, loading: () => <div className="h-96 bg-gray-50 rounded-xl animate-pulse" /> }
+)
 
 interface CitaPendiente {
   id: string
