@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server"
 import { auth } from "@/auth"
+import { prisma } from "@/lib/prisma"
 import { readFile } from "fs/promises"
 import path from "path"
 import { existsSync } from "fs"
@@ -18,6 +19,39 @@ export async function GET(
   // Prevent path traversal
   if (!filePath.startsWith(uploadsRoot)) {
     return NextResponse.json({ error: "Ruta no permitida" }, { status: 403 })
+  }
+
+  // Ownership check: ADMIN ve todo, pacientes solo sus archivos
+  if (session.user.role !== "ADMIN") {
+    const relativeUrl = `/api/files/${segments.join("/")}`
+
+    const archivoPaciente = await prisma.archivoPaciente.findFirst({
+      where: { url: relativeUrl },
+      include: { paciente: { select: { userId: true } } },
+    })
+
+    if (archivoPaciente) {
+      if (archivoPaciente.paciente.userId !== session.user.id) {
+        return NextResponse.json({ error: "No autorizado" }, { status: 403 })
+      }
+    } else {
+      const sesionArchivo = await prisma.sesionArchivo.findFirst({
+        where: { url: relativeUrl },
+        include: { sesion: { select: { pacienteId: true } } },
+      })
+
+      if (sesionArchivo) {
+        const paciente = await prisma.paciente.findUnique({
+          where: { id: sesionArchivo.sesion.pacienteId },
+          select: { userId: true },
+        })
+        if (paciente?.userId !== session.user.id) {
+          return NextResponse.json({ error: "No autorizado" }, { status: 403 })
+        }
+      } else {
+        return NextResponse.json({ error: "No autorizado" }, { status: 403 })
+      }
+    }
   }
 
   if (!existsSync(filePath)) {
