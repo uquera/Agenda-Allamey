@@ -65,10 +65,10 @@ export async function GET(req: Request) {
       continue
     }
 
-    // Verificar bloqueo de todo el día (getSantiago evita desfase UTC en servidores no-UTC)
+    // Verificar bloqueo de todo el día
     const bloqueadoTodoDia = bloqueos.some((b) => {
-      const bs = getSantiago(b.fecha)
-      return bs.year === year && bs.month === month && bs.day === dia && b.todoElDia
+      const bd = new Date(b.fecha)
+      return bd.getFullYear() === year && bd.getMonth() === month - 1 && bd.getDate() === dia && b.todoElDia
     })
     if (bloqueadoTodoDia) {
       resultado[fechaStr] = "bloqueado"
@@ -83,8 +83,8 @@ export async function GET(req: Request) {
 
     // Bloqueos parciales del día
     const bloqueosParciales = bloqueos.filter((b) => {
-      const bs = getSantiago(b.fecha)
-      return bs.year === year && bs.month === month && bs.day === dia && !b.todoElDia
+      const bd = new Date(b.fecha)
+      return bd.getFullYear() === year && bd.getMonth() === month - 1 && bd.getDate() === dia && !b.todoElDia
     })
 
     // Citas del día (comparar fecha en zona horaria Santiago, no UTC)

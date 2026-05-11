@@ -48,14 +48,15 @@ export async function GET(req: Request) {
   })
   if (!horario) return NextResponse.json({ slots: [] })
 
-  // Verificar bloqueos
-  // finDia se extiende +5h para cubrir citas tardías en Santiago (UTC-4/UTC-3)
+  // Ventanas separadas: bloqueos usan 24h exactas (evita que el UTC midnight del
+  // día siguiente se cuele), citas usan 29h para cubrir la última hora local (UTC-4).
   const inicioDia = new Date(fecha.getFullYear(), fecha.getMonth(), fecha.getDate())
-  const finDia = new Date(inicioDia.getTime() + 29 * 60 * 60 * 1000)
+  const finBloqueos = new Date(inicioDia.getTime() + 24 * 60 * 60 * 1000)
+  const finCitas   = new Date(inicioDia.getTime() + 29 * 60 * 60 * 1000)
 
   const bloqueo = await prisma.bloqueoHorario.findFirst({
     where: {
-      fecha: { gte: inicioDia, lt: finDia },
+      fecha: { gte: inicioDia, lt: finBloqueos },
       todoElDia: true,
     },
   })
@@ -63,14 +64,14 @@ export async function GET(req: Request) {
 
   // Bloqueos parciales del día
   const bloqueosParciales = await prisma.bloqueoHorario.findMany({
-    where: { fecha: { gte: inicioDia, lt: finDia }, todoElDia: false },
+    where: { fecha: { gte: inicioDia, lt: finBloqueos }, todoElDia: false },
     select: { horaInicio: true, horaFin: true, motivo: true },
   })
 
   // Citas ya agendadas ese día
   const citasDelDia = await prisma.cita.findMany({
     where: {
-      fecha: { gte: inicioDia, lt: finDia },
+      fecha: { gte: inicioDia, lt: finCitas },
       estado: { in: ["PENDIENTE", "APROBADA"] },
     },
     select: { fecha: true, duracion: true },
