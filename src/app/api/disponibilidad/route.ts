@@ -37,7 +37,9 @@ export async function GET(req: Request) {
     return NextResponse.json(disponibilidad)
   }
 
-  const fecha = new Date(fechaParam)
+  // Parsear como fecha local para evitar desfase UTC en servidores con timezone != UTC
+  const [fYear, fMonth, fDay] = fechaParam.split("-").map(Number)
+  const fecha = new Date(fYear, fMonth - 1, fDay)
   const diaSemana = fecha.getDay()
 
   // Obtener horario del día

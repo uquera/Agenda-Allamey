@@ -23,7 +23,7 @@ export async function POST(req: Request) {
 
   const bloqueo = await prisma.bloqueoHorario.create({
     data: {
-      fecha: new Date(fecha),
+      fecha: new Date(`${fecha}T12:00:00Z`),
       horaInicio: todoElDia ? null : horaInicio || null,
       horaFin: todoElDia ? null : horaFin || null,
       todoElDia: todoElDia || false,
