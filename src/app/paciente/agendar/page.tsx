@@ -79,9 +79,10 @@ export default function AgendarPage() {
   async function confirmarCita() {
     if (!fechaSeleccionada || !horaSeleccionada) return
     setLoading(true)
-    const [hh, mm] = horaSeleccionada.split(":").map(Number)
-    const fechaCompleta = new Date(fechaSeleccionada)
-    fechaCompleta.setHours(hh, mm, 0, 0)
+    // Construir la fecha con offset explícito -04:00 (Venezuela / America/Caracas)
+    // para que el UTC almacenado sea correcto independientemente del timezone del navegador
+    const fechaStr = format(fechaSeleccionada, "yyyy-MM-dd")
+    const fechaCompleta = new Date(`${fechaStr}T${horaSeleccionada}:00-04:00`)
     try {
       const res = await fetch("/api/citas", {
         method: "POST",

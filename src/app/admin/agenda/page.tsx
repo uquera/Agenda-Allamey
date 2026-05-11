@@ -3,6 +3,12 @@ import AgendaWrapper from "@/components/admin/AgendaWrapper"
 
 export const dynamic = "force-dynamic"
 
+// Convierte una fecha UTC a ISO local de Venezuela (America/Caracas, UTC-4 fijo)
+// sin sufijo Z para que FullCalendar no haga conversión de timezone.
+function toCaracasISO(date: Date): string {
+  return date.toLocaleString("sv-SE", { timeZone: "America/Caracas" }).replace(" ", "T")
+}
+
 export default async function AgendaPage() {
   const citas = await prisma.cita.findMany({
     include: {
@@ -14,8 +20,8 @@ export default async function AgendaPage() {
   const eventos = citas.map((c) => ({
     id: c.id,
     title: c.paciente.user.name || "Paciente",
-    start: c.fecha.toISOString(),
-    end: new Date(new Date(c.fecha).getTime() + c.duracion * 60000).toISOString(),
+    start: toCaracasISO(c.fecha),
+    end: toCaracasISO(new Date(c.fecha.getTime() + c.duracion * 60000)),
     extendedProps: {
       estado: c.estado,
       modalidad: c.modalidad,

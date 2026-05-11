@@ -15,6 +15,15 @@ import { Textarea } from "@/components/ui/textarea"
 import { format } from "date-fns"
 import { es } from "date-fns/locale"
 import { toast } from "sonner"
+
+// ISO local de Caracas (sin Z) para pasar a FullCalendar sin conversión de timezone
+function toCaracasISO(date: Date): string {
+  return date.toLocaleString("sv-SE", { timeZone: "America/Caracas" }).replace(" ", "T")
+}
+// UTC desde fecha+hora ingresada como hora local de Venezuela
+function utcDesdeCaracas(fecha: string, hora: string): string {
+  return new Date(`${fecha}T${hora}:00-04:00`).toISOString()
+}
 import { Lock, Trash2, CalendarPlus, Plus, X, Check, Calendar, Ban, Video, MapPin, Clock, User } from "lucide-react"
 
 interface Evento {
@@ -260,6 +269,8 @@ export default function AgendaCalendar({ eventos, bloqueosIniciales, onCitaActua
       id: string
       start: Date | null
       end: Date | null
+      startStr: string
+      endStr: string
       extendedProps: Record<string, unknown>
     }
     revert: () => void
@@ -267,11 +278,16 @@ export default function AgendaCalendar({ eventos, bloqueosIniciales, onCitaActua
     const ev = info.event
     if (!ev.start) { info.revert(); return }
 
+    // Extraer hora local del evento (ev.startStr incluye offset del navegador)
+    // y re-interpretar como hora Venezuela (-04:00) para almacenar UTC correcto
+    const startLocal = ev.startStr.slice(0, 16)  // "2026-05-12T09:00"
+    const endLocal   = ev.endStr?.slice(0, 16)
+
     try {
       const res = await fetch(`/api/citas/${ev.id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ estado: "REAGENDADA", nuevaFecha: ev.start.toISOString() }),
+        body: JSON.stringify({ estado: "REAGENDADA", nuevaFecha: new Date(`${startLocal}:00-04:00`).toISOString() }),
       })
       if (!res.ok) {
         const data = await res.json()
@@ -284,8 +300,8 @@ export default function AgendaCalendar({ eventos, bloqueosIniciales, onCitaActua
           e.id === ev.id
             ? {
                 ...e,
-                start: ev.start!.toISOString(),
-                end: ev.end ? ev.end.toISOString() : e.end,
+                start: `${startLocal}:00`,
+                end: endLocal ? `${endLocal}:00` : e.end,
                 backgroundColor: estadoBg["REAGENDADA"],
                 borderColor: estadoBg["REAGENDADA"],
                 extendedProps: { ...e.extendedProps, estado: "REAGENDADA" },
@@ -333,7 +349,7 @@ export default function AgendaCalendar({ eventos, bloqueosIniciales, onCitaActua
         break
       case "reagendar":
         if (!accionFecha || !accionHora) { toast.error("Selecciona fecha y hora"); return }
-        body = { estado: "REAGENDADA", nuevaFecha: new Date(`${accionFecha}T${accionHora}:00`).toISOString() }
+        body = { estado: "REAGENDADA", nuevaFecha: utcDesdeCaracas(accionFecha, accionHora) }
         break
       case "cancelar":
         body = { estado: "CANCELADA" }
@@ -372,12 +388,12 @@ export default function AgendaCalendar({ eventos, bloqueosIniciales, onCitaActua
             ...( ["COMPLETADA", "CANCELADA", "RECHAZADA"].includes(nuevoEstado) ? { editable: false } : {}),
           }
           if (accion === "reagendar") {
-            const nuevoInicio = new Date(`${accionFecha}T${accionHora}:00`)
+            const nuevoInicio = new Date(utcDesdeCaracas(accionFecha, accionHora))
             const durMs = citaSeleccionada.end
               ? citaSeleccionada.end.getTime() - citaSeleccionada.start.getTime()
               : 60 * 60000
-            updated.start = nuevoInicio.toISOString()
-            updated.end = new Date(nuevoInicio.getTime() + durMs).toISOString()
+            updated.start = `${accionFecha}T${accionHora}:00`
+            updated.end = toCaracasISO(new Date(nuevoInicio.getTime() + durMs))
           }
           return updated
         })
@@ -524,7 +540,7 @@ export default function AgendaCalendar({ eventos, bloqueosIniciales, onCitaActua
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           pacienteId: nuevaCita.pacienteId,
-          fecha: new Date(`${nuevaCita.fecha}T${nuevaCita.hora}:00`).toISOString(),
+          fecha: utcDesdeCaracas(nuevaCita.fecha, nuevaCita.hora),
           modalidad: nuevaCita.modalidad,
           duracion: nuevaCita.duracion,
           motivoConsulta: nuevaCita.motivoConsulta || null,
@@ -540,7 +556,7 @@ export default function AgendaCalendar({ eventos, bloqueosIniciales, onCitaActua
       const cita = await res.json()
 
       const paciente = pacientes.find((p) => p.id === nuevaCita.pacienteId)
-      const inicio = new Date(`${nuevaCita.fecha}T${nuevaCita.hora}:00`)
+      const inicio = new Date(utcDesdeCaracas(nuevaCita.fecha, nuevaCita.hora))
       const fin = new Date(inicio.getTime() + nuevaCita.duracion * 60000)
 
       setEventosColoreados((prev) => [
@@ -548,8 +564,8 @@ export default function AgendaCalendar({ eventos, bloqueosIniciales, onCitaActua
         colorearEvento({
           id: cita.id,
           title: paciente?.nombre || "Paciente",
-          start: inicio.toISOString(),
-          end: fin.toISOString(),
+          start: `${nuevaCita.fecha}T${nuevaCita.hora}:00`,
+          end: toCaracasISO(fin),
           extendedProps: {
             estado: "APROBADA",
             modalidad: cita.modalidad,

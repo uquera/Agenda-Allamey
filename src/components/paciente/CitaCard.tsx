@@ -6,6 +6,19 @@ import { CalendarDays, Clock, Monitor, MapPin, X } from "lucide-react"
 import { format } from "date-fns"
 import { es } from "date-fns/locale"
 
+function formatFechaCaracas(iso: string): string {
+  return new Intl.DateTimeFormat("es", {
+    timeZone: "America/Caracas",
+    weekday: "long", day: "numeric", month: "long", year: "numeric",
+  }).format(new Date(iso))
+}
+function formatHoraCaracas(iso: string): string {
+  return new Intl.DateTimeFormat("es", {
+    timeZone: "America/Caracas",
+    hour: "2-digit", minute: "2-digit", hour12: false,
+  }).format(new Date(iso))
+}
+
 const estadoColor: Record<string, string> = {
   PENDIENTE: "bg-amber-100 text-amber-700",
   APROBADA: "bg-green-100 text-green-700",
@@ -69,12 +82,12 @@ export default function CitaCard({ cita }: { cita: CitaData }) {
         <div className="flex items-start justify-between gap-2 flex-wrap">
           <div>
             <p className="text-sm font-semibold text-gray-800 capitalize">
-              {format(new Date(cita.fecha), "EEEE d 'de' MMMM 'de' yyyy", { locale: es })}
+              {formatFechaCaracas(cita.fecha)}
             </p>
             <div className="flex items-center gap-3 mt-1">
               <span className="flex items-center gap-1 text-xs text-gray-500">
                 <Clock size={12} />
-                {format(new Date(cita.fecha), "HH:mm")}
+                {formatHoraCaracas(cita.fecha)}
               </span>
               <span className="flex items-center gap-1 text-xs text-gray-500">
                 {cita.modalidad === "ONLINE" ? <Monitor size={12} /> : <MapPin size={12} />}
