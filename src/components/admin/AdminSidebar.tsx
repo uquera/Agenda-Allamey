@@ -14,6 +14,7 @@ import {
   Settings,
   LogOut,
   BarChart2,
+  Shield,
 } from "lucide-react"
 import { signOut } from "next-auth/react"
 import { cn } from "@/lib/utils"
@@ -27,6 +28,7 @@ const navItems = [
   { href: "/admin/pagos", label: "Pagos", icon: CreditCard },
   { href: "/admin/morbilidad", label: "Morbilidad", icon: BarChart2 },
   { href: "/admin/configuracion", label: "Configuración", icon: Settings },
+  { href: "/admin/licencia", label: "Licencia", icon: Shield },
 ]
 
 export default function AdminSidebar() {
