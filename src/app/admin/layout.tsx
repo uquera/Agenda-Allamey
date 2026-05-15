@@ -2,6 +2,8 @@ import { auth } from "@/auth"
 import { redirect } from "next/navigation"
 import AdminSidebar from "@/components/admin/AdminSidebar"
 import AdminHeader from "@/components/admin/AdminHeader"
+import LicenciaBanner from "@/components/LicenciaBanner"
+import { getLicenciaStatus } from "@/lib/licencia"
 
 export default async function AdminLayout({
   children,
@@ -11,14 +13,19 @@ export default async function AdminLayout({
   const session = await auth()
   if (!session || session.user.role !== "ADMIN") redirect("/login")
 
+  const licencia = await getLicenciaStatus()
+
   return (
-    <div className="flex h-dvh bg-gray-50 overflow-hidden">
-      <AdminSidebar />
-      <div className="flex-1 flex flex-col overflow-hidden">
-        <AdminHeader user={session.user} />
-        <main className="flex-1 overflow-y-auto p-4 md:p-6">
-          {children}
-        </main>
+    <div className="flex flex-col h-dvh bg-gray-50 overflow-hidden">
+      <LicenciaBanner licencia={licencia} />
+      <div className="flex flex-1 overflow-hidden">
+        <AdminSidebar />
+        <div className="flex-1 flex flex-col overflow-hidden">
+          <AdminHeader user={session.user} />
+          <main className="flex-1 overflow-y-auto p-4 md:p-6">
+            {children}
+          </main>
+        </div>
       </div>
     </div>
   )

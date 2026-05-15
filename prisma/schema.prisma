@@ -443,6 +443,42 @@ enum TipoArchivo {
   OTRO
 }
 
+// ─── GOBERNANZA HYPNOS ─────────────────────────────────────────────────────────
+
+model Licencia {
+  id               String       @id @default("singleton")
+  plan             PlanLicencia @default(BASICO)
+  fechaVencimiento DateTime
+  suspendida       Boolean      @default(false)
+  notasAdmin       String?
+  updatedAt        DateTime     @updatedAt
+
+  pagos PagoLicencia[]
+
+  @@map("licencia")
+}
+
+model PagoLicencia {
+  id            String   @id @default(cuid())
+  licenciaId    String
+  monto         Float
+  moneda        String   @default("CLP")
+  periodoInicio DateTime
+  periodoFin    DateTime
+  fechaPago     DateTime @default(now())
+  notas         String?
+
+  licencia Licencia @relation(fields: [licenciaId], references: [id])
+
+  @@map("pagos_licencia")
+}
+
+enum PlanLicencia {
+  BASICO
+  PRO
+  ENTERPRISE
+}
+
 model ArchivoPaciente {
   id          String      @id @default(cuid())
   pacienteId  String
