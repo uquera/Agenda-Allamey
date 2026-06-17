@@ -292,6 +292,42 @@ export async function enviarInvitacionResena(
   })
 }
 
+export async function enviarRecordatorio2h(
+  email: string,
+  nombre: string,
+  fecha: Date,
+  modalidad: string,
+  linkSesion?: string | null
+) {
+  const horaStr = format(toSantiago(fecha), "HH:mm", { locale: es })
+  const esOnline = modalidad === "ONLINE"
+
+  const html = emailWrapper(`
+    <h2 style="margin:0 0 8px;color:${grayColor};font-size:22px;">Tu cita es en 2 horas ⏰</h2>
+    <p style="margin:0 0 24px;color:#888;font-size:14px;">Recordatorio</p>
+
+    <p style="color:${grayColor};font-size:15px;line-height:1.6;">Hola <strong>${nombre}</strong>,</p>
+    <p style="color:${grayColor};font-size:15px;line-height:1.6;">
+      Te recordamos que tu cita es hoy a las <strong>${horaStr}</strong>, en aproximadamente 2 horas.
+    </p>
+
+    <div style="background:#fff8f8;border:1px solid #f0d0d4;padding:20px;border-radius:10px;margin:24px 0;text-align:center;">
+      <p style="margin:0;color:${brandColor};font-size:20px;font-weight:700;">Hoy a las ${horaStr}</p>
+      <p style="margin:8px 0 0;color:#888;font-size:14px;">${esOnline ? "📱 Sesión online" : "🏥 Consulta presencial"}</p>
+      ${linkSesion ? `<p style="margin:12px 0 0;"><a href="${linkSesion}" style="color:${brandColor};font-size:14px;">Acceder al enlace de videollamada</a></p>` : ""}
+    </div>
+
+    <p style="color:#888;font-size:13px;">¡Te esperamos!</p>
+  `)
+
+  await transporter.sendMail({
+    from: process.env.EMAIL_FROM,
+    to: email,
+    subject: `Tu cita es en 2 horas — ${BRAND.name}`,
+    html,
+  })
+}
+
 export async function enviarNuevoMaterial(
   email: string,
   nombre: string,

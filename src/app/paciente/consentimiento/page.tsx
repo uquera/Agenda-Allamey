@@ -7,7 +7,9 @@ import { Button } from "@/components/ui/button"
 import { Loader2, ShieldCheck, CheckSquare, Square, FileText, Download } from "lucide-react"
 import { BRAND } from "@/lib/brand"
 
-const CLAUSULAS = [
+interface Clausula { id: string; titulo: string; texto: string }
+
+const CLAUSULAS_DEFAULT: Clausula[] = [
   {
     id: "naturaleza",
     titulo: "Naturaleza del servicio",
@@ -57,6 +59,7 @@ export default function ConsentimientoPage() {
   const [loadingEstado, setLoadingEstado] = useState(true)
   const [aceptados, setAceptados] = useState<Record<string, boolean>>({})
   const [loading, setLoading] = useState(false)
+  const [clausulas, setClausulas] = useState<Clausula[]>(CLAUSULAS_DEFAULT)
 
   useEffect(() => {
     fetch("/api/consentimiento")
@@ -66,12 +69,24 @@ export default function ConsentimientoPage() {
       .finally(() => setLoadingEstado(false))
   }, [])
 
+  // Cargar cláusulas configuradas por la doctora; si no hay, usar las predeterminadas
+  useEffect(() => {
+    fetch("/api/clausulas")
+      .then((r) => (r.ok ? r.json() : []))
+      .then((data: Clausula[]) => {
+        if (Array.isArray(data) && data.length > 0) {
+          setClausulas(data.map((c) => ({ id: c.id, titulo: c.titulo, texto: c.texto })))
+        }
+      })
+      .catch(() => {})
+  }, [])
+
   const toggleClausula = (id: string) => {
     setAceptados((prev) => ({ ...prev, [id]: !prev[id] }))
   }
 
   const aceptadosCount = Object.values(aceptados).filter(Boolean).length
-  const todosAceptados = CLAUSULAS.every((c) => aceptados[c.id])
+  const todosAceptados = clausulas.length > 0 && clausulas.every((c) => aceptados[c.id])
 
   async function handleFirmar() {
     if (!todosAceptados) {
@@ -176,7 +191,7 @@ export default function ConsentimientoPage() {
 
       {/* Cláusulas */}
       <div className="space-y-3">
-        {CLAUSULAS.map((clausula) => {
+        {clausulas.map((clausula) => {
           const aceptado = !!aceptados[clausula.id]
           return (
             <button
@@ -213,14 +228,14 @@ export default function ConsentimientoPage() {
         <div className="flex items-center justify-between mb-2">
           <span className="text-xs text-gray-500">Puntos aceptados</span>
           <span className="text-xs font-semibold text-gray-700">
-            {aceptadosCount} / {CLAUSULAS.length}
+            {aceptadosCount} / {clausulas.length}
           </span>
         </div>
         <div className="w-full h-2 bg-gray-100 rounded-full overflow-hidden">
           <div
             className="h-full rounded-full transition-all duration-300"
             style={{
-              width: `${(aceptadosCount / CLAUSULAS.length) * 100}%`,
+              width: `${(aceptadosCount / clausulas.length) * 100}%`,
               backgroundColor: todosAceptados ? "#16a34a" : "var(--brand)",
             }}
           />

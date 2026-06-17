@@ -16,6 +16,8 @@ import {
   BarChart2,
   Shield,
   Star,
+  History,
+  TrendingUp,
 } from "lucide-react"
 import { signOut } from "next-auth/react"
 import { cn } from "@/lib/utils"
@@ -28,7 +30,9 @@ const navItems = [
   { href: "/admin/materiales", label: "Materiales", icon: BookOpen },
   { href: "/admin/pagos", label: "Pagos", icon: CreditCard },
   { href: "/admin/morbilidad", label: "Morbilidad", icon: BarChart2 },
+  { href: "/admin/metricas", label: "Métricas", icon: TrendingUp },
   { href: "/admin/resenas", label: "Reseñas", icon: Star },
+  { href: "/admin/auditoria", label: "Auditoría", icon: History },
   { href: "/admin/configuracion", label: "Configuración", icon: Settings },
   { href: "/admin/licencia", label: "Licencia", icon: Shield },
 ]

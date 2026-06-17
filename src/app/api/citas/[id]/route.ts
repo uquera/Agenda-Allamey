@@ -8,6 +8,7 @@ import {
 } from "@/lib/email"
 import { BRAND } from "@/lib/brand"
 import { randomUUID } from "crypto"
+import { logAudit } from "@/lib/audit"
 
 async function hayConflictoCita(fecha: Date, duracion: number, excludeId?: string): Promise<boolean> {
   const ventanaInicio = new Date(fecha.getTime() - 8 * 60 * 60 * 1000)
@@ -65,6 +66,19 @@ export async function PATCH(
     where: { id },
     data: updateData as Parameters<typeof prisma.cita.update>[0]["data"],
   })
+
+  // Auditoría: registrar cambio de estado
+  if (estado && estado !== cita.estado) {
+    logAudit({
+      entidadTipo: "cita",
+      entidadId: id,
+      campo: "estado",
+      valorAntes: cita.estado,
+      valorDespues: estado,
+      userId: session.user.id,
+      userName: session.user.name ?? session.user.email ?? "Admin",
+    })
+  }
 
   const emailPaciente = cita.paciente.user.email
   const nombrePaciente = cita.paciente.user.name || "Paciente"
@@ -142,6 +156,16 @@ export async function DELETE(
   await prisma.cita.update({
     where: { id },
     data: { estado: "CANCELADA" },
+  })
+
+  logAudit({
+    entidadTipo: "cita",
+    entidadId: id,
+    campo: "estado",
+    valorAntes: cita.estado,
+    valorDespues: "CANCELADA",
+    userId: session.user.id,
+    userName: session.user.name ?? session.user.email ?? "Usuario",
   })
 
   return NextResponse.json({ ok: true })

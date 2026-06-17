@@ -2,6 +2,7 @@ import { NextResponse } from "next/server"
 import { auth } from "@/auth"
 import { prisma } from "@/lib/prisma"
 import { enviarConfirmacionPago } from "@/lib/email"
+import { logAudit } from "@/lib/audit"
 
 export async function DELETE(
   _req: Request,
@@ -54,6 +55,19 @@ export async function PATCH(
       },
     },
   })
+
+  // Auditoría: registrar cambio de estado del pago
+  if (estado !== undefined && estado !== existe.estado) {
+    logAudit({
+      entidadTipo: "pago",
+      entidadId: id,
+      campo: "estado",
+      valorAntes: existe.estado,
+      valorDespues: estado,
+      userId: session.user.id,
+      userName: session.user.name ?? session.user.email ?? "Admin",
+    })
+  }
 
   if (body.estado === "PAGADO") {
     try {
