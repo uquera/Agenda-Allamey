@@ -17,7 +17,7 @@ import {
   Bold, Italic, List, ListOrdered, Heading2, Undo, Redo,
   Save, Eye, EyeOff, FileDown, Loader2, ArrowLeft, User,
   ImageIcon, Paperclip, FileSpreadsheet, FileText, File, Trash2, ExternalLink, Music,
-  Lock, Globe,
+  Lock, Globe, Sparkles, X,
 } from "lucide-react"
 import { format } from "date-fns"
 import { es } from "date-fns/locale"
@@ -99,6 +99,13 @@ export default function SesionEditor({ sesion }: Props) {
   const [subiendoArchivo, setSubiendoArchivo] = useState(false)
   const [subiendoImagen, setSubiendoImagen] = useState(false)
 
+  // Asistente de IA
+  const [iaPanelAbierto, setIaPanelAbierto] = useState(false)
+  const [plantillas, setPlantillas] = useState<{ id: string; nombre: string }[]>([])
+  const [plantillaId, setPlantillaId] = useState("")
+  const [instruccionIA, setInstruccionIA] = useState("")
+  const [generandoIA, setGenerandoIA] = useState(false)
+
   const fileInputRef = useRef<HTMLInputElement>(null)
   const imgInputRef = useRef<HTMLInputElement>(null)
 
@@ -109,6 +116,14 @@ export default function SesionEditor({ sesion }: Props) {
       .then(setArchivos)
       .catch(() => {})
   }, [sesion.id])
+
+  // Cargar plantillas de informe disponibles
+  useEffect(() => {
+    fetch(`/api/plantillas-informe`)
+      .then((r) => (r.ok ? r.json() : []))
+      .then((data) => setPlantillas(Array.isArray(data) ? data.filter((p: { activo: boolean }) => p.activo) : []))
+      .catch(() => {})
+  }, [])
 
   const editor = useEditor({
     immediatelyRender: false,
@@ -229,6 +244,37 @@ export default function SesionEditor({ sesion }: Props) {
     },
     [editor, titulo, publicado, sesion.id, router, tipoSesion, recomendacion, anotacionesPrivadas, cantidadSesiones, estadoSeguimiento]
   )
+
+  const asistirIA = useCallback(async () => {
+    if (!editor) return
+    setGenerandoIA(true)
+    try {
+      const res = await fetch(`/api/sesiones/${sesion.id}/asistir`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          borrador: editor.getHTML(),
+          instruccion: instruccionIA,
+          plantillaId: plantillaId || undefined,
+        }),
+      })
+      if (!res.ok) {
+        const d = await res.json().catch(() => ({}))
+        throw new Error(d.error)
+      }
+      const data = await res.json()
+      if (data.html) {
+        editor.commands.setContent(data.html)
+        toast.success("Borrador generado con IA. Revísalo y ajústalo antes de publicar.")
+        setIaPanelAbierto(false)
+        setInstruccionIA("")
+      }
+    } catch (err) {
+      toast.error(err instanceof Error && err.message ? err.message : "Error al generar con IA")
+    } finally {
+      setGenerandoIA(false)
+    }
+  }, [editor, sesion.id, instruccionIA, plantillaId])
 
   const generarPDF = useCallback(async () => {
     if (!editor) return
@@ -352,7 +398,68 @@ export default function SesionEditor({ sesion }: Props) {
           <button onClick={() => editor.chain().focus().redo().run()} disabled={!editor.can().redo()} className="p-1.5 rounded-lg text-gray-500 hover:bg-gray-200 disabled:opacity-30 transition-colors">
             <Redo size={16} />
           </button>
+
+          <div className="flex-1" />
+
+          {/* Asistente de IA */}
+          <button
+            onClick={() => setIaPanelAbierto((v) => !v)}
+            title="Generar borrador con IA"
+            className="flex items-center gap-1.5 text-xs font-medium px-2.5 py-1.5 rounded-lg transition-colors text-white"
+            style={{ backgroundColor: "var(--brand)" }}
+          >
+            <Sparkles size={14} />
+            Asistente IA
+          </button>
         </div>
+
+        {/* Panel del asistente de IA */}
+        {iaPanelAbierto && (
+          <div className="border-b border-gray-100 bg-violet-50/40 p-4 space-y-3">
+            <div className="flex items-center justify-between">
+              <h4 className="text-sm font-semibold text-gray-700 flex items-center gap-1.5">
+                <Sparkles size={15} style={{ color: "var(--brand)" }} /> Generar borrador con IA
+              </h4>
+              <button onClick={() => setIaPanelAbierto(false)} className="text-gray-400 hover:text-gray-600">
+                <X size={16} />
+              </button>
+            </div>
+            <p className="text-xs text-gray-500">
+              La IA tomará lo que ya escribiste (si hay algo), la anamnesis y el historial del paciente para redactar una nota clínica estructurada. Siempre revísala antes de publicar.
+            </p>
+            {plantillas.length > 0 && (
+              <div className="space-y-1.5">
+                <Label className="text-xs text-gray-600">Plantilla de informe modelo (opcional)</Label>
+                <Select value={plantillaId} onValueChange={(v) => setPlantillaId(v && v !== "ninguna" ? v : "")}>
+                  <SelectTrigger className="h-9"><SelectValue placeholder="Estilo por defecto" /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="ninguna">Estilo por defecto</SelectItem>
+                    {plantillas.map((p) => (
+                      <SelectItem key={p.id} value={p.id}>{p.nombre}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
+            <div className="space-y-1.5">
+              <Label className="text-xs text-gray-600">Instrucción específica (opcional)</Label>
+              <Textarea
+                value={instruccionIA}
+                onChange={(e) => setInstruccionIA(e.target.value)}
+                rows={2}
+                placeholder="Ej: enfócate en los avances respecto a la ansiedad y propón ejercicios para casa."
+                className="bg-white text-sm"
+              />
+            </div>
+            <div className="flex items-center gap-2">
+              <Button onClick={asistirIA} disabled={generandoIA} className="h-9 text-white" style={{ backgroundColor: "var(--brand)" }}>
+                {generandoIA ? <Loader2 size={14} className="animate-spin mr-2" /> : <Sparkles size={14} className="mr-2" />}
+                {generandoIA ? "Generando..." : "Generar borrador"}
+              </Button>
+              <p className="text-xs text-gray-400">Reemplaza el contenido del editor.</p>
+            </div>
+          </div>
+        )}
 
         <EditorContent editor={editor} />
       </div>

@@ -4,7 +4,10 @@ import { prisma } from "@/lib/prisma"
 import {
   enviarAprobacionCita,
   enviarRechazoRcita,
+  enviarInvitacionResena,
 } from "@/lib/email"
+import { BRAND } from "@/lib/brand"
+import { randomUUID } from "crypto"
 
 async function hayConflictoCita(fecha: Date, duracion: number, excludeId?: string): Promise<boolean> {
   const ventanaInicio = new Date(fecha.getTime() - 8 * 60 * 60 * 1000)
@@ -86,6 +89,17 @@ export async function PATCH(
         cita.modalidad,
         linkSesion || cita.linkSesion
       )
+    } else if (estado === "COMPLETADA" && cita.estado !== "COMPLETADA") {
+      // Generar token único e invitar al paciente a calificar la sesión (solo la primera vez)
+      const token = randomUUID()
+      await prisma.cita.update({ where: { id }, data: { resenaToken: token } })
+
+      const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? ""
+      const linkResena = `${appUrl}/resena/${token}`
+
+      enviarInvitacionResena(emailPaciente, nombrePaciente, BRAND.doctorTitle, linkResena).catch((err) => {
+        console.error("[resena] Error enviando email invitación:", err)
+      })
     }
   } catch (err) {
     console.error("Error enviando email:", err)
