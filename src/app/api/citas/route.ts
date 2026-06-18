@@ -2,6 +2,9 @@ import { NextResponse } from "next/server"
 import { auth } from "@/auth"
 import { prisma } from "@/lib/prisma"
 import { enviarConfirmacionSolicitud, enviarNuevaSolicitudAlAdmin } from "@/lib/email"
+import { sendPushToAdmins } from "@/lib/push"
+import { format } from "date-fns"
+import { es } from "date-fns/locale"
 
 // GET — listar citas (admin: todas, paciente: las suyas)
 export async function GET(req: Request) {
@@ -137,6 +140,16 @@ export async function POST(req: Request) {
       motivoConsulta
     ).catch((err) => console.error("Error enviando notificación al admin:", err))
   }
+
+  // Notificación push directa al teléfono de la doctora
+  const fechaPush = format(new Date(fecha), "EEEE d 'de' MMMM 'a las' HH:mm", { locale: es })
+  sendPushToAdmins({
+    title: "Nueva solicitud de cita",
+    body: `${paciente.user.name || "Un paciente"} solicitó una cita para el ${fechaPush}.`,
+    url: "/admin/agenda",
+    tag: "cita-solicitud",
+    requireInteraction: true,
+  }).catch((err) => console.error("Error enviando push al admin:", err))
 
   return NextResponse.json(cita, { status: 201 })
 }

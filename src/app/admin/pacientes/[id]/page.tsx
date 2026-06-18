@@ -8,6 +8,7 @@ import { es } from "date-fns/locale"
 import Link from "next/link"
 import PacienteFichaEditor from "@/components/admin/PacienteFichaEditor"
 import EditarCuentaPacienteDialog from "@/components/admin/EditarCuentaPacienteDialog"
+import BitacoraPaciente from "@/components/admin/BitacoraPaciente"
 import { mergeConfig, AnamnesisConfigData } from "@/lib/anamnesis-config"
 
 export const dynamic = "force-dynamic"
@@ -166,6 +167,7 @@ export default async function PacienteDetallePage({
 
         {/* Citas recientes */}
         <div className="xl:col-span-2 space-y-4">
+          <BitacoraPaciente pacienteId={paciente.id} />
           <Card className="border-0 shadow-sm">
             <CardContent className="p-4">
               <div className="flex items-center justify-between mb-3">

@@ -25,8 +25,26 @@ model User {
   accounts Account[]
   sessions Session[]
   paciente Paciente?
+  pushSubscriptions PushSubscription[]
 
   @@map("users")
+}
+
+// ─── WEB PUSH (notificaciones al teléfono) ─────────────────────────────────────
+
+model PushSubscription {
+  id        String   @id @default(cuid())
+  userId    String
+  endpoint  String   @unique
+  p256dh    String
+  auth      String
+  userAgent String?
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("push_subscriptions")
 }
 
 model Account {
@@ -116,8 +134,29 @@ model Paciente {
   consentimiento  ConsentimientoInformado?
   anamnesis       Anamnesis?
   resenas         Resena[]
+  registrosEmocionales RegistroEmocional[]
 
   @@map("pacientes")
+}
+
+// ─── BITÁCORA EMOCIONAL ────────────────────────────────────────────────────────
+
+model RegistroEmocional {
+  id            String   @id @default(cuid())
+  pacienteId    String
+  fecha         DateTime @default(now())   // día/momento del registro
+  estadoAnimo   Int      // 1=muy mal, 2=mal, 3=neutral, 4=bien, 5=muy bien
+  emociones     String?  // JSON array de etiquetas, ej: ["ansiedad","cansancio"]
+  desencadenante String? // ¿qué lo provocó?
+  nota          String?  // texto libre del paciente
+  horasSueno    Float?
+  nivelEnergia  Int?     // 1-5
+  createdAt     DateTime @default(now())
+
+  paciente Paciente @relation(fields: [pacienteId], references: [id], onDelete: Cascade)
+
+  @@index([pacienteId])
+  @@map("registros_emocionales")
 }
 
 // ─── DISPONIBILIDAD ────────────────────────────────────────────────────────────

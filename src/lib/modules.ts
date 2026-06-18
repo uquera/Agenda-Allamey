@@ -22,6 +22,8 @@ export const MODULES = {
   consentimiento: process.env.NEXT_PUBLIC_MODULE_CONSENTIMIENTO !== "false",
   /** Patient documents folder — files shared by the doctor (/paciente/documentos) */
   documentos:     process.env.NEXT_PUBLIC_MODULE_DOCUMENTOS     !== "false",
+  /** Emotional journal — patient logs mood between sessions (/paciente/bitacora) */
+  bitacora:       process.env.NEXT_PUBLIC_MODULE_BITACORA       !== "false",
 } as const
 
 export type ModuleKey = keyof typeof MODULES

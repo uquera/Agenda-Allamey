@@ -3,7 +3,7 @@
 import Link from "next/link"
 import Image from "next/image"
 import { usePathname } from "next/navigation"
-import { CalendarDays, Clock, FileText, BookOpen, LogOut, Home, ShieldCheck, ClipboardList, Lock, FolderOpen } from "lucide-react"
+import { CalendarDays, Clock, FileText, BookOpen, LogOut, Home, ShieldCheck, ClipboardList, Lock, FolderOpen, HeartPulse } from "lucide-react"
 import { BRAND } from "@/lib/brand"
 import { MODULES, type ModuleKey } from "@/lib/modules"
 import { signOut } from "next-auth/react"
@@ -17,6 +17,7 @@ const navItems: {
   module?: ModuleKey
 }[] = [
   { href: "/paciente",                label: "Inicio",           icon: Home,          exact: true },
+  { href: "/paciente/bitacora",       label: "Mi bitácora",      icon: HeartPulse,    module: "bitacora" },
   { href: "/paciente/agendar",        label: "Solicitar cita",   icon: CalendarDays,  module: "agendar" },
   { href: "/paciente/citas",          label: "Mis citas",        icon: Clock,         module: "agendar" },
   { href: "/paciente/sesiones",       label: "Mis sesiones",     icon: FileText,      module: "sesiones" },
