@@ -9,6 +9,7 @@ import { Label } from "@/components/ui/label"
 import { ArrowLeft, FileText, Loader2 } from "lucide-react"
 import { toast } from "sonner"
 import Link from "next/link"
+import PacienteCombo from "@/components/admin/PacienteCombo"
 
 interface Paciente {
   id: string
@@ -169,18 +170,11 @@ export default function NuevaSesionPage() {
             <Label className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5 block">
               Paciente *
             </Label>
-            <select
+            <PacienteCombo
+              pacientes={pacientes}
               value={form.pacienteId}
-              onChange={(e) => setForm((f) => ({ ...f, pacienteId: e.target.value }))}
-              className="w-full h-10 rounded-lg border border-gray-200 bg-gray-50 px-3 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-[var(--brand)]/20"
-            >
-              <option value="">— Seleccionar paciente —</option>
-              {pacientes.map((p) => (
-                <option key={p.id} value={p.id}>
-                  {p.nombre}
-                </option>
-              ))}
-            </select>
+              onChange={(id) => setForm((f) => ({ ...f, pacienteId: id }))}
+            />
           </div>
 
           {/* Fecha */}
