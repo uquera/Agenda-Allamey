@@ -2,6 +2,7 @@ import { prisma } from "@/lib/prisma"
 import ConfiguracionManager from "@/components/admin/ConfiguracionManager"
 import Link from "next/link"
 import { ClipboardList, ChevronRight, Sparkles, UserCircle, ShieldCheck } from "lucide-react"
+import NotificationsToggle from "@/components/NotificationsToggle"
 
 export const dynamic = "force-dynamic"
 
@@ -13,6 +14,18 @@ export default async function ConfiguracionPage() {
 
   return (
     <div className="space-y-6">
+      {/* Notificaciones al teléfono */}
+      <div>
+        <h2 className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-3">Notificaciones</h2>
+        <NotificationsToggle
+          label="Avisos en este dispositivo"
+          description="Recibe un aviso al instante cuando un paciente solicite una cita."
+        />
+        <p className="text-xs text-gray-400 mt-2 px-1">
+          Para recibirlas en tu teléfono, abre el portal desde el navegador del celular, instálalo en la pantalla de inicio y activa esta opción.
+        </p>
+      </div>
+
       {/* Accesos rápidos */}
       <div>
         <h2 className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-3">Formularios y herramientas</h2>

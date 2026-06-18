@@ -3,6 +3,7 @@ import { Poppins, Open_Sans, Playfair_Display } from "next/font/google"
 import "./globals.css"
 import { Toaster } from "@/components/ui/sonner"
 import { BRAND } from "@/lib/brand"
+import ServiceWorkerRegister from "@/components/ServiceWorkerRegister"
 
 const poppins = Poppins({
   subsets: ["latin"],
@@ -27,6 +28,7 @@ export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
   viewportFit: "cover",
+  themeColor: BRAND.color,
 }
 
 export const metadata: Metadata = {
@@ -83,6 +85,12 @@ export const metadata: Metadata = {
     ],
     apple: "/apple-icon.png",
   },
+  manifest: "/manifest.webmanifest",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "default",
+    title: BRAND.name,
+  },
 }
 
 export default function RootLayout({
@@ -97,6 +105,7 @@ export default function RootLayout({
           `:root { --brand: ${BRAND.color}; --brand-dark: ${BRAND.colorDark}; --brand-light: ${BRAND.colorLight}; }`
         }} />
         {children}
+        <ServiceWorkerRegister />
         <Toaster richColors position="top-right" />
       </body>
     </html>
