@@ -250,6 +250,84 @@ export async function enviarRecordatorio24h(
   })
 }
 
+export async function enviarInvitacionResena(
+  email: string,
+  nombrePaciente: string,
+  nombreProfesional: string,
+  linkResena: string
+) {
+  const html = emailWrapper(`
+    <h2 style="margin:0 0 8px;color:${grayColor};font-size:22px;">¿Cómo fue tu sesión? ⭐</h2>
+    <p style="margin:0 0 24px;color:#888;font-size:14px;">Tu opinión hace la diferencia</p>
+
+    <p style="color:${grayColor};font-size:15px;line-height:1.6;">Hola <strong>${nombrePaciente}</strong>,</p>
+    <p style="color:${grayColor};font-size:15px;line-height:1.6;">
+      Gracias por tu visita. Nos gustaría saber cómo fue tu experiencia con
+      <strong>${nombreProfesional}</strong>. Solo toma unos segundos y tu opinión ayuda a seguir mejorando.
+    </p>
+
+    <div style="text-align:center;margin:36px 0;">
+      <a href="${linkResena}"
+         style="background:${brandColor};color:#ffffff;padding:16px 36px;border-radius:10px;text-decoration:none;font-size:16px;font-weight:700;display:inline-block;">
+        ⭐ Dejar mi calificación
+      </a>
+    </div>
+
+    <div style="background:#fff8f8;border:1px solid #f0d0d4;padding:16px 20px;border-radius:10px;margin:16px 0;">
+      <p style="margin:0;color:${grayColor};font-size:13px;text-align:center;">
+        Este enlace es exclusivo para ti y solo puede usarse una vez.
+      </p>
+    </div>
+
+    <p style="color:#888;font-size:12px;text-align:center;margin-top:20px;">
+      Si no deseas calificar esta sesión puedes ignorar este mensaje.
+    </p>
+  `)
+
+  await transporter.sendMail({
+    from: process.env.EMAIL_FROM,
+    to: email,
+    subject: `¿Cómo fue tu sesión con ${nombreProfesional}? — ${BRAND.name}`,
+    html,
+  })
+}
+
+export async function enviarRecordatorio2h(
+  email: string,
+  nombre: string,
+  fecha: Date,
+  modalidad: string,
+  linkSesion?: string | null
+) {
+  const horaStr = format(toSantiago(fecha), "HH:mm", { locale: es })
+  const esOnline = modalidad === "ONLINE"
+
+  const html = emailWrapper(`
+    <h2 style="margin:0 0 8px;color:${grayColor};font-size:22px;">Tu cita es en 2 horas ⏰</h2>
+    <p style="margin:0 0 24px;color:#888;font-size:14px;">Recordatorio</p>
+
+    <p style="color:${grayColor};font-size:15px;line-height:1.6;">Hola <strong>${nombre}</strong>,</p>
+    <p style="color:${grayColor};font-size:15px;line-height:1.6;">
+      Te recordamos que tu cita es hoy a las <strong>${horaStr}</strong>, en aproximadamente 2 horas.
+    </p>
+
+    <div style="background:#fff8f8;border:1px solid #f0d0d4;padding:20px;border-radius:10px;margin:24px 0;text-align:center;">
+      <p style="margin:0;color:${brandColor};font-size:20px;font-weight:700;">Hoy a las ${horaStr}</p>
+      <p style="margin:8px 0 0;color:#888;font-size:14px;">${esOnline ? "📱 Sesión online" : "🏥 Consulta presencial"}</p>
+      ${linkSesion ? `<p style="margin:12px 0 0;"><a href="${linkSesion}" style="color:${brandColor};font-size:14px;">Acceder al enlace de videollamada</a></p>` : ""}
+    </div>
+
+    <p style="color:#888;font-size:13px;">¡Te esperamos!</p>
+  `)
+
+  await transporter.sendMail({
+    from: process.env.EMAIL_FROM,
+    to: email,
+    subject: `Tu cita es en 2 horas — ${BRAND.name}`,
+    html,
+  })
+}
+
 export async function enviarNuevoMaterial(
   email: string,
   nombre: string,

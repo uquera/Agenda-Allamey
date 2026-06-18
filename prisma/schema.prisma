@@ -16,6 +16,9 @@ model User {
   image         String?
   password      String?
   role          Role      @default(PACIENTE)
+  // Configuración del asistente de IA para informes (solo aplica al ADMIN/doctora)
+  iaInstrucciones String?
+  iaEjemplo       String?
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
 
@@ -112,6 +115,7 @@ model Paciente {
   archivos        ArchivoPaciente[]
   consentimiento  ConsentimientoInformado?
   anamnesis       Anamnesis?
+  resenas         Resena[]
 
   @@map("pacientes")
 }
@@ -180,12 +184,15 @@ model Cita {
   notasAdmin     String?
   linkSesion     String?
   recordatorio24h Boolean   @default(false)
+  recordatorio2h  Boolean   @default(false)
+  resenaToken    String?    @unique
   createdAt      DateTime   @default(now())
   updatedAt      DateTime   @updatedAt
 
   paciente Paciente    @relation(fields: [pacienteId], references: [id])
   sesion   SesionNota?
   pago     Pago?
+  resena   Resena?
 
   @@map("citas")
 }
@@ -492,4 +499,84 @@ model ArchivoPaciente {
   paciente Paciente @relation(fields: [pacienteId], references: [id], onDelete: Cascade)
 
   @@map("archivos_paciente")
+}
+
+// ─── RESEÑAS / CALIFICACIONES ──────────────────────────────────────────────────
+
+model Resena {
+  id           String    @id @default(cuid())
+  pacienteId   String
+  citaId       String    @unique
+  calificacion Int       // 1=Deficiente, 2=Regular, 3=Bueno, 4=Muy bueno, 5=Excelente
+  comentario   String?
+  visible      Boolean   @default(true)  // mostrar como testimonio público
+  respuesta    String?   // respuesta pública de la doctora
+  respondidoEn DateTime?
+  createdAt    DateTime  @default(now())
+
+  paciente Paciente @relation(fields: [pacienteId], references: [id])
+  cita     Cita     @relation(fields: [citaId], references: [id])
+
+  @@map("resenas")
+}
+
+// ─── PERFIL PROFESIONAL (editable) ─────────────────────────────────────────────
+
+model PerfilProfesional {
+  id           String   @id @default("singleton")
+  nombre       String?  // sobrescribe BRAND.name si se define
+  especialidad String?
+  bio          String?
+  fotoUrl      String?
+  infoServicio String?  // descripción del servicio que ve el paciente al agendar
+  disclaimer   String?  // aviso/descargo que el paciente acepta
+  telefono     String?
+  whatsapp     String?
+  updatedAt    DateTime @updatedAt
+
+  @@map("perfil_profesional")
+}
+
+// ─── CLÁUSULAS DE CONSENTIMIENTO (configurables) ───────────────────────────────
+
+model ClausulaConsentimiento {
+  id        String   @id @default(cuid())
+  orden     Int      @default(0)
+  titulo    String
+  texto     String
+  activo    Boolean  @default(true)
+  updatedAt DateTime @updatedAt
+
+  @@map("clausulas_consentimiento")
+}
+
+// ─── PLANTILLAS DE INFORME (modelos para la IA) ────────────────────────────────
+
+model PlantillaInforme {
+  id          String   @id @default(cuid())
+  nombre      String
+  descripcion String?
+  contenido   String   // informe modelo de referencia para el estilo/estructura
+  activo      Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("plantillas_informe")
+}
+
+// ─── AUDITORÍA ─────────────────────────────────────────────────────────────────
+
+model AuditEntry {
+  id           String   @id @default(cuid())
+  entidadTipo  String   // "cita" | "pago" | "paciente" | ...
+  entidadId    String
+  campo        String   // campo que cambió, ej: "estado"
+  valorAntes   String?
+  valorDespues String?
+  userId       String
+  userName     String
+  createdAt    DateTime @default(now())
+
+  @@index([entidadId])
+  @@map("audit_entries")
 }
