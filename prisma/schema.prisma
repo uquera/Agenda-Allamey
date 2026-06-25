@@ -619,3 +619,16 @@ model AuditEntry {
   @@index([entidadId])
   @@map("audit_entries")
 }
+
+// ─── LIBRO DE CONDOLENCIAS (memorial Allamey) ──────────────────────────────────
+
+model Condolencia {
+  id        String   @id @default(cuid())
+  nombre    String   // quién deja el mensaje
+  mensaje   String   // su último adiós
+  visible   Boolean  @default(true) // permite ocultar mensajes inapropiados
+  createdAt DateTime @default(now())
+
+  @@index([createdAt])
+  @@map("condolencias")
+}

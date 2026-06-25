@@ -1,5 +1,6 @@
 import type { Metadata } from "next"
 import Image from "next/image"
+import LibroCondolencias from "@/components/LibroCondolencias"
 
 export const metadata: Metadata = {
   title: "En memoria de Allamey Sanz",
@@ -29,6 +30,8 @@ export default function MemorialPage() {
           </p>
         </figcaption>
       </figure>
+
+      <LibroCondolencias />
     </main>
   )
 }
