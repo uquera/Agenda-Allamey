@@ -51,3 +51,6 @@ next-env.d.ts
 
 # Archivos subidos por usuarios (datos de pacientes)
 /public/uploads/
+
+# Registro de envío memorial (contiene correos de pacientes)
+scripts/memorial-envios.json
